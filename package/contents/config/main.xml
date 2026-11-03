@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name=""/>
+  <group name="General">
+    <entry name="shape" type="Int"><default>1</default></entry>
+    <entry name="hoverOpen" type="Bool"><default>true</default></entry>
+    <entry name="hoverDelay" type="Int"><default>250</default></entry>
+    <entry name="compactWidth" type="Int"><default>240</default></entry>
+    <entry name="showBattery" type="Bool"><default>true</default></entry>
+    <entry name="reduceMotion" type="Bool"><default>false</default></entry>
+    <entry name="shelfJson" type="String"><default>[]</default></entry>
+  </group>
+</kcfg>
