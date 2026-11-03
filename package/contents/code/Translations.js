@@ -1,6 +1,9 @@
 .pragma library
 
 var polish = {
+    "Fit height to panel": "Dopasuj wysokość do panelu",
+    "Compact height (px):": "Wysokość zwiniętego widżetu (px):",
+    "Manual height is limited to the space available in the panel. Width is adjusted separately.": "Wysokość ręczna jest ograniczona do miejsca dostępnego w panelu. Szerokość ustawisz osobno.",
     "Appearance and behavior": "Wygląd i zachowanie",
     "Shape:": "Kształt:",
     "Notch": "Notch",

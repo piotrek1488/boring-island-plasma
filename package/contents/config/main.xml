@@ -6,6 +6,8 @@
     <entry name="shape" type="Int"><default>1</default></entry>
     <entry name="hoverOpen" type="Bool"><default>true</default></entry>
     <entry name="hoverDelay" type="Int"><default>250</default></entry>
+    <entry name="autoHeight" type="Bool"><default>true</default></entry>
+    <entry name="compactHeight" type="Int"><default>42</default><min>16</min><max>128</max></entry>
     <entry name="compactWidth" type="Int"><default>240</default></entry>
     <entry name="showBattery" type="Bool"><default>true</default></entry>
     <entry name="reduceMotion" type="Bool"><default>false</default></entry>

@@ -9,6 +9,8 @@ Kirigami.FormLayout {
     property alias cfg_shape: shape.currentIndex
     property alias cfg_hoverOpen: hover.checked
     property alias cfg_hoverDelay: delay.value
+    property alias cfg_autoHeight: autoSize.checked
+    property alias cfg_compactHeight: heightSize.value
     property alias cfg_compactWidth: size.value
     property alias cfg_showBattery: battery.checked
     property alias cfg_reduceMotion: motion.checked
@@ -22,6 +24,9 @@ Kirigami.FormLayout {
     }
     ComboBox { id: shape; Kirigami.FormData.label: strings.text("Shape:"); model: [strings.text("Notch"), "Dynamic Island"] }
     SpinBox { id: size; Kirigami.FormData.label: strings.text("Compact width:"); from: 180; to: 400; stepSize: 10 }
+    CheckBox { id: autoSize; objectName: "autoHeightSetting"; text: strings.text("Fit height to panel") }
+    SpinBox { id: heightSize; objectName: "compactHeightSetting"; Kirigami.FormData.label: strings.text("Compact height (px):"); from: 16; to: 128; value: 42; stepSize: 1; editable: true; enabled: !autoSize.checked }
+    Label { text: strings.text("Manual height is limited to the space available in the panel. Width is adjusted separately."); wrapMode: Text.WordWrap }
     CheckBox { id: hover; text: strings.text("Expand on hover") }
     SpinBox { id: delay; Kirigami.FormData.label: strings.text("Hover delay (ms):"); from: 100; to: 1500; stepSize: 50 }
     CheckBox { id: battery; text: strings.text("Show battery status") }

@@ -1,9 +1,13 @@
-# Verification of 0.2.1
+# Verification of 0.2.2
 
 Environment: Ubuntu 26.04, Plasma 6.6.6, Qt 6.10.2. Tests run offscreen with a
 software renderer and an isolated session bus. No files were sent to real devices.
 
 Passed:
+
+- Compact sizing: automatic fit at 16–128 logical pixels, manual clamping, notch
+  top alignment, island centering, click area matching the visible height and
+  enabling/disabling the manual height setting.
 
 - Translation tests: catalog coverage, English default independently of system
   locale, Polish/English live switching, lazy-loaded calendar propagation, saved

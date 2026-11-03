@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.2.1** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.2.2** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -43,7 +43,15 @@ Right-click the widget and open its settings, then select **Boring Island**.
   accessibility descriptions and dates update when the setting is applied.
 - **Notch:** a flat top edge and rounded bottom corners.
 - **Dynamic Island:** a rounded capsule; the default shape.
-- Configure compact width, hover delay, battery visibility and reduced motion.
+- **Fit height to panel:** enabled by default; follows the space Plasma gives the widget.
+- Disable automatic fitting to set **Compact height (px)** from 16 to 128. The
+  visible height is capped to the available panel space. Text, indicator and padding
+  scale with the height; compact width remains independently configurable.
+- A smaller notch stays aligned to the top of its allocated area; a smaller island
+  is centered vertically. On the desktop, automatic height is 42 px.
+- Sizes use Qt logical pixels, so desktop display scaling still applies. Panel
+  margins are controlled by Plasma; the expanded popup keeps its existing size.
+- Configure hover delay, battery visibility and reduced motion.
 
 Device names, filenames, track metadata and event content remain in their original
 language. External KDE dialogs and service error details use their own language
@@ -114,7 +122,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.2.1.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.2.2.plasmoid
 plasmawindowed ./package
 ```
 

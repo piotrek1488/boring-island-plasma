@@ -31,9 +31,11 @@ PlasmoidItem {
     Timer { id: closeTimer; interval: 650; onTriggered: { if (!root.interactionHeld && !root.compactHovered && !root.fullHovered) root.close(); } }
     compactRepresentation: CompactView {
         language: root.language
+        autoHeight: Plasmoid.configuration.autoHeight
+        compactHeight: Plasmoid.configuration.compactHeight
         backend: systemBackend; notch: Plasmoid.configuration.shape === 0; showBattery: Plasmoid.configuration.showBattery
         Layout.minimumWidth: 120; Layout.preferredWidth: Plasmoid.configuration.compactWidth
-        Layout.minimumHeight: 32
+        Layout.minimumHeight: 16
         onActivated: root.expanded = !root.expanded
         onHoverChanged: hovered => root.hoverChanged(true, hovered)
         onFilesDropped: urls => { root.storeShelf(Shelf.merge(root.savedShelf, urls)); root.open(); }
@@ -44,7 +46,10 @@ PlasmoidItem {
         CompactView {
             visible: !root.inPanel && !root.desktopOpen
             anchors.top: parent.top; anchors.horizontalCenter: parent.horizontalCenter
-            width: Math.min(parent.width, Plasmoid.configuration.compactWidth); height: 42
+            width: Math.min(parent.width, Plasmoid.configuration.compactWidth)
+            autoHeight: Plasmoid.configuration.autoHeight
+            compactHeight: Plasmoid.configuration.compactHeight
+            height: implicitHeight
             language: root.language
             backend: systemBackend; notch: Plasmoid.configuration.shape === 0; showBattery: Plasmoid.configuration.showBattery
             onActivated: root.open()

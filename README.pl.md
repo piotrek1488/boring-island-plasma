@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.2.1; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.2.2; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.2.1.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.2.2.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -40,7 +40,16 @@ PPM → ustawienia Boring Island → **Boring Island**:
   osobno dla każdego widżetu i działa niezależnie od języka systemu.
 - **Notch** — płaska górna krawędź i zaokrąglony dół.
 - **Dynamic Island** — zaokrąglona kapsuła; ustawienie domyślne.
-- Szerokość, opóźnienie najechania, pokazywanie baterii i ograniczenie animacji.
+- **Dopasuj wysokość do panelu** — domyślnie włączone; widżet korzysta z wysokości
+  przydzielonej przez Plasma.
+- Wyłącz automatyczne dopasowanie, aby ustawić **Wysokość zwiniętego widżetu (px)**
+  w zakresie 16–128. Widoczna wysokość nie przekroczy dostępnego miejsca w panelu.
+  Tekst, wskaźnik i odstępy skalują się razem z wysokością; szerokość ustawisz osobno.
+- Mniejszy notch przylega do góry przydzielonego obszaru, a wyspa jest wyśrodkowana
+  w pionie. Na pulpicie automatyczna wysokość wynosi 42 px.
+- Wymiary są podane w pikselach logicznych Qt — nadal obowiązuje skalowanie ekranu.
+  Marginesami panelu zarządza Plasma. Rozwinięty widok zachowuje swój rozmiar.
+- Opóźnienie najechania, pokazywanie baterii i ograniczenie animacji.
 
 Nazwy urządzeń, plików, utworów i treść wydarzeń pozostają w oryginalnym języku.
 Zewnętrzne okna KDE i szczegóły błędów usług używają własnych ustawień języka.
@@ -110,7 +119,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.2.1.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.2.2.plasmoid
 plasmawindowed ./package
 ```
 
