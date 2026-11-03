@@ -1,140 +1,151 @@
-# Boring Island — plasmoid dla KDE Plasma
+# Boring Island for KDE Plasma
 
-Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
+**English** | [Polski](README.pl.md)
+
+A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.2.0; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Version **0.2.1** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
 
-## Instalacja
+## Installation
 
-W katalogu tego projektu uruchom:
+Download the `.plasmoid` package from [Releases](https://github.com/piotrek1488/boring-island-plasma/releases)
+and install it through Plasma's **Add Widgets → Get New Widgets → Install Widget
+From Local File**. Add **Boring Island** to your desktop or a top panel.
+
+Alternatively, from a source checkout:
 
 ```bash
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.2.0.plasmoid` przez „Dodaj elementy interfejsu” →
-„Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
-Dodaj **Boring Island** do pulpitu lub górnego panelu.
-Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
-Nie potrzeba osobnej usługi ani autostartu.
+Plasma saves the widget and its settings and restores them at login. No separate
+service or autostart entry is needed.
 
-Opcjonalnie, po instalacji:
+An optional helper creates a small, centered top panel:
 
 ```bash
 ./scripts/add-top-panel.sh
 ```
 
-Ten skrypt tworzy mały, wyśrodkowany panel na górze ekranu; nie usuwa istniejących
-paneli i nie dodaje drugiej kopii, jeśli znajdzie widżet w panelu. Skrypt jest
-opcjonalnym narzędziem wdrożeniowym; nie był wykonywany na rzeczywistym pulpicie
-użytkownika podczas przygotowania pakietu. Na komputerze z istniejącym górnym
-panelem lepiej dodać widżet do niego ręcznie, aby uniknąć nakładania paneli.
+It preserves existing panels and avoids adding a second copy if a panel already
+contains Boring Island. The helper has not been tested on the user's live desktop.
+If you already have a top panel, add the widget there manually to avoid overlap.
 
-PPM → ustawienia Boring Island → **Appearance and behavior**:
+## Language and appearance
 
-- **Notch** — płaska górna krawędź i zaokrąglony dół.
-- **Dynamic Island** — zaokrąglona kapsuła; ustawienie domyślne.
-- Szerokość, opóźnienie najechania, pokazywanie baterii i ograniczenie animacji.
+Right-click the widget and open its settings, then select **Boring Island**.
 
-Dla efektu wyspy włącz pływający panel w ustawieniach Plasma. Dla notch wyłącz
-pływanie i ustaw górną krawędź. Motyw Plasma nadal decyduje o tle i marginesach
-samego panelu. Plasmoid nie zastępuje całego panelu ani nie tworzy niezależnej
-warstwy ponad wszystkimi oknami. W panelu rozwija się standardowy popup Plasma;
-na pulpicie rozwija się zawartość widżetu. Nie emuluje fizycznego wycięcia ekranu.
+- **Language:** English by default, or Polski. The selection is saved for each
+  widget separately and does not follow the system language. Labels, hints,
+  accessibility descriptions and dates update when the setting is applied.
+- **Notch:** a flat top edge and rounded bottom corners.
+- **Dynamic Island:** a rounded capsule; the default shape.
+- Configure compact width, hover delay, battery visibility and reduced motion.
 
-## Funkcje
+Device names, filenames, track metadata and event content remain in their original
+language. External KDE dialogs and service error details use their own language
+settings. The configuration category uses the language-neutral name Boring Island.
 
-- Sterowanie aktywnym odtwarzaczem przez MPRIS: poprzedni/następny, play/pause,
-  okładka, tytuł, wykonawca, pozycja, przewijanie i głośność **odtwarzacza**.
-- Automatyczny wybór odtwarzacza przez model KDE; przyciski uwzględniają jego możliwości.
-- Zegar w stanie bez muzyki, data w rozwinięciu.
-- Wydarzenia kalendarzy KDE/Akonadi: agenda wybranego dnia, godziny, wydarzenia całodniowe,
-  kolory kalendarzy, przechodzenie między dniami i odświeżanie.
-- Wysyłanie pliku z półki przez KDE Connect: przycisk ↗, wybór sparowanego i osiągalnego
-  urządzenia, przycisk Send. Widżet nie wysyła niczego automatycznie po upuszczeniu pliku.
-- Zbiorczy status wewnętrznej baterii oraz podłączenia zasilania. Na komputerze bez
-  baterii wskaźnik znika. `+` oznacza zewnętrzne zasilanie, nie gwarancję ładowania.
-- Półka do 24 lokalnych plików/katalogów: upuść pliki, kliknij, aby otworzyć,
-  przeciągnij do innej aplikacji, usuń skrót przyciskiem ×.
-- Półka zapisuje tylko adresy, nie kopiuje i nie usuwa plików. Przeniesienie lub
-  usunięcie oryginału unieważnia skrót. Nie otwiera plików automatycznie po upuszczeniu.
-- Konfiguracja i półka osobno dla każdej instancji widżetu; bez zewnętrznego demona.
+For an island effect, enable a floating panel in Plasma settings. For a notch,
+disable floating and place the panel at the top edge. Plasma's theme still controls
+the panel background and margins. In a panel, the expanded view is a standard
+Plasma popup; on the desktop, it expands inside the widget's allocated area.
+It does not create an independent overlay above every window or a physical cutout.
 
-Spotify, VLC, Elisa i przeglądarki mogą udostępniać MPRIS, ale zakres sterowania
-zależy od aplikacji. Pusta lista oznacza brak aktywnego źródła MPRIS. Głośność
-odtwarzacza nie jest regulacją całego systemu. Okładki mogą być pobierane z URL
-przekazanych przez odtwarzacz.
+## Features
 
-## KDE Connect i kalendarze
+- MPRIS media controls: previous/next track, play/pause, cover art, title, artist,
+  position, seeking and **player** volume.
+- KDE's automatic player selection, with controls respecting player capabilities.
+- An idle clock and a date in the expanded view.
+- A daily agenda from KDE/Akonadi calendars: timed and all-day events, calendar
+  colors, previous/next day navigation and refresh.
+- File sharing from the shelf through KDE Connect: click ↗, choose a paired and
+  reachable device, then click **Send**. Dropping a file never sends it automatically.
+- Internal battery percentage and external power status; hidden on systems without
+  an internal battery. `+` means external power, not necessarily active charging.
+- A persistent shelf of up to 24 local file/folder shortcuts: drop, open, drag out
+  or remove a shortcut with ×. Removing a shortcut never deletes the original.
+- Independent settings and shelf contents for each widget instance.
 
-**KDE Connect:** zainstaluj KDE Connect na komputerze i urządzeniu odbiorczym,
-połącz je w tej samej sieci i sparuj. Wtyczka „Udostępnianie i odbieranie” musi być
-włączona. Na półce kliknij ↗ obok pliku, następnie Send przy urządzeniu. Przycisk
-⚙ otwiera ustawienia parowania. Wyświetlane są urządzenia sparowane i osiągalne;
-nieaktywna funkcja udostępniania blokuje przycisk. Plasmoid przekazuje żądanie do
-KDE Connect — komunikat o przekazaniu nie oznacza dostarczenia pliku. Postęp i
-ostateczne błędy pokazują powiadomienia KDE Connect. Katalog najpierw spakuj do
-archiwum; wysyłanie katalogów nie jest funkcją tej integracji.
+The shelf stores addresses only. Moving or deleting the original breaks its
+shortcut. MPRIS support and available controls depend on the player. An empty media
+view means no active MPRIS source. Player volume does not change system volume.
+Cover art may be fetched from URLs supplied by the player.
 
-**Kalendarze:** potrzebna jest wtyczka Plasma Calendar „Calendar Events” / „Wydarzenia
-w kalendarzu” (`pimevents`) oraz skonfigurowane kalendarze Akonadi/KOrganizer.
-Na Ubuntu wtyczkę dostarcza `kdepim-addons`. Nie jest dołączona do paczki plasmoidu.
-W ustawieniach zegara Plasma otwórz sekcję kalendarza, włącz wydarzenia PIM i wybierz
-kalendarze. Widżet używa tego samego wyboru w procesie Plasma; nie kopiuje wydarzeń
-ani nie przechowuje haseł kont. Po doinstalowaniu wtyczki ponownie załaduj widżet.
-Tryb `plasmawindowed` ma własną konfigurację procesu, więc nie musi widzieć wyboru
-kalendarzy z `plasmashell` — docelowe miejsce to panel/pulpit Plasma.
-Jeżeli wtyczki brakuje, widżet pokazuje instrukcję zamiast pustej agendy. To agenda
-odczytu: dodawanie/edycję wydarzeń wykonuj w KOrganizer.
+## KDE Connect and calendars
 
-## Zakres i ograniczenia
+**KDE Connect:** install it on the computer and receiving device, connect both to
+the same network and pair them. Enable the sharing plugin. Click ↗ beside a shelf
+file and **Send** beside a device. The ⚙ button opens pairing settings.
 
-Nie przeniesiono: AirDrop, kamery, tekstów piosenek, historii schowka, pełnej kolejki powiadomień, pomiarowego
-wizualizatora audio, zamienników systemowego OSD ani wykrywania pełnego ekranu.
-Szczegółowe porównanie źródeł: [docs/ANALIZA.md](docs/ANALIZA.md).
+Only paired, reachable devices appear. Devices without the sharing capability have
+a disabled button. The widget acknowledges handing the request to KDE Connect;
+this does **not** confirm delivery. KDE Connect notifications report progress and
+final errors. Archive a folder before sending it; this integration sends files.
 
-Moduły MPRIS i baterii są **prywatnym API Plasma**. Zweryfikowane środowisko:
-Plasma 6.6.6 / Qt 6.10.2, Ubuntu 26.04. Nie deklarujemy zgodności z Plasma 5 ani
-ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacji.
+**Calendars:** install Plasma's **Calendar Events** (`pimevents`) plugin and configure
+calendars in Akonadi/KOrganizer. Ubuntu provides the plugin in `kdepim-addons`; it
+is not bundled in the plasmoid package. In the Plasma clock settings, enable the
+calendar events plugin and select your calendars. Reload the widget after installing
+the plugin.
 
-## Testy i rozwój
+The widget shares the calendar selection within the Plasma process. It does not
+copy events or store account passwords. `plasmawindowed` has separate application
+configuration, so it may not see the calendar selection used by `plasmashell`.
+The intended host is the Plasma panel or desktop. A missing plugin produces setup
+instructions rather than a misleading empty agenda. Create or edit events in
+KOrganizer; the widget's agenda is read-only.
+
+## Scope and limitations
+
+Not implemented: AirDrop, camera preview, lyrics, clipboard history, a full
+notification queue, measured audio visualization, system OSD replacement and
+fullscreen detection. See the [source analysis, in Polish](docs/ANALIZA.md).
+
+The MPRIS and battery integrations use **private Plasma APIs**. The verified
+environment is Plasma 6.6.6 / Qt 6.10.2 on Ubuntu 26.04. Plasma 5 and older Plasma 6
+versions are not supported. Future API changes may require updates.
+
+## Development and testing
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.2.0.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.2.1.plasmoid
 plasmawindowed ./package
 ```
 
-Testy wymagają Qt Quick Test (`qmltestrunner`), `dbus-run-session`, `python3-dbus`
-i `python3-gi`; moduły KDE Connect są potrzebne do testu wysyłania. Te zależności testowe nie są wymagane do korzystania z widżetu.
-Na dystrybucjach z inną ścieżką ustaw `QMLTESTRUNNER`.
+The standard suites require Qt Quick Test (`qmltestrunner`), `dbus-run-session`,
+`python3-dbus`, `python3-gi` and the KDE Connect QML module. Set `QMLTESTRUNNER` if
+your distribution installs the runner elsewhere. No translation compilation step
+is required: the English/Polish catalog ships inside the package.
 
-Dodatkowy test natywnego dostawcy kalendarza (wymaga CMake, kompilatora C++, Qt 6
-Core development i nagłówków `libkf6declarative-dev`):
+The optional native calendar provider test requires CMake, a C++ compiler, Qt 6
+Core development files and `libkf6declarative-dev` headers:
 
 ```bash
 ./scripts/test-calendar-plugin.sh
 ```
 
-Buduje lokalną wtyczkę testową, która emituje kontrolowane wydarzenia. Nie instaluj
-jej do systemu — służy wyłącznie testom. Sprawdza wykrycie dostawcy, asynchroniczne
-wydarzenia, zmianę miesiąca/roku oraz przeładowanie bez duplikowania wyników.
+It builds a local test plugin and checks asynchronous events and month/year
+boundaries. Never install the test plugin into the system plugin directory.
 
-Zweryfikowano: testy QML, MPRIS i KDE Connect na izolowanym D-Bus, natywną testową
-wtyczkę kalendarza, renderowanie widoków,
-instalację KPackage do katalogu testowego oraz ładowanie przez `plasmawindowed`
-w trybie offscreen. Testy MPRIS używają rzeczywistego D-Bus i testowego odtwarzacza,
-a obrazy prezentują dane testowe. Test KDE Connect nie wysyła danych do prawdziwego
-urządzenia; test kalendarza nie łączy się z prywatnymi kontami Akonadi. Nie wykonano końcowego testu interaktywnego
-panelu Wayland, fizycznej baterii, przeciągania między aplikacjami ani ponownego
-logowania, fizycznego transferu do telefonu ani synchronizacji konta kalendarza. Te scenariusze pozostają do sprawdzenia na docelowym pulpicie.
+Tests use isolated D-Bus fixtures and synthetic calendar events. They do not send
+files to a real phone or access private calendars. Real-device transfer, Akonadi
+account synchronization, interactive Wayland panel behavior, physical battery
+status, inter-application drag-and-drop, multi-monitor placement and login
+restoration still need target-device testing. Screenshots use test data.
+See [verification details](docs/TESTING.md).
 
-Odinstalowanie: najpierw usuń widżet z panelu/pulpitu, następnie:
+## Uninstall
+
+Remove the widget from the panel or desktop, then run:
 
 ```bash
 kpackagetool6 --type Plasma/Applet --remove org.kde.plasma.boringisland
 ```
 
-Licencja GPL-3.0-only. Autorzy i źródło inspiracji: [NOTICE.md](NOTICE.md).
+Licensed under GPL-3.0-only. See [NOTICE.md](NOTICE.md) for attribution.

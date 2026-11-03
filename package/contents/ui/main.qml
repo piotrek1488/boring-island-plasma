@@ -6,6 +6,8 @@ import org.kde.plasma.core as PlasmaCore
 import "../code/Shelf.js" as Shelf
 PlasmoidItem {
     id: root
+    readonly property string language: Plasmoid.configuration.language || "en"
+    Translations { id: strings; language: root.language }
     readonly property bool inPanel: Plasmoid.formFactor === PlasmaCore.Types.Horizontal || Plasmoid.formFactor === PlasmaCore.Types.Vertical
     property bool desktopOpen: false
     property bool interactionHeld: false
@@ -15,7 +17,7 @@ PlasmoidItem {
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
     preferredRepresentation: inPanel ? compactRepresentation : fullRepresentation
     toolTipMainText: "Boring Island"
-    toolTipSubText: systemBackend.title || qsTr("Media and file shelf")
+    toolTipSubText: systemBackend.title || strings.text("Media and file shelf")
     SystemBackend { id: systemBackend }
     function open() { if (inPanel) expanded = true; else desktopOpen = true; }
     function close() { expanded = false; desktopOpen = false; }
@@ -28,6 +30,7 @@ PlasmoidItem {
     Timer { id: openTimer; interval: Math.max(100, Plasmoid.configuration.hoverDelay); onTriggered: root.open() }
     Timer { id: closeTimer; interval: 650; onTriggered: { if (!root.interactionHeld && !root.compactHovered && !root.fullHovered) root.close(); } }
     compactRepresentation: CompactView {
+        language: root.language
         backend: systemBackend; notch: Plasmoid.configuration.shape === 0; showBattery: Plasmoid.configuration.showBattery
         Layout.minimumWidth: 120; Layout.preferredWidth: Plasmoid.configuration.compactWidth
         Layout.minimumHeight: 32
@@ -42,6 +45,7 @@ PlasmoidItem {
             visible: !root.inPanel && !root.desktopOpen
             anchors.top: parent.top; anchors.horizontalCenter: parent.horizontalCenter
             width: Math.min(parent.width, Plasmoid.configuration.compactWidth); height: 42
+            language: root.language
             backend: systemBackend; notch: Plasmoid.configuration.shape === 0; showBattery: Plasmoid.configuration.showBattery
             onActivated: root.open()
             onHoverChanged: hovered => root.hoverChanged(true, hovered)
@@ -53,6 +57,7 @@ PlasmoidItem {
             visible: root.inPanel || root.desktopOpen
             opacity: visible ? 1 : 0
             Behavior on opacity { NumberAnimation { duration: Plasmoid.configuration.reduceMotion ? 0 : 160 } }
+            language: root.language
             backend: systemBackend; shelf: root.savedShelf
             notch: Plasmoid.configuration.shape === 0; showBattery: Plasmoid.configuration.showBattery
             onShelfEdited: urls => root.storeShelf(urls)

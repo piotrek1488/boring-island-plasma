@@ -31,6 +31,7 @@ Item {
         function setVolume(value) { volume = value; }
     }
     UI.IslandView { id: island; x: 20; y: 10; width: 440; height: 286; backend: fake; onShelfEdited: urls => shelf = urls }
+    UI.ConfigGeneral { id: settings; visible: false }
     SignalSpy { id: closeSpy; target: island; signalName: "closeRequested" }
     TestCase {
         name: "Island"; when: windowShown
@@ -50,6 +51,28 @@ Item {
             compare(Shelf.name("file:///tmp/hello%20world.pdf"), "hello world.pdf");
             var files = []; for (var i = 0; i < 30; i++) files.push("file:///tmp/" + i);
             compare(Shelf.merge([], files).length, 24);
+        }
+        function test_translations() {
+            compare(island.language, "en");
+            compare(findChild(island, "calendarTab").text, "Calendar");
+            island.language = "pl";
+            compare(findChild(island, "calendarTab").text, "Kalendarz");
+            compare(findChild(island, "nextButton").Accessible.description, "Następny utwór");
+            island.page = 3;
+            tryVerify(() => findChild(island, "calendarPage") !== null);
+            var calendar = findChild(island, "calendarPage");
+            compare(calendar.language, "pl");
+            compare(findChild(calendar, "nextDay").Accessible.description, "Następny dzień");
+            island.language = "en";
+            compare(calendar.language, "en");
+            compare(findChild(calendar, "nextDay").Accessible.description, "Next day");
+            var choice = findChild(settings, "languageChoice");
+            compare(settings.cfg_language, "en");
+            choice.activated(1); compare(settings.cfg_language, "pl");
+            choice.activated(0); compare(settings.cfg_language, "en");
+            island.page = 0; island.notch = false; island.language = "pl"; wait(50);
+            grabImage(island).save(Qt.resolvedUrl("../docs/dynamic-island-pl.png").toString().replace("file://", ""));
+            island.language = "en";
         }
         function test_time() { compare(island.timeLabel(125000000), "2:05"); compare(island.timeLabel(-1), "0:00"); }
         function test_shapes_and_render() {

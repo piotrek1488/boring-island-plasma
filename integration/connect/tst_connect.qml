@@ -21,6 +21,11 @@ Item {
             tryCompare(failure, "count", 1); compare(target.busy, false);
             target.send("https://example.com");
             compare(failure.count, 2); compare(success.count, 1);
+            page.statusKey = "Starting transfer…";
+            compare(page.statusText, "Starting transfer…");
+            page.language = "pl";
+            compare(page.statusText, "Rozpoczynanie transferu…");
+            page.language = "en"; page.statusKey = "";
             grabImage(page).save(Qt.resolvedUrl("../../docs/kde-connect.png").toString().replace("file://", ""));
         }
     }

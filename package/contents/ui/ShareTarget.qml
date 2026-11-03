@@ -3,6 +3,8 @@ import org.kde.kdeconnect as KDEConnect
 import "../code/Shelf.js" as Shelf
 Item {
     id: target
+    property string language: "en"
+    Translations { id: strings; language: target.language }
     required property string deviceId
     property bool busy: false
     readonly property var device: KDEConnect.DeviceDbusInterfaceFactory.create(deviceId)
@@ -20,7 +22,7 @@ Item {
     function send(url) {
         if (busy) return;
         if (!available || !shareInterface || !Shelf.allowed(url)) {
-            failed(qsTr("Device unavailable or unsupported file address."));
+            failed(strings.text("Device unavailable or unsupported file address."));
             return;
         }
         busy = true;

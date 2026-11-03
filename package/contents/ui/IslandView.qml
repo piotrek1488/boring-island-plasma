@@ -5,6 +5,8 @@ import QtQuick.Layouts
 import "../code/Shelf.js" as Shelf
 Item {
     id: view
+    property string language: "en"
+    Translations { id: strings; language: view.language }
     required property var backend
     property bool notch: false
     property bool showBattery: true
@@ -15,7 +17,8 @@ Item {
     readonly property bool interactionHeld: page === 2
     signal interactionHeldChangedByUser(bool held)
     onInteractionHeldChanged: interactionHeldChangedByUser(interactionHeld)
-    property string today: Qt.formatDate(new Date(), "ddd, d MMM")
+    property date currentDate: new Date()
+    readonly property string today: currentDate.toLocaleDateString(strings.locale, "ddd, d MMM")
     onVisibleChanged: { if (!visible) hoverChanged(false); }
     signal shelfEdited(var urls)
     signal hoverChanged(bool hovered)
@@ -33,13 +36,13 @@ Item {
             Text { text: "BORING / ISLAND"; color: "#aaa0c9"; font.pixelSize: 10; font.letterSpacing: 2 }
             Item { Layout.fillWidth: true }
             Text { text: view.today; color: "#9395a7"; font.pixelSize: 11 }
-            ActionButton { text: "×"; implicitWidth: 26; implicitHeight: 26; Accessible.description: qsTr("Close"); onClicked: view.closeRequested() }
+            ActionButton { text: "×"; implicitWidth: 26; implicitHeight: 26; Accessible.description: strings.text("Close"); onClicked: view.closeRequested() }
         }
         RowLayout {
             spacing: 8
-            ActionButton { text: qsTr("Media"); implicitWidth: 70; implicitHeight: 30; accent: view.page === 0; onClicked: view.page = 0 }
-            ActionButton { text: qsTr("Shelf") + " · " + view.shelf.length; implicitWidth: 85; implicitHeight: 30; accent: view.page === 1; onClicked: view.page = 1 }
-            ActionButton { objectName: "calendarTab"; text: qsTr("Calendar"); implicitWidth: 92; implicitHeight: 30; accent: view.page === 3; onClicked: view.page = 3 }
+            ActionButton { text: strings.text("Media"); implicitWidth: 70; implicitHeight: 30; accent: view.page === 0; onClicked: view.page = 0 }
+            ActionButton { text: strings.text("Shelf") + " · " + view.shelf.length; implicitWidth: 85; implicitHeight: 30; accent: view.page === 1; onClicked: view.page = 1 }
+            ActionButton { objectName: "calendarTab"; text: strings.text("Calendar"); implicitWidth: 92; implicitHeight: 30; accent: view.page === 3; onClicked: view.page = 3 }
             Item { Layout.fillWidth: true }
             Text { visible: view.showBattery && view.backend.hasBattery; text: (view.backend.charging ? "+ " : "") + view.backend.percent + "%"; color: "#a7e7b8"; font.pixelSize: 12 }
         }
@@ -56,12 +59,12 @@ Item {
                     }
                     ColumnLayout {
                         Layout.fillWidth: true; spacing: 5
-                        Text { Layout.fillWidth: true; text: view.backend.title || qsTr("Nothing playing"); textFormat: Text.PlainText; color: "#f3f2fa"; font.pixelSize: 19; font.weight: Font.DemiBold; elide: Text.ElideRight }
-                        Text { Layout.fillWidth: true; text: view.backend.artist || qsTr("Start a player with MPRIS support"); textFormat: Text.PlainText; color: "#9899aa"; font.pixelSize: 12; elide: Text.ElideRight }
+                        Text { Layout.fillWidth: true; text: view.backend.title || strings.text("Nothing playing"); textFormat: Text.PlainText; color: "#f3f2fa"; font.pixelSize: 19; font.weight: Font.DemiBold; elide: Text.ElideRight }
+                        Text { Layout.fillWidth: true; text: view.backend.artist || strings.text("Start a player with MPRIS support"); textFormat: Text.PlainText; color: "#9899aa"; font.pixelSize: 12; elide: Text.ElideRight }
                         RowLayout {
-                            ActionButton { objectName: "previousButton"; text: "|‹"; enabled: view.backend.canPrevious; Accessible.description: qsTr("Previous track"); onClicked: view.backend.previous() }
-                            ActionButton { objectName: "playButton"; text: view.backend.playing ? "Ⅱ" : "▶"; accent: true; enabled: view.backend.canToggle; Accessible.description: view.backend.playing ? qsTr("Pause") : qsTr("Play"); onClicked: view.backend.toggle() }
-                            ActionButton { objectName: "nextButton"; text: "›|"; enabled: view.backend.canNext; Accessible.description: qsTr("Next track"); onClicked: view.backend.next() }
+                            ActionButton { objectName: "previousButton"; text: "|‹"; enabled: view.backend.canPrevious; Accessible.description: strings.text("Previous track"); onClicked: view.backend.previous() }
+                            ActionButton { objectName: "playButton"; text: view.backend.playing ? "Ⅱ" : "▶"; accent: true; enabled: view.backend.canToggle; Accessible.description: view.backend.playing ? strings.text("Pause") : strings.text("Play"); onClicked: view.backend.toggle() }
+                            ActionButton { objectName: "nextButton"; text: "›|"; enabled: view.backend.canNext; Accessible.description: strings.text("Next track"); onClicked: view.backend.next() }
                         }
                     }
                 }
@@ -70,21 +73,21 @@ Item {
                     Slider {
                         id: seek; objectName: "seekSlider"; Layout.fillWidth: true; from: 0; to: Math.max(1, view.backend.duration)
                         value: view.backend.position; enabled: view.backend.canSeek
-                        Accessible.name: qsTr("Track position")
+                        Accessible.name: strings.text("Track position")
                         onMoved: view.backend.seek(value)
                     }
                     Text { text: view.timeLabel(view.backend.duration); color: "#9395a7"; font.pixelSize: 10 }
                 }
                 RowLayout {
                     Text { Layout.fillWidth: true; text: view.backend.identity || "MPRIS · Plasma 6"; textFormat: Text.PlainText; color: "#77798d"; font.pixelSize: 10; elide: Text.ElideRight }
-                    Text { text: qsTr("Volume"); color: "#9395a7"; font.pixelSize: 10 }
-                    Slider { Layout.preferredWidth: 110; from: 0; to: 1; value: view.backend.volume; enabled: view.backend.available; Accessible.name: qsTr("Player volume"); onMoved: view.backend.setVolume(value) }
+                    Text { text: strings.text("Volume"); color: "#9395a7"; font.pixelSize: 10 }
+                    Slider { Layout.preferredWidth: 110; from: 0; to: 1; value: view.backend.volume; enabled: view.backend.available; Accessible.name: strings.text("Player volume"); onMoved: view.backend.setVolume(value) }
                 }
             }
             Item {
                 Text {
                     anchors.centerIn: parent; width: parent.width; visible: view.shelf.length === 0
-                    text: qsTr("Drop files here") + "\n" + qsTr("A shelf of shortcuts · up to 24 files")
+                    text: strings.text("Drop files here") + "\n" + strings.text("A shelf of shortcuts · up to 24 files")
                     color: "#9899aa"; horizontalAlignment: Text.AlignHCenter; font.pixelSize: 15; lineHeight: 1.6
                 }
                 ListView {
@@ -109,8 +112,8 @@ Item {
                             contentItem: Text { text: fileButton.text; color: "#eeeaf8"; elide: Text.ElideMiddle; textFormat: Text.PlainText; verticalAlignment: Text.AlignVCenter }
                             background: Rectangle { color: "#20212a"; radius: 8 }
                         }
-                        ActionButton { objectName: "shareFileButton"; text: "↗"; implicitWidth: 30; implicitHeight: 30; Accessible.description: qsTr("Send with KDE Connect"); onClicked: { view.selectedShareUrl = shelfRow.modelData; view.page = 2; } }
-                        ActionButton { text: "×"; implicitWidth: 30; implicitHeight: 30; Accessible.description: qsTr("Remove shortcut"); onClicked: { var items = view.shelf.slice(); items.splice(shelfRow.index, 1); view.shelfEdited(items); } }
+                        ActionButton { objectName: "shareFileButton"; text: "↗"; implicitWidth: 30; implicitHeight: 30; Accessible.description: strings.text("Send with KDE Connect"); onClicked: { view.selectedShareUrl = shelfRow.modelData; view.page = 2; } }
+                        ActionButton { text: "×"; implicitWidth: 30; implicitHeight: 30; Accessible.description: strings.text("Remove shortcut"); onClicked: { var items = view.shelf.slice(); items.splice(shelfRow.index, 1); view.shelfEdited(items); } }
                     }
                 }
             }
@@ -120,17 +123,21 @@ Item {
                     anchors.fill: parent
                     active: view.page === 2
                     source: "SharePage.qml"
-                    onLoaded: item.selectedUrl = Qt.binding(() => view.selectedShareUrl)
+                    onLoaded: {
+                        item.selectedUrl = Qt.binding(() => view.selectedShareUrl);
+                        item.language = Qt.binding(() => view.language);
+                    }
                 }
                 Connections { target: shareLoader.item; function onBackRequested() { view.page = 1; } }
-                Text { anchors.fill: parent; visible: shareLoader.status === Loader.Error; text: qsTr("Install KDE Connect and its QML module to send files."); color: "#aaa9bb"; wrapMode: Text.WordWrap }
+                Text { anchors.fill: parent; visible: shareLoader.status === Loader.Error; text: strings.text("Install KDE Connect and its QML module to send files."); color: "#aaa9bb"; wrapMode: Text.WordWrap }
             }
             Loader {
                 active: view.page === 3
                 source: "CalendarPage.qml"
+                onLoaded: item.language = Qt.binding(() => view.language)
             }
         }
     }
     Keys.onEscapePressed: closeRequested()
-    Timer { interval: 60000; running: true; repeat: true; onTriggered: view.today = Qt.formatDate(new Date(), "ddd, d MMM") }
+    Timer { interval: 60000; running: true; repeat: true; onTriggered: view.currentDate = new Date() }
 }

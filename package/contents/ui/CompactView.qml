@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 Item {
     id: compact
+    property string language: "en"
+    Translations { id: strings; language: compact.language }
     required property var backend
     property bool notch: false
     property bool showBattery: true
@@ -24,6 +26,6 @@ Item {
     Keys.onReturnPressed: activated()
     Keys.onSpacePressed: activated()
     Accessible.role: Accessible.Button
-    Accessible.name: qsTr("Open Boring Island")
+    Accessible.name: strings.text("Open Boring Island")
     Timer { interval: 1000; running: true; repeat: true; onTriggered: compact.clockText = Qt.formatTime(new Date(), "hh:mm") }
 }

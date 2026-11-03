@@ -1,10 +1,13 @@
-# Verification of 0.2.0
+# Verification of 0.2.1
 
 Environment: Ubuntu 26.04, Plasma 6.6.6, Qt 6.10.2. Tests run offscreen with a
 software renderer and an isolated session bus. No files were sent to real devices.
 
 Passed:
 
+- Translation tests: catalog coverage, English default independently of system
+  locale, Polish/English live switching, lazy-loaded calendar propagation, saved
+  language selection, localized dates and KDE Connect status updates.
 - QML component tests: media controls and capabilities, shelf validation and
   serialization, shape rendering, agenda display, missing-provider state and date
   navigation across the year boundary.
