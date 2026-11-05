@@ -1,3 +1,19 @@
+# Verification of 0.3.6
+
+Core tests verify reset values against every KConfig preference (excluding shelf
+content), a 400 ms default, restoring control aliases, preserving shelf data and
+unrelated fields, immediate collapse/disabled input during editing, and disabled
+input on the reparented compact visual. Existing animation, notification and
+battery suites remain enabled.
+
+The native configuration fixture also exercises restoring all cfg_ properties on
+the real Kirigami form. It requires Plasma/Kirigami modules unavailable here.
+Panel editing detection uses containment.userConfiguring and corona.editMode, as
+exposed by KDE. The actual panel remove controls and Apply/Cancel integration
+still require testing on a Plasma 6.6+ desktop.
+
+---
+
 # Verification of 0.3.5
 
 Core offscreen tests cover minimum collapsed side padding at 50%, 100% and 150%

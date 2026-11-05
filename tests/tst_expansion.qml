@@ -70,7 +70,7 @@ Item {
     }
     TestCase {
         name: "Expansion"; when: windowShown
-        function init() { shell.reduceMotion=true; shell.opened=false; shell.fullView=false; shell.presentedFullView=false; shell.fixedViewport=false; shell.reduceMotion=true; shell.notch=false; shell.uiScale=1; shell.animationDuration=280; shell.initialPage=0; historyModel.clear(); wait(20); compare(shell.progress,0); }
+        function init() { shell.editing=false; shell.reduceMotion=true; shell.opened=false; shell.fullView=false; shell.presentedFullView=false; shell.fixedViewport=false; shell.reduceMotion=true; shell.notch=false; shell.uiScale=1; shell.animationDuration=400; shell.initialPage=0; historyModel.clear(); wait(20); compare(shell.progress,0); }
         function test_shapes_and_scaling_data() {
             return [{tag:"island",notch:false},{tag:"notch",notch:true}];
         }
@@ -110,6 +110,14 @@ Item {
             wait(50); verify(shell.progress>0.7 && shell.progress<1);
             wait(60); verify(shell.progress>0 && shell.progress<0.7);
             tryCompare(shell,"progress",0,400);
+        }
+        function test_edit_mode_immediately_dismisses_expansion() {
+            shell.fullView=true; shell.opened=true; compare(shell.progress,1);
+            shell.reduceMotion=false; shell.editing=true;
+            compare(shell.progress,0); verify(!shell.enabled);
+            interactionSpy.clear(); mouseClick(shell,100,20); compare(interactionSpy.count,0);
+            shell.opened=false; shell.editing=false;
+            verify(shell.enabled); compare(shell.progress,0);
         }
         function test_animation_duration_setting() {
             shell.reduceMotion=false; shell.fullView=true; shell.animationDuration=800; shell.opened=true;

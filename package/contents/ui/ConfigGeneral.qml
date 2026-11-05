@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import "../code/SettingsDefaults.js" as Defaults
 import org.kde.kirigami as Kirigami
 Kirigami.FormLayout {
     id: config
@@ -28,6 +29,17 @@ Kirigami.FormLayout {
     property string cfg_batteryPercentPosition: "right"
     property alias cfg_animationDuration: animationDuration.value
     property alias cfg_reduceMotion: motion.checked
+    function restoreDefaults() { Defaults.restore(config); }
+    Button {
+        objectName: "resetDefaultsButton"
+        text: strings.text("Restore default settings")
+        icon.name: "edit-undo"
+        onClicked: config.restoreDefaults()
+    }
+    Label {
+        text: strings.text("Use Apply or OK to save the reset. Shelf shortcuts are kept.")
+        wrapMode: Text.WordWrap
+    }
     ComboBox {
         id: languageChoice
         objectName: "languageChoice"
@@ -68,7 +80,7 @@ Kirigami.FormLayout {
         currentIndex: Math.max(0, ["inside", "left", "right", "hidden"].indexOf(config.cfg_batteryPercentPosition))
         onActivated: index => config.cfg_batteryPercentPosition = ["inside", "left", "right", "hidden"][index]
     }
-    SpinBox { id: animationDuration; objectName: "animationDurationSetting"; Kirigami.FormData.label: strings.text("Animation duration (ms):"); from: 50; to: 1000; value: 280; stepSize: 10; editable: true }
+    SpinBox { id: animationDuration; objectName: "animationDurationSetting"; Kirigami.FormData.label: strings.text("Animation duration (ms):"); from: 50; to: 1000; value: 400; stepSize: 10; editable: true }
     Label { text: strings.text("Lower values make opening faster. Closing uses 70% of that duration, limited to 100–220 ms. Reduced motion disables animations."); wrapMode: Text.WordWrap }
     CheckBox { id: motion; text: strings.text("Reduce motion") }
     Label { text: strings.text("For an island at the top of the screen, place this widget in a centered top panel."); wrapMode: Text.WordWrap; LayoutMirroring.enabled: false }

@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.3.5; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.3.6; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.3.5.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.3.6.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -107,7 +107,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.5.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.6.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -183,7 +183,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.3.5.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.3.6.plasmoid
 plasmawindowed ./package
 ```
 
@@ -276,9 +276,23 @@ przy każdym spadku procentów; ponownie uzbraja się po podłączeniu zasilania
 wzroście poziomu powyżej 20%. To komunikat widżetu, bez dodawania wpisu do historii KDE.
 
 **Czas animacji (ms)** obejmuje otwieranie i automatyczną zmianę
-szerokości. Zakres: 50–1000 ms, nowa wartość domyślna **280 ms** zamiast 420 ms.
+szerokości. Zakres: 50–1000 ms, nowa wartość domyślna **400 ms**.
 Mniej oznacza szybciej; pole nie zmienia częstotliwości odświeżania ekranu.
 Opóźnienie najechania jest osobne. Po opuszczeniu ręcznie otwartego widżetu
 zamykanie startuje po 30 ms i używa łagodnej krzywej InOutCubic. Trwa 70% czasu
-otwierania, w zakresie 100–220 ms (domyślnie 196 ms).
+otwierania, w zakresie 100–220 ms (domyślnie 220 ms).
 Ograniczenie animacji wyłącza ruch.
+
+### Reset ustawień i edycja panelu (0.3.6)
+
+Domyślny czas animacji wynosi teraz **400 ms**. Zapisane wartości pozostają bez
+zmian. Przycisk **Przywróć ustawienia domyślne** na początku strony ustawień
+Boring Island resetuje wygląd i zachowanie, w tym język i czas animacji. Zapisz
+zmiany przez **Zastosuj** lub **OK**; **Anuluj** odrzuca reset. Skróty na półce,
+położenie w panelu i skrót klawiaturowy Plasma zostają zachowane.
+
+Podczas konfiguracji widżetu, edycji jego panelu lub globalnej edycji Plasma
+rozwijanie jest zablokowane. Otwarty widok znika natychmiast, timery hover są
+zatrzymywane, a podglądy powiadomień wyłączone bez usuwania historii KDE.
+Zwinięty kształt wraca do obszaru plasmoidu i nie przechwytuje wejścia, dzięki czemu
+można użyć uchwytów edycji i usuwania. Po zakończeniu edycji wraca zwykłe działanie.

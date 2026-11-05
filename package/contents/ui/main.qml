@@ -11,6 +11,14 @@ PlasmoidItem {
     id: root
     readonly property string language: Plasmoid.configuration.language || "en"
     readonly property bool inPanel: Plasmoid.formFactor === PlasmaCore.Types.Horizontal || Plasmoid.formFactor === PlasmaCore.Types.Vertical
+    readonly property bool editing: Plasmoid.userConfiguring || (Plasmoid.containment !== null
+        && (Plasmoid.containment.userConfiguring || (Plasmoid.containment.corona !== null && Plasmoid.containment.corona.editMode)))
+    onEditingChanged: if (editing) {
+        if (openTimer) openTimer.stop();
+        if (closeTimer) closeTimer.stop();
+        compactHovered = false; fullHovered = false; interactionHeld = false;
+        close();
+    }
     readonly property bool notch: Plasmoid.configuration.shape === 0
     readonly property int animationDuration: Math.max(50, Math.min(1000, Plasmoid.configuration.animationDuration))
     readonly property var configureAction: Plasmoid.internalAction("configure")
@@ -39,7 +47,7 @@ PlasmoidItem {
     property Item anchorItem: null
     property int selectedPage: 0
     readonly property var savedShelf: Shelf.decode(Plasmoid.configuration.shelfJson)
-    readonly property bool wantOpen: opened || notifications.preview !== null || lowBattery.active
+    readonly property bool wantOpen: !editing && (opened || notifications.preview !== null || lowBattery.active)
     readonly property string mode: Activity.resolve(Plasmoid.configuration.pinnedMode || "auto", notifications.preview !== null,
         activities.packages.active, systemBackend.playing, activities.llm.active)
     readonly property color accentColor: ({notifications: "#f6c177", packages: "#7ac7ff", media: "#b9a3ff", llm: "#a7e7b8", system: "#89dceb", clock: "#77798d"})[mode] || "#b9a3ff"
@@ -70,7 +78,7 @@ PlasmoidItem {
     NotificationBackend {
         id: notifications
         previewDuration: Plasmoid.configuration.notificationDuration * 1000
-        previewsEnabled: Plasmoid.configuration.notificationPreviews
+        previewsEnabled: !root.editing && Plasmoid.configuration.notificationPreviews
     }
     ActivityBackend {
         id: activities
@@ -86,6 +94,7 @@ PlasmoidItem {
     toolTipSubText: displayText
     onExpandedChanged: if (expanded) { expanded = false; open(true); }
     function open(keyboard = false) {
+        if (editing) return;
         if (!opened) focusRequested = keyboard;
         else if (keyboard) focusRequested = true;
         if (!opened) selectedPage = Activity.page(mode);
@@ -96,16 +105,17 @@ PlasmoidItem {
         }
     }
     function activateFromInteraction() {
-        if (!inPanel || !wantOpen) return;
+        if (editing || !inPanel || !wantOpen) return;
         // Let the original control handle this pointer event before activation.
         Qt.callLater(() => {
-            if (!root.wantOpen || !attachedDialog.visible) return;
+            if (root.editing || !root.wantOpen || !attachedDialog.visible) return;
             root.focusRequested = true;
             attachedDialog.requestActivate();
         });
     }
     function close() { if (lowBattery) lowBattery.dismiss(); opened = false; if (notifications) notifications.hidePreviews(); }
     function hoverChanged(compact, hovered) {
+        if (editing) return;
         if (compact) compactHovered = hovered; else fullHovered = hovered;
         if (hovered) { closeTimer.stop(); if (!opened && Plasmoid.configuration.hoverOpen) openTimer.restart(); }
         else { openTimer.stop(); closeTimer.restart(); }
@@ -138,7 +148,8 @@ PlasmoidItem {
     Timer { interval: 1000; running: true; repeat: true; onTriggered: root.clockText = Qt.formatTime(new Date(), "hh:mm") }
     compactRepresentation: CompactView {
         id: compact
-        panelItem: root.inPanel && compact.Window.window ? compact.Window.window.contentItem : null
+        enabled: !root.editing
+        panelItem: !root.editing && root.inPanel && compact.Window.window ? compact.Window.window.contentItem : null
         Component.onCompleted: root.anchorItem = compact
         opacity: attachedDialog.visible ? 0 : 1
         language: root.language; backend: systemBackend; notch: root.notch
@@ -163,7 +174,7 @@ PlasmoidItem {
     }
     AttachedDialog {
         id: attachedDialog
-        visible: root.inPanel && root.anchorItem !== null && root.anchorItem.width > 0 && root.anchorItem.height > 0 && (root.wantOpen || popupShell.progress > 0.001)
+        visible: !root.editing && root.inPanel && root.anchorItem !== null && root.anchorItem.width > 0 && root.anchorItem.height > 0 && (root.wantOpen || popupShell.progress > 0.001)
         transientParent: root.anchorItem ? root.anchorItem.Window.window : null
         focusRequested: root.focusRequested
         onWindowDeactivated: root.close()
@@ -181,6 +192,7 @@ PlasmoidItem {
         }
         mainItem: ExpandingIsland {
             id: popupShell
+            editing: root.editing
             fixedViewport: true
             onWidthChanged: root.positionDialog()
             onHeightChanged: root.positionDialog()
@@ -223,6 +235,7 @@ PlasmoidItem {
         Layout.minimumHeight: Plasmoid.configuration.autoHeight ? 42 : Plasmoid.configuration.compactHeight
         ExpandingIsland {
             id: desktopShell
+            editing: root.editing
             backend: systemBackend; notifications: root.notificationBackend; activities: root.activityBackend
             opened: !root.inPanel && root.wantOpen; fullView: root.opened
             language: root.language; displayText: root.displayText; accentColor: root.accentColor

@@ -12,6 +12,8 @@ Item {
     property string displayText: ""
     property string pinnedMode: "auto"
     property color accentColor: "#b9a3ff"
+    property bool editing: false
+    enabled: !editing
     property bool opened: false
     property bool fullView: false
     property bool presentedFullView: false
@@ -20,7 +22,7 @@ Item {
     property bool bottomEdge: false
     property bool showBattery: true
     property bool reduceMotion: false
-    property int animationDuration: 280
+    property int animationDuration: 400
     property string batteryWarning: ""
     property string batteryPercentPosition: "right"
     property bool configureEnabled: true
@@ -33,7 +35,7 @@ Item {
     property real expandedHeight: 390
     property var shelf: []
     property int initialPage: 0
-    property real progress: opened ? 1 : 0
+    property real progress: opened && !editing ? 1 : 0
     signal closeRequested()
     signal activated()
     signal filesDropped(var urls)
@@ -54,6 +56,7 @@ Item {
     readonly property int collapseDuration: Math.max(100, Math.min(220, Math.round(animationDuration * 0.7)))
     Behavior on progress {
         id: morphAnimation
+        enabled: !shell.editing
         NumberAnimation {
             duration: shell.reduceMotion ? 0 : (morphAnimation.targetValue > 0 ? Math.max(50, Math.min(1000, shell.animationDuration)) : shell.collapseDuration)
             easing.type: morphAnimation.targetValue > 0 ? Easing.OutQuint : Easing.InOutCubic

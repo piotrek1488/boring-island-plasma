@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.3.5** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.3.6** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -144,7 +144,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.5.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.6.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -193,7 +193,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.3.5.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.3.6.plasmoid
 plasmawindowed ./package
 ```
 
@@ -294,9 +294,23 @@ localized status and exact percentage. These use the existing private KDE batter
 model, with no extra polling or service.
 
 **Animation duration (ms)** controls opening and automatic width changes,
-from 50 to 1000 ms. The new default is **280 ms** (previously 420 ms). Lower values
+from 50 to 1000 ms. The new default is **400 ms**. Lower values
 are faster; this changes duration, not display refresh rate. Hover delay remains
 independent. After the pointer leaves, a manually opened view waits 30 ms for
 header/body hover handoff, then closes with an InOutCubic curve in 70% of the
-opening duration, bounded to 100–220 ms (196 ms by default).
+opening duration, bounded to 100–220 ms (220 ms by default).
 Reduce motion overrides both durations with no animation.
+
+### Defaults and panel editing (0.3.6)
+
+The default animation duration is now **400 ms**. Existing saved values are kept;
+use **Restore default settings** at the top of the Boring Island settings page
+and then **Apply** or **OK** to reset all appearance/behavior preferences, including
+language and animation duration. **Cancel** discards the draft reset. Shelf
+shortcuts and Plasma's panel placement/global shortcut are preserved.
+
+While configuring the widget, editing its panel, or using Plasma's global edit
+mode, expansion is blocked. Existing popups close immediately, hover timers stop,
+and notification previews are suppressed without deleting KDE history. The compact
+shape returns inside its applet allocation with input disabled, exposing Plasma's
+edit/remove controls. Closing edit mode restores normal behavior.

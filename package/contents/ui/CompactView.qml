@@ -48,6 +48,7 @@ Item {
         objectName: "compactVisual"
         parent: compact.panelItem || compact
         visible: compact.visible
+        enabled: compact.enabled
         opacity: compact.panelItem ? compact.opacity : 1
         x: panelAnchor.origin.x
         width: compact.width

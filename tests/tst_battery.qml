@@ -21,7 +21,7 @@ Item {
         name: "BatteryAndSettings"; when: windowShown
         function init() {
             indicator.percentPosition="right"; indicator.status="discharging"; indicator.language="en";
-            compact.expandedHeader=true; compact.compactScale=1; compact.notch=false; compact.showBattery=true; compact.configureEnabled=true;
+            compact.enabled=true; compact.expandedHeader=true; compact.compactScale=1; compact.notch=false; compact.showBattery=true; compact.configureEnabled=true;
             compact.batteryPercentPosition="right"; fake.hasBattery=true;
             configureSpy.clear(); activationSpy.clear();
         }
@@ -78,6 +78,13 @@ Item {
             const title=findChild(compact,"compactTitle"), battery=findChild(compact,"compactBattery");
             verify(title.mapToItem(visual,0,0).x>=28);
             verify(visual.width-battery.mapToItem(visual,battery.width,0).x>=28);
+        }
+        function test_edit_mode_disables_reparented_visual_input() {
+            compact.panelItem=compact.parent;
+            compact.enabled=false;
+            verify(!compact.visualItem.enabled);
+            mouseClick(findChild(compact,"compactTitle")); compare(activationSpy.count,0);
+            compact.panelItem=null; compact.enabled=true;
         }
         function test_low_battery_color() {
             indicator.percent=20; compare(indicator.levelColor.toString(),"#ff9494");

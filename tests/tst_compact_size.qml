@@ -1,5 +1,6 @@
 import QtQuick
 import QtTest
+import "../package/contents/code/SettingsDefaults.js" as Defaults
 import "../package/contents/ui" as UI
 Item {
     width: 420; height: 180
@@ -54,6 +55,13 @@ Item {
             compact.compactScale=2; compare(compact.effectiveHeight,128);
             compact.autoHeight=false; compact.compactHeight=20; compact.compactScale=1.5;
             compare(compact.effectiveHeight,30);
+        }
+        function test_reset_settings_button() {
+            settings.cfg_language="pl"; settings.cfg_shape=0;
+            settings.cfg_animationDuration=50; settings.cfg_hoverOpen=false;
+            settings.restoreDefaults();
+            for (const name in Defaults.values) compare(settings["cfg_"+name],Defaults.values[name]);
+            compare(findChild(settings,"resetDefaultsButton").text,"Restore default settings");
         }
         function test_settings() {
             settings.cfg_autoHeight = true;

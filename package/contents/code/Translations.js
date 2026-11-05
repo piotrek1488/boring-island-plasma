@@ -1,6 +1,8 @@
 .pragma library
 
 var polish = {
+    "Restore default settings": "Przywróć ustawienia domyślne",
+    "Use Apply or OK to save the reset. Shelf shortcuts are kept.": "Zapisz reset przyciskiem Zastosuj lub OK. Skróty na półce zostaną zachowane.",
     "Lower values make opening faster. Closing uses 70% of that duration, limited to 100–220 ms. Reduced motion disables animations.": "Mniejsze wartości przyspieszają otwieranie. Zamykanie trwa 70% tego czasu, w zakresie 100–220 ms. Ograniczenie animacji wyłącza ruch.",
     "Lower values make opening faster. Closing takes 60 ms. Reduced motion disables animations.": "Mniejsze wartości przyspieszają otwieranie. Zamykanie trwa 60 ms. Ograniczenie animacji wyłącza ruch.",
     "Low battery": "Niski poziom baterii",
