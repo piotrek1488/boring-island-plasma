@@ -1,3 +1,19 @@
+# Verification of 0.3.3
+
+The core suites now additionally cover four battery percentage placements, power
+state labels/translations, clamped levels, a hidden/absent battery with the gear
+still available, gear clicks isolated from expansion (including a disabled
+configure action), and configurable opening/closing duration with reduced-motion
+precedence. The native battery state's API and configure action were checked
+against KDE source. No physical battery or native configuration window is present
+in this environment; confirm those on a Plasma 6.6+ desktop.
+
+Run `./scripts/test-core.sh` and `python3 scripts/validate-package.py --qml` after
+building. Core tests run offscreen on Qt 6.4.2; they do not certify Wayland timing
+or hardware charging accuracy.
+
+---
+
 # Verification of 0.3.2
 
 Core offscreen tests additionally cover panel fill-height allocation, manual

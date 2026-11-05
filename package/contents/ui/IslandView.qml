@@ -41,7 +41,6 @@ Item {
             Text { text: "BORING / ISLAND"; color: "#aaa0c9"; font.pixelSize: 10; font.letterSpacing: 2 }
             Item { Layout.fillWidth: true }
             Text { text: view.today; color: "#c1c2d0"; font.pixelSize: 13 }
-            Text { objectName: "expandedBattery"; visible: view.showBattery && view.backend.hasBattery; text: (view.backend.charging ? "+ " : "") + view.backend.percent + "%"; color: "#b7f4c8"; font.pixelSize: 14 }
             ActionButton { text: "×"; implicitWidth: 26; implicitHeight: 26; Accessible.description: strings.text("Close"); onClicked: view.closeRequested() }
         }
         Flow {

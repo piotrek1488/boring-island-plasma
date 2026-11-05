@@ -22,7 +22,10 @@ Item {
     readonly property real volume: available ? player.volume : 0
     readonly property bool hasBattery: battery.hasInternalBatteries
     readonly property int percent: battery.percent
-    readonly property bool charging: battery.pluggedIn
+    readonly property bool powerConnected: battery.pluggedIn
+    readonly property bool charging: battery.state === Battery.BatteryControlModel.Charging
+    readonly property bool fullyCharged: battery.state === Battery.BatteryControlModel.FullyCharged
+    readonly property string batteryStatus: charging ? "charging" : fullyCharged ? "full" : powerConnected ? "plugged" : "discharging"
     function toggle() { if (canToggle) player.PlayPause(); }
     function next() { if (canNext) player.Next(); }
     function previous() { if (canPrevious) player.Previous(); }

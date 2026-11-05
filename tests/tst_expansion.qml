@@ -69,7 +69,7 @@ Item {
     }
     TestCase {
         name: "Expansion"; when: windowShown
-        function init() { shell.opened=false; shell.fullView=false; shell.presentedFullView=false; shell.fixedViewport=false; shell.reduceMotion=true; shell.notch=false; shell.uiScale=1; shell.initialPage=0; historyModel.clear(); }
+        function init() { shell.reduceMotion=true; shell.opened=false; shell.fullView=false; shell.presentedFullView=false; shell.fixedViewport=false; shell.reduceMotion=true; shell.notch=false; shell.uiScale=1; shell.animationDuration=280; shell.initialPage=0; historyModel.clear(); wait(20); compare(shell.progress,0); }
         function test_shapes_and_scaling_data() {
             return [{tag:"island",notch:false},{tag:"notch",notch:true}];
         }
@@ -89,13 +89,22 @@ Item {
             wait(90); verify(shell.progress>0 && shell.progress<1);
             tryCompare(shell,"progress",0,600);
         }
+        function test_animation_duration_setting() {
+            shell.reduceMotion=false; shell.fullView=true; shell.animationDuration=800; shell.opened=true;
+            wait(100); verify(shell.progress>0 && shell.progress<1);
+            tryCompare(shell,"progress",1,1200);
+            shell.animationDuration=50; shell.opened=false;
+            tryCompare(shell,"progress",0,250);
+            shell.reduceMotion=true; shell.animationDuration=1000; shell.opened=true;
+            compare(shell.progress,1);
+        }
         function test_fixed_viewport_does_not_resize_during_animation() {
-            shell.fixedViewport=true; shell.fullView=true; shell.reduceMotion=false;
+            shell.fixedViewport=true; shell.fullView=true; shell.animationDuration=800; shell.reduceMotion=false;
             const initialWidth=shell.width, initialHeight=shell.height;
             shell.opened=true; wait(100);
             compare(shell.width,initialWidth); compare(shell.height,initialHeight);
             verify(shell.surfaceWidth>240 && shell.surfaceWidth<520);
-            tryCompare(shell,"progress",1,800);
+            tryCompare(shell,"progress",1,1200);
         }
         function test_tab_layout_data() { return [{tag:"en",language:"en"},{tag:"pl",language:"pl"}]; }
         function test_tab_layout(data) {
@@ -160,7 +169,7 @@ Item {
             const morph=findChild(shell,"morphSurface");
             const a=title.mapToItem(morph,0,0), b=battery.mapToItem(morph,battery.width,battery.height);
             verify(a.x>=30); verify(b.x<=morph.width-30);
-            verify(title.font.pixelSize>=16); verify(battery.font.pixelSize>=16);
+            verify(title.font.pixelSize>=16); verify(battery.fontSize>=16);
         }
         function test_activity_page() {
             shell.fullView=true; shell.opened=true; shell.initialPage=5;

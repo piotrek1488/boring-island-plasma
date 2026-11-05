@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.3.2** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.3.3** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -74,8 +74,10 @@ It does not create an independent overlay above every window or a physical cutou
   colors, previous/next day navigation and refresh.
 - File sharing from the shelf through KDE Connect: click ↗, choose a paired and
   reachable device, then click **Send**. Dropping a file never sends it automatically.
-- Internal battery percentage and external power status; hidden on systems without
-  an internal battery. `+` means external power, not necessarily active charging.
+- Battery icon with charge level and actual KDE charge state: charging, discharging,
+  fully charged or plugged in without charging. Hidden without an internal battery.
+  Percentage can appear inside, left/right of the icon, or be hidden. The old `+`
+  power indicator has been replaced by distinct charging/plug/full markers.
 - A persistent shelf of up to 24 local file/folder shortcuts: drop, open, drag out
   or remove a shortcut with ×. Removing a shortcut never deletes the original.
 - Independent settings and shelf contents for each widget instance.
@@ -141,7 +143,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.2.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.3.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -190,7 +192,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.3.2.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.3.3.plasmoid
 plasmawindowed ./package
 ```
 
@@ -272,3 +274,21 @@ is capped. Fixed-size header text layers cross-fade instead of resizing each fra
 `./scripts/test-popup.sh` adds native Plasma tests for nonactivating hover, stable
 show/resize position and explicit keyboard focus. It needs Plasma 6 modules;
 real compositor animation and focus should also be checked on Wayland.
+
+### Battery, settings and animation speed (0.3.3)
+
+The header's **gear button**, to the right of the battery, opens this widget
+instance's native Plasma settings. It remains available when battery display is
+disabled or the computer has no internal battery. It follows the availability of
+Plasma's configure action; clicking it does not toggle the expansion.
+
+In settings, **Battery percentage** selects Inside the icon / Left of the icon /
+Right of the icon (default) / Hidden. A bolt means actual charging, a plug means
+external power without charging, and a check means fully charged; hover for the
+localized status and exact percentage. These use the existing private KDE battery
+model, with no extra polling or service.
+
+**Animation duration (ms)** controls opening, closing and automatic width changes,
+from 50 to 1000 ms. The new default is **280 ms** (previously 420 ms). Lower values
+are faster; this changes duration, not display refresh rate. Hover delay remains
+independent, and Reduce motion overrides the duration with no animation.

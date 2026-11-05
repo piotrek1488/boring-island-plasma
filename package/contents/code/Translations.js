@@ -87,7 +87,20 @@ var polish = {
     "Show audio output device": "Pokazuj urządzenie wyjściowe dźwięku",
     "Editing the height disables automatic fitting. Height cannot exceed the panel; increase the panel height to grow further. Compact scale also changes width, even at the height limit.": "Zmiana wysokości wyłącza dopasowanie automatyczne. Wysokość nie przekroczy panelu; aby ją zwiększyć, powiększ panel. Skala zwinięcia zmienia też szerokość, także przy limicie wysokości.",
     "Compact scale (%):": "Skala zwiniętego widżetu (%):",
-    "Editing the height disables automatic fitting. Compact scale adjusts height, width and text within the available panel space.": "Zmiana wysokości wyłącza dopasowanie automatyczne. Skala zwinięcia zmienia wysokość, szerokość i tekst w granicach miejsca w panelu."
+    "Editing the height disables automatic fitting. Compact scale adjusts height, width and text within the available panel space.": "Zmiana wysokości wyłącza dopasowanie automatyczne. Skala zwinięcia zmienia wysokość, szerokość i tekst w granicach miejsca w panelu.",
+    "Battery": "Bateria",
+    "Charging": "Ładowanie",
+    "Fully charged": "W pełni naładowana",
+    "Plugged in, not charging": "Zasilanie podłączone, bez ładowania",
+    "Discharging": "Rozładowywanie",
+    "Configure Boring Island": "Ustawienia Boring Island",
+    "Battery percentage:": "Procent baterii:",
+    "Inside the icon": "Wewnątrz ikony",
+    "Left of the icon": "Po lewej stronie ikony",
+    "Right of the icon": "Po prawej stronie ikony",
+    "Hidden": "Ukryty",
+    "Animation duration (ms):": "Czas animacji (ms):",
+    "Lower values make opening and closing faster. Reduced motion disables animations.": "Mniejsze wartości przyspieszają otwieranie i zamykanie. Ograniczenie animacji wyłącza ruch."
 };
 
 function text(language, source) {

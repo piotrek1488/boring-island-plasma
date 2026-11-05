@@ -20,6 +20,10 @@ Item {
     property bool bottomEdge: false
     property bool showBattery: true
     property bool reduceMotion: false
+    property int animationDuration: 280
+    property string batteryPercentPosition: "right"
+    property bool configureEnabled: true
+    signal configureRequested()
     property real uiScale: 1
     property real compactWidth: 240
     property real compactHeight: 42
@@ -45,7 +49,7 @@ Item {
     readonly property real surfaceHeight: headerHeight + bodyHeight * progress
     width: fixedViewport ? targetWidth : surfaceWidth
     height: fixedViewport ? expandedHeaderHeight + bodyHeight : surfaceHeight
-    Behavior on progress { NumberAnimation { duration: shell.reduceMotion ? 0 : 420; easing.type: Easing.OutQuint } }
+    Behavior on progress { NumberAnimation { duration: shell.reduceMotion ? 0 : Math.max(50, Math.min(1000, shell.animationDuration)); easing.type: Easing.OutQuint } }
     Item {
         id: morph
         objectName: "morphSurface"
@@ -64,6 +68,8 @@ Item {
             visible: opacity > 0
             backend: shell.backend; language: shell.language; notch: shell.notch
             showBattery: shell.showBattery; displayText: shell.displayText
+            batteryPercentPosition: shell.batteryPercentPosition; configureEnabled: shell.configureEnabled
+            onConfigureRequested: shell.configureRequested()
             drawSurface: false; accentColor: shell.accentColor
             onActivated: shell.activated()
             onFilesDropped: urls => shell.filesDropped(urls)
@@ -78,6 +84,8 @@ Item {
             visible: opacity > 0
             backend: shell.backend; language: shell.language; notch: shell.notch
             showBattery: shell.showBattery; displayText: shell.displayText
+            batteryPercentPosition: shell.batteryPercentPosition; configureEnabled: shell.configureEnabled
+            onConfigureRequested: shell.configureRequested()
             drawSurface: false; accentColor: shell.accentColor
             onActivated: shell.activated()
             onFilesDropped: urls => shell.filesDropped(urls)

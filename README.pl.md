@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.3.2; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.3.3; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.3.2.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.3.3.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -107,7 +107,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.2.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.3.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -131,8 +131,10 @@ Szczegóły wykonanych i niewykonanych testów: [TESTING.md](docs/TESTING.md).
   kolory kalendarzy, przechodzenie między dniami i odświeżanie.
 - Wysyłanie pliku z półki przez KDE Connect: przycisk ↗, wybór sparowanego i osiągalnego
   urządzenia, przycisk Send. Widżet nie wysyła niczego automatycznie po upuszczeniu pliku.
-- Zbiorczy status wewnętrznej baterii oraz podłączenia zasilania. Na komputerze bez
-  baterii wskaźnik znika. `+` oznacza zewnętrzne zasilanie, nie gwarancję ładowania.
+- Ikona wewnętrznej baterii z poziomem i stanem ładowania KDE. Na komputerze bez
+  baterii wskaźnik znika. Procent można umieścić wewnątrz, po lewej lub po prawej
+  stronie ikony albo ukryć. Symbol `+` zastąpiły oznaczenia ładowania, podłączenia
+  zasilania bez ładowania i pełnego naładowania.
 - Półka do 24 lokalnych plików/katalogów: upuść pliki, kliknij, aby otworzyć,
   przeciągnij do innej aplikacji, usuń skrót przyciskiem ×.
 - Półka zapisuje tylko adresy, nie kopiuje i nie usuwa plików. Przeniesienie lub
@@ -181,7 +183,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.3.2.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.3.3.plasmoid
 plasmawindowed ./package
 ```
 
@@ -249,3 +251,20 @@ limitu wysokości. Nagłówki o stałym rozmiarze tekstu przenikają się podcza
 `./scripts/test-popup.sh` sprawdza natywne flagi fokusu i pozycję przy otwieraniu
 i zmianie rozmiaru; wymaga modułów Plasma 6. Płynność i zachowanie aktywnego okna
 trzeba również sprawdzić na rzeczywistym pulpicie Wayland.
+
+### Bateria, ustawienia i czas animacji (0.3.3)
+
+**Zębatka** po prawej stronie baterii otwiera ustawienia konkretnego plasmoidu.
+Pozostaje widoczna także po ukryciu baterii i na komputerze bez baterii. Korzysta
+z natywnej akcji konfiguracji Plasma; kliknięcie nie przełącza rozwinięcia.
+
+Pole **Procent baterii** pozwala wybrać: wewnątrz ikony, po lewej, po prawej
+(domyślnie) lub ukryty. Błyskawica oznacza rzeczywiste ładowanie, wtyczka —
+podłączone zasilanie bez ładowania, a znacznik ✓ — pełne naładowanie. Podpowiedź
+pokazuje stan po polsku lub angielsku oraz dokładny procent. Dane pochodzą
+z dotychczasowego modelu KDE, bez dodatkowego odpytywania systemu.
+
+**Czas animacji (ms)** obejmuje otwieranie, zamykanie i automatyczną zmianę
+szerokości. Zakres: 50–1000 ms, nowa wartość domyślna **280 ms** zamiast 420 ms.
+Mniej oznacza szybciej; pole nie zmienia częstotliwości odświeżania ekranu.
+Opóźnienie najechania jest osobne, a ograniczenie animacji wyłącza ruch.

@@ -12,6 +12,10 @@ PlasmoidItem {
     readonly property string language: Plasmoid.configuration.language || "en"
     readonly property bool inPanel: Plasmoid.formFactor === PlasmaCore.Types.Horizontal || Plasmoid.formFactor === PlasmaCore.Types.Vertical
     readonly property bool notch: Plasmoid.configuration.shape === 0
+    readonly property int animationDuration: Math.max(50, Math.min(1000, Plasmoid.configuration.animationDuration))
+    readonly property var configureAction: Plasmoid.internalAction("configure")
+    readonly property bool configureEnabled: configureAction !== null && configureAction.enabled
+    function configure() { close(); if (configureAction && configureAction.enabled) configureAction.trigger(); }
     readonly property bool reduceMotion: Plasmoid.configuration.reduceMotion
     readonly property real compactScale: Math.max(0.5, Math.min(2, Plasmoid.configuration.compactScale / 100))
     readonly property real uiScale: Math.max(0.6, Math.min(2, Plasmoid.configuration.expandedScale / 100))
@@ -116,6 +120,9 @@ PlasmoidItem {
         opacity: attachedDialog.visible ? 0 : 1
         language: root.language; backend: systemBackend; notch: root.notch
         displayText: root.displayText; accentColor: root.accentColor
+        batteryPercentPosition: Plasmoid.configuration.batteryPercentPosition
+        configureEnabled: root.configureEnabled
+        onConfigureRequested: root.configure()
         animateMedia: true; reduceMotion: root.reduceMotion
         compactScale: root.compactScale
         autoHeight: Plasmoid.configuration.autoHeight; compactHeight: Plasmoid.configuration.compactHeight
@@ -125,7 +132,7 @@ PlasmoidItem {
             (Plasmoid.configuration.autoWidth ? Math.min(Plasmoid.configuration.compactWidth, naturalWidth) : Plasmoid.configuration.compactWidth) * root.compactScale)
         Layout.fillHeight: true
         Layout.minimumHeight: 16
-        Behavior on Layout.preferredWidth { NumberAnimation { duration: root.reduceMotion ? 0 : 260; easing.type: Easing.InOutCubic } }
+        Behavior on Layout.preferredWidth { NumberAnimation { duration: root.reduceMotion ? 0 : root.animationDuration; easing.type: Easing.InOutCubic } }
         onActivated: root.opened ? root.close() : root.open()
         onKeyboardActivated: root.open(true)
         onHoverChanged: hovered => root.hoverChanged(true, hovered)
@@ -158,6 +165,10 @@ PlasmoidItem {
             opened: root.inPanel && root.popupReady && root.wantOpen; fullView: root.opened
             language: root.language; displayText: root.displayText; accentColor: root.accentColor
             notch: root.notch; bottomEdge: Plasmoid.location === PlasmaCore.Types.BottomEdge
+            animationDuration: root.animationDuration
+            batteryPercentPosition: Plasmoid.configuration.batteryPercentPosition
+            configureEnabled: root.configureEnabled
+            onConfigureRequested: root.configure()
             reduceMotion: root.reduceMotion; uiScale: root.uiScale
             maximumWidth: root.anchorItem && root.anchorItem.Window.window ? root.anchorItem.Window.window.screen.width : 4096
             compactWidth: root.geometryLocked ? root.popupAnchorWidth : (root.anchorItem ? root.anchorItem.width : Plasmoid.configuration.compactWidth)
@@ -190,6 +201,10 @@ PlasmoidItem {
             backend: systemBackend; notifications: root.notificationBackend; activities: root.activityBackend
             opened: !root.inPanel && root.wantOpen; fullView: root.opened
             language: root.language; displayText: root.displayText; accentColor: root.accentColor
+            animationDuration: root.animationDuration
+            batteryPercentPosition: Plasmoid.configuration.batteryPercentPosition
+            configureEnabled: root.configureEnabled
+            onConfigureRequested: root.configure()
             notch: root.notch; reduceMotion: root.reduceMotion; uiScale: root.uiScale
             compactWidth: Plasmoid.configuration.compactWidth * root.compactScale
             compactHeight: (Plasmoid.configuration.autoHeight ? 42 : Plasmoid.configuration.compactHeight) * root.compactScale

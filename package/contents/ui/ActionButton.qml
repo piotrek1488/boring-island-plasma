@@ -3,6 +3,7 @@ import QtQuick.Controls
 Button {
     id: button
     property bool accent: false
+    property real textSize: 16
     property bool showTooltip: true
     implicitWidth: Math.max(42, contentItem.implicitWidth + leftPadding + rightPadding); implicitHeight: 38
     leftPadding: 12; rightPadding: 12
@@ -11,7 +12,7 @@ Button {
     contentItem: Text {
         text: button.text; color: button.enabled ? (button.accent ? "#090a0e" : "#f4f4f8") : "#60616c"
         textFormat: Text.PlainText
-        font.pixelSize: 16; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+        font.pixelSize: button.textSize; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
     }
     background: Rectangle {
         radius: 13
