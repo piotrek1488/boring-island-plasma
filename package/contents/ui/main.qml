@@ -58,7 +58,8 @@ PlasmoidItem {
     readonly property bool compactBatteryOnly: mode === "clock" && !lowBattery.active && Plasmoid.configuration.idleView === "battery" && Plasmoid.configuration.showBattery && systemBackend.hasBattery
     readonly property string mediaTimeText: Activity.timeLabel(systemBackend.position) + " / " + (systemBackend.duration > 0 ? Activity.timeLabel(systemBackend.duration) : "—")
     readonly property color accentColor: ({notifications: "#f6c177", packages: "#7ac7ff", media: "#b9a3ff", llm: "#a7e7b8", system: "#89dceb", clock: "#77798d"})[mode] || "#b9a3ff"
-    property string clockText: Qt.formatTime(new Date(), "hh:mm")
+    property date currentTime: new Date()
+    readonly property string clockText: Qt.formatTime(currentTime, "hh:mm")
     readonly property string displayText: {
         if (mode === "osd") return osdState.current.kind === "brightness" ? strings.text("Brightness") : strings.text("Volume");
         if (lowBattery.active) return strings.text("Low battery") + " · " + systemBackend.percent + "%";
@@ -72,7 +73,7 @@ PlasmoidItem {
             return activities.llm.model + (speed !== undefined && speed !== null ? " · " + Number(speed).toFixed(1) + " tok/s" : "");
         }
         if (mode === "system") return "CPU " + (activities.system.cpu === undefined || activities.system.cpu === null ? "—" : activities.system.cpu + "%") + " · RAM " + (activities.system.ram === undefined ? "—" : activities.system.ram + "%");
-        return Plasmoid.configuration.idleView === "dateClock" ? new Date().toLocaleDateString(strings.locale,"d MMM yyyy") + " · " + clockText : clockText;
+        return Activity.idleText(Plasmoid.configuration.idleView, currentTime, strings.locale);
     }
     Translations { id: strings; language: root.language }
     SystemBackend { id: systemBackend }
@@ -187,7 +188,7 @@ PlasmoidItem {
     }
     Timer { id: openTimer; interval: Math.max(100, Plasmoid.configuration.hoverDelay); onTriggered: root.open() }
     Timer { id: closeTimer; interval: 30; onTriggered: if (!root.interactionHeld && !root.compactHovered && !root.fullHovered && root.opened) root.close() }
-    Timer { interval: 1000; running: true; repeat: true; onTriggered: root.clockText = Qt.formatTime(new Date(), "hh:mm") }
+    Timer { interval: 1000; running: true; repeat: true; onTriggered: root.currentTime = new Date() }
     compactRepresentation: CompactView {
         id: compact
         enabled: !root.editing

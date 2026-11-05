@@ -46,54 +46,70 @@ Item {
             Item { Layout.fillWidth: true }
             Text { objectName: "headerDate"; text: view.today; color: "#c1c2d0"; font.pixelSize: 13 }
         }
-        Flow {
+        CenteredTabs {
             objectName: "tabs"
             Layout.fillWidth: true
+            Layout.maximumWidth: 548
+            Layout.alignment: Qt.AlignHCenter
             Layout.preferredHeight: implicitHeight
-            spacing: 5
-            ActionButton { text: strings.text("Media"); showTooltip: false; implicitHeight: 34; accent: view.page === 0; onClicked: view.page = 0 }
-            ActionButton { text: strings.text("Shelf") + " · " + view.shelf.length; showTooltip: false; implicitHeight: 34; accent: view.page === 1; onClicked: view.page = 1 }
-            ActionButton { objectName: "calendarTab"; text: strings.text("Calendar"); showTooltip: false; implicitHeight: 34; accent: view.page === 3; onClicked: view.page = 3 }
-            ActionButton { objectName: "notificationsTab"; text: strings.text("Notifications") + (view.notifications ? " · " + view.notifications.count : ""); showTooltip: false; implicitHeight: 34; accent: view.page === 4; onClicked: view.page = 4 }
-            ActionButton { text: strings.text("Activity"); showTooltip: false; implicitHeight: 34; accent: view.page === 5; onClicked: view.page = 5 }
+            currentPage: view.page
+            onPageRequested: page => view.page = page
+            entries: [
+                {name:"mediaTab", page:0, text:strings.text("Media")},
+                {name:"shelfTab", page:1, text:strings.text("Shelf") + " · " + view.shelf.length},
+                {name:"calendarTab", page:3, text:strings.text("Calendar")},
+                {name:"notificationsTab", page:4, text:strings.text("Notifications") + (view.notifications ? " · " + view.notifications.count : "")},
+                {name:"activityTab", page:5, text:strings.text("Activity")}
+            ]
         }
         StackLayout {
+            objectName: "categoryContent"
+            Layout.minimumWidth: 0
+            Layout.maximumWidth: 548
+            Layout.alignment: Qt.AlignHCenter
             currentIndex: view.page; Layout.fillWidth: true; Layout.fillHeight: true; clip: true
-            ColumnLayout {
-                spacing: 8
-                RowLayout {
-                    spacing: 16
-                    Rectangle {
-                        implicitWidth: 88; implicitHeight: 88; radius: 18; color: "#242130"; clip: true
-                        Text { anchors.centerIn: parent; text: "♫"; color: "#c4b5fd"; font.pixelSize: 40 }
-                        Image { anchors.fill: parent; source: view.backend.artwork; fillMode: Image.PreserveAspectCrop; asynchronous: true; visible: status === Image.Ready }
-                    }
-                    ColumnLayout {
-                        Layout.fillWidth: true; spacing: 5
-                        Text { Layout.fillWidth: true; text: view.backend.title || strings.text("Nothing playing"); textFormat: Text.PlainText; color: "#f3f2fa"; font.pixelSize: 19; font.weight: Font.DemiBold; elide: Text.ElideRight }
-                        Text { Layout.fillWidth: true; text: view.backend.artist || strings.text("Start a player with MPRIS support"); textFormat: Text.PlainText; color: "#9899aa"; font.pixelSize: 12; elide: Text.ElideRight }
-                        RowLayout {
-                            ActionButton { objectName: "previousButton"; text: "|‹"; enabled: view.backend.canPrevious; Accessible.description: strings.text("Previous track"); onClicked: view.backend.previous() }
-                            ActionButton { objectName: "playButton"; text: view.backend.playing ? "Ⅱ" : "▶"; accent: true; enabled: view.backend.canToggle; Accessible.description: view.backend.playing ? strings.text("Pause") : strings.text("Play"); onClicked: view.backend.toggle() }
-                            ActionButton { text: "↗"; enabled: !!view.backend.canRaise; Accessible.description: strings.text("Open media player"); onClicked: view.backend.raisePlayer() }
-                            ActionButton { objectName: "nextButton"; text: "›|"; enabled: view.backend.canNext; Accessible.description: strings.text("Next track"); onClicked: view.backend.next() }
+            Item {
+                ColumnLayout {
+                    objectName: "mediaContent"
+                    anchors.centerIn: parent
+                    width: Math.min(480, parent.width)
+                    height: Math.min(implicitHeight, parent.height)
+                    spacing: 8
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 16
+                        Rectangle {
+                            implicitWidth: 88; implicitHeight: 88; radius: 18; color: "#242130"; clip: true
+                            Text { anchors.centerIn: parent; text: "♫"; color: "#c4b5fd"; font.pixelSize: 40 }
+                            Image { anchors.fill: parent; source: view.backend.artwork; fillMode: Image.PreserveAspectCrop; asynchronous: true; visible: status === Image.Ready }
+                        }
+                        ColumnLayout {
+                            Layout.fillWidth: true; spacing: 5
+                            Text { Layout.fillWidth: true; text: view.backend.title || strings.text("Nothing playing"); textFormat: Text.PlainText; color: "#f3f2fa"; font.pixelSize: 19; font.weight: Font.DemiBold; elide: Text.ElideRight }
+                            Text { Layout.fillWidth: true; text: view.backend.artist || strings.text("Start a player with MPRIS support"); textFormat: Text.PlainText; color: "#9899aa"; font.pixelSize: 12; elide: Text.ElideRight }
+                            RowLayout {
+                                ActionButton { objectName: "previousButton"; text: "|‹"; enabled: view.backend.canPrevious; Accessible.description: strings.text("Previous track"); onClicked: view.backend.previous() }
+                                ActionButton { objectName: "playButton"; text: view.backend.playing ? "Ⅱ" : "▶"; accent: true; enabled: view.backend.canToggle; Accessible.description: view.backend.playing ? strings.text("Pause") : strings.text("Play"); onClicked: view.backend.toggle() }
+                                ActionButton { text: "↗"; enabled: !!view.backend.canRaise; Accessible.description: strings.text("Open media player"); onClicked: view.backend.raisePlayer() }
+                                ActionButton { objectName: "nextButton"; text: "›|"; enabled: view.backend.canNext; Accessible.description: strings.text("Next track"); onClicked: view.backend.next() }
+                            }
                         }
                     }
-                }
-                RowLayout {
-                    Text { text: view.timeLabel(view.backend.position); color: "#9395a7"; font.pixelSize: 10 }
-                    Slider {
-                        id: seek; objectName: "seekSlider"; Layout.fillWidth: true; from: 0; to: Math.max(1, view.backend.duration)
-                        value: view.backend.position; enabled: view.backend.canSeek
-                        Accessible.name: strings.text("Track position")
-                        onMoved: view.backend.seek(value)
+                    RowLayout {
+                        Text { text: view.timeLabel(view.backend.position); color: "#9395a7"; font.pixelSize: 10 }
+                        Slider {
+                            id: seek; objectName: "seekSlider"; Layout.fillWidth: true; from: 0; to: Math.max(1, view.backend.duration)
+                            value: view.backend.position; enabled: view.backend.canSeek
+                            Accessible.name: strings.text("Track position")
+                            onMoved: view.backend.seek(value)
+                        }
+                        Text { text: view.timeLabel(view.backend.duration); color: "#9395a7"; font.pixelSize: 10 }
                     }
-                    Text { text: view.timeLabel(view.backend.duration); color: "#9395a7"; font.pixelSize: 10 }
-                }
-                RowLayout {
-                    Text { Layout.fillWidth: true; text: (view.backend.identity || "MPRIS · Plasma 6") + (view.activities && view.activities.audio ? " · " + view.activities.audio : ""); textFormat: Text.PlainText; color: "#77798d"; font.pixelSize: 10; elide: Text.ElideRight }
-                    Text { text: strings.text("Volume"); color: "#9395a7"; font.pixelSize: 10 }
-                    Slider { Layout.preferredWidth: 110; from: 0; to: 1; value: view.backend.volume; enabled: view.backend.available; Accessible.name: strings.text("Player volume"); onMoved: view.backend.setVolume(value) }
+                    RowLayout {
+                        Text { Layout.fillWidth: true; text: (view.backend.identity || "MPRIS · Plasma 6") + (view.activities && view.activities.audio ? " · " + view.activities.audio : ""); textFormat: Text.PlainText; color: "#77798d"; font.pixelSize: 10; elide: Text.ElideRight }
+                        Text { text: strings.text("Volume"); color: "#9395a7"; font.pixelSize: 10 }
+                        Slider { Layout.preferredWidth: 110; from: 0; to: 1; value: view.backend.volume; enabled: view.backend.available; Accessible.name: strings.text("Player volume"); onMoved: view.backend.setVolume(value) }
+                    }
                 }
             }
             Item {
@@ -109,6 +125,7 @@ Item {
                         id: shelfRow
                         required property string modelData
                         required property int index
+                        x: 6
                         width: ListView.view.width - 12; spacing: 8
                         Button {
                             id: fileButton

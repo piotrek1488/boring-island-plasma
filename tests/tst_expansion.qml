@@ -86,6 +86,7 @@ Item {
         function test_shapes_and_scaling_data() {
             return [{tag:"island",notch:false},{tag:"notch",notch:true}];
         }
+        function cleanup() { shell.expandedWidth=600; shell.language="en"; }
         function test_shapes_and_scaling(data) {
             shell.notch=data.notch; shell.fullView=true; shell.opened=true;
             compare(shell.width,600); compare(shell.height,400);
@@ -197,14 +198,14 @@ Item {
             shell.language=data.language; shell.fullView=true; shell.opened=true;
             wait(80);
             const flow=findChild(shell,"tabs");
-            const tabs=Array.from(flow.children).filter(item => item.hasOwnProperty("showTooltip"));
+            const tabs=["mediaTab","shelfTab","calendarTab","notificationsTab","activityTab"].map(name=>findChild(flow,name));
             verify(tabs.length===5);
             for (let i=0;i<tabs.length;i++) {
                 verify(tabs[i].width>=tabs[i].contentItem.implicitWidth+20);
                 verify(!tabs[i].showTooltip);
                 for (let j=i+1;j<tabs.length;j++) {
-                    const a=tabs[i], b=tabs[j];
-                    verify(a.x+a.width<=b.x || b.x+b.width<=a.x || a.y+a.height<=b.y || b.y+b.height<=a.y);
+                    const a=tabs[i], b=tabs[j], ap=a.mapToItem(flow,0,0), bp=b.mapToItem(flow,0,0);
+                    verify(ap.x+a.width<=bp.x || bp.x+b.width<=ap.x || ap.y+a.height<=bp.y || bp.y+b.height<=ap.y);
                 }
             }
             shell.language="en";
@@ -219,6 +220,35 @@ Item {
             shell.language="pl";
             compare(findChild(shell,"notificationsTab").text,"Powiadomienia · 0");
             shell.language="en";
+        }
+        function test_centered_categories_data() {
+            return [{tag:"narrow-pl",width:420,language:"pl"}, {tag:"default-en",width:600,language:"en"}, {tag:"wide-pl",width:1000,language:"pl"}];
+        }
+        function test_centered_categories(data) {
+            shell.expandedWidth=data.width; shell.language=data.language; shell.fullView=true; shell.opened=true;
+            verify(waitForRendering(shell));
+            const tabs=findChild(shell,"tabs"), stack=findChild(shell,"categoryContent"), mediaPage=findChild(shell,"mediaContent");
+            const tabButtons=["mediaTab","shelfTab","calendarTab","notificationsTab","activityTab"].map(name=>findChild(tabs,name));
+            const rows={};
+            for (const button of tabButtons) {
+                const p=button.mapToItem(tabs,0,0), key=String(Math.round(p.y));
+                if (!rows[key]) rows[key]={left:p.x,right:p.x+button.width};
+                else { rows[key].left=Math.min(rows[key].left,p.x); rows[key].right=Math.max(rows[key].right,p.x+button.width); }
+            }
+            for (const key in rows) verify(Math.abs((rows[key].left+rows[key].right)/2-tabs.width/2)<1);
+            const p=stack.mapToItem(shell,0,0);
+            verify(Math.abs(p.x+stack.width/2-shell.width/2)<1,"stack x="+p.x+" width="+stack.width+" shell="+shell.width);
+            verify(stack.width<=548,"stack width="+stack.width);
+            verify(Math.abs(mediaPage.x+mediaPage.width/2-stack.width/2)<1,"media x="+mediaPage.x+" width="+mediaPage.width+" stack="+stack.width);
+            shell.expandedWidth=600; shell.language="en";
+        }
+        function test_preview_has_symmetric_side_margins() {
+            notifications.preview={id:"preview",application:"Mail",summary:"New mail",body:"A short message"};
+            shell.opened=true; verify(waitForRendering(shell));
+            const card=findChild(shell,"notificationPreviewCard"), p=card.mapToItem(shell,0,0);
+            verify(p.x>=32); verify(shell.width-p.x-card.width>=32);
+            verify(Math.abs(p.x+card.width/2-shell.width/2)<1);
+            verify(card.height>56);
         }
         function test_expansion_keeps_origin_and_text_layout() {
             shell.fixedViewport=true; shell.notch=true; shell.fullView=true; shell.reduceMotion=false;
@@ -300,7 +330,7 @@ Item {
         function test_notification_preserves_manual_shelf_and_playback() {
             shell.fullView=true; shell.opened=true; shell.initialPage=1; media.playing=true; wait(30);
             const tabs=findChild(shell,"tabs");
-            const shelf=Array.from(tabs.children).find(child=>child.text && child.text.indexOf("Shelf")===0);
+            const shelf=findChild(tabs,"shelfTab");
             verify(shelf.accent);
             notifications.preview={id:"message",application:"Mail",summary:"Hello",body:"World"}; wait(30);
             verify(media.playing); verify(shelf.accent);

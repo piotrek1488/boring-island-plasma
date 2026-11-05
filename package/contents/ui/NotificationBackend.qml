@@ -14,8 +14,8 @@ Item {
         engine: "executable"
         onNewData: (source,data) => {
             disconnectSource(source);
-            const id=backend.launches[source]; delete backend.launches[source];
-            backend.applicationLaunchFinished(String(id),data["exit code"]===0);
+            const ids=backend.launches[source] || []; delete backend.launches[source];
+            for (const id of ids) backend.completeAsyncLaunch(id,data["exit code"]===0);
         }
     }
     property int actionRevision: 0
@@ -24,7 +24,8 @@ Item {
     property bool previewsEnabled: true
     readonly property alias history: historyModel
     readonly property alias preview: feed.preview
-    readonly property int count: historyModel.count
+    property int historyCount: 0
+    readonly property int count: historyCount
     readonly property bool available: NM.Server.valid
     NM.Settings { id: settings; live: true }
     NM.Notifications {
@@ -71,6 +72,19 @@ Item {
         actionRevision++;
     }
     function scheduleScan() { Qt.callLater(scan); }
+    function updateHistoryCount() { historyCount = historyModel.rowCount(); }
+    function completeAsyncLaunch(id, success) {
+        applicationLaunchFinished(String(id), success);
+        if (success) closeId(String(id));
+    }
+    function launchApplication(command, id) {
+        if (launches[command] === undefined) {
+            launches[command] = [String(id)];
+            launcher.connectSource(command);
+        } else if (launches[command].indexOf(String(id)) === -1) {
+            launches[command].push(String(id));
+        }
+    }
     function actionRow(id) {
         if (id === undefined || id === null) return -1;
         for (let row=0;row<arrivals.rowCount();++row) if (String(value(row,NM.Notifications.IdRole))===String(id)) return row;
@@ -86,12 +100,15 @@ Item {
         if (value(row,NM.Notifications.HasDefaultActionRole)) {
             if (window) arrivals.window=window;
             arrivals.invokeDefaultAction(arrivals.index(row,0), NM.Notifications.None);
+            // Let the clicked delegate finish before removing it from both models.
+            const openedId = String(id);
+            Qt.callLater(() => backend.closeId(openedId));
             return true;
         }
         const entry=String(value(row,NM.Notifications.DesktopEntryRole) || "");
         if (!/^[A-Za-z0-9_.-]{1,250}$/.test(entry)) return false;
         const command="python3 "+quote(launchScript)+" --desktop-id "+quote(entry);
-        if (launches[command]===undefined) { launches[command]=String(id); launcher.connectSource(command); }
+        launchApplication(command, id);
         return false; // The asynchronous launcher reports success separately.
     }
     function closeId(id) {
@@ -118,5 +135,13 @@ Item {
         function onDataChanged() { backend.scheduleScan(); }
         function onModelReset() { backend.scheduleScan(); }
     }
-    Component.onCompleted: scan()
+    Connections {
+        target: historyModel
+        // A proxy's countChanged can precede propagation to its outer model.
+        // Read after row changes settle, including history-filter changes.
+        function onRowsInserted() { Qt.callLater(backend.updateHistoryCount); }
+        function onRowsRemoved() { Qt.callLater(backend.updateHistoryCount); }
+        function onModelReset() { Qt.callLater(backend.updateHistoryCount); }
+    }
+    Component.onCompleted: { scan(); updateHistoryCount(); }
 }

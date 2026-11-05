@@ -18,9 +18,11 @@ ColumnLayout {
     Label {
         visible: page.backend.count === 0
         text: page.backend.available ? strings.text("No notifications") : strings.text("Open this widget in Plasma to share notification history.")
-        wrapMode: Text.WordWrap; Layout.fillWidth: true; color: "#9899aa"
+        wrapMode: Text.WordWrap; Layout.fillWidth: true; Layout.fillHeight: true; color: "#9899aa"
+        horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
     }
     ListView {
+        visible: page.backend.count > 0
         Layout.fillWidth: true; Layout.fillHeight: true
         clip: true; spacing: 8
         model: page.backend.history
@@ -28,6 +30,7 @@ ColumnLayout {
         delegate: NotificationCard {
             id: notification
             required property var model
+            x: 6
             width: ListView.view.width - 12
             backend: page.backend; language: page.language
             note: ({id:String(model.notificationId), application:model.applicationName || "", summary:model.summary || "", body:model.body || ""})

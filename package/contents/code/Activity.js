@@ -19,3 +19,10 @@ function timeLabel(microseconds) {
     return (hours ? hours + ":" + String(Math.floor(seconds / 60) % 60).padStart(2,"0") : Math.floor(seconds / 60))
         + ":" + String(seconds % 60).padStart(2,"0");
 }
+
+function idleText(style, now, locale) {
+    const date = now.toLocaleDateString(locale, "d MMM yyyy");
+    if (style === "date") return date;
+    const clock = now.toLocaleTimeString(locale, "hh:mm");
+    return style === "dateClock" ? date + " · " + clock : clock;
+}

@@ -59,6 +59,7 @@ jobs:
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             git ca-certificates python3 plasma-sdk plasma-desktop plasma-workspace \
+            plasma-workspace-dev cmake g++ make libglib2.0-bin \
             qt6-declarative-dev-tools qml6-module-qttest qml6-module-qtquick \
             qml6-module-qtquick-controls qml6-module-qtquick-templates \
             qml6-module-qtquick-layouts qml6-module-qtquick-window qml6-module-qtqml \
@@ -75,6 +76,10 @@ jobs:
         run: |
           QT_QPA_PLATFORM=xcb xvfb-run -a dbus-run-session -- python3 scripts/test-panel-hover.py
           QT_QPA_PLATFORM=xcb xvfb-run -a dbus-run-session -- python3 scripts/test-panel-hover.py --location bottomedge
+      - name: Test shared notification actions
+        run: ./scripts/test-notifications.sh
+      - name: Test verified package upgrade in an isolated profile
+        run: python3 scripts/test-update-install.py
 
   release:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

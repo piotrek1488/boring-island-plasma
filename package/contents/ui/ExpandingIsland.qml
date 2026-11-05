@@ -160,7 +160,9 @@ Item {
                 }
                 NotificationCard {
                     objectName: "notificationPreviewCard"
-                    anchors.fill: parent; anchors.margins: 12
+                    anchors.centerIn: parent
+                    width: Math.max(0, Math.min(548, parent.width - 64))
+                    height: Math.max(0, Math.min(implicitHeight, parent.height - 24))
                     visible: !shell.presentedFullView && shell.batteryWarning === "" && shell.notifications.preview !== null
                     backend: shell.notifications; language: shell.language
                     note: shell.notifications.preview; maximumBodyLines:2; maximumSummaryLines:1

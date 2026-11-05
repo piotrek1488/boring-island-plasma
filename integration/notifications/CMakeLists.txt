@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.22)
+project(BoringNotificationTests LANGUAGES CXX)
+set(CMAKE_AUTOMOC ON)
+find_package(Qt6 REQUIRED COMPONENTS QuickTest Widgets)
+find_package(KF6Config REQUIRED)
+find_package(LibNotificationManager REQUIRED)
+add_executable(notification-tests runner.cpp)
+target_link_libraries(notification-tests PRIVATE Qt6::QuickTest Qt6::Widgets PW::LibNotificationManager)

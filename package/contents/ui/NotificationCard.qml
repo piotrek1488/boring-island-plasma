@@ -19,12 +19,12 @@ Rectangle {
     Connections {
         target: card.backend
         ignoreUnknownSignals: true
-        function onApplicationLaunchFinished(id, success) { if (success && card.note && String(card.note.id)===String(id)) card.applicationOpened(); }
+        function onApplicationLaunchFinished(id, success) { if (success && card.visible && card.note && String(card.note.id)===String(id)) card.applicationOpened(); }
     }
     function openApplication() {
         if (canOpen && backend.openId(note.id, card.Window.window)) applicationOpened();
     }
-    implicitHeight: Math.max(56, content.implicitHeight + 20)
+    implicitHeight: Math.max(56, content.implicitHeight + 28)
     radius: 10
     color: hover.hovered ? "#262833" : "#191a22"
     Accessible.role: Accessible.ListItem
@@ -38,7 +38,7 @@ Rectangle {
     }
     RowLayout {
         id: content
-        anchors.fill: parent; anchors.margins: 10; spacing: 8
+        anchors.fill: parent; anchors.margins: 14; spacing: 8
         ColumnLayout {
             Layout.fillWidth: true; spacing: 3
             Label { Layout.fillWidth: true; text: card.note ? card.note.application : ""; textFormat: Text.PlainText; color: "#aaa0c9"; elide: Text.ElideRight; font.pixelSize: 11 }

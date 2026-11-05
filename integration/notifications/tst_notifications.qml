@@ -9,6 +9,7 @@ TestCase {
     id: test
     name: "SharedNotificationHistory"
     when: windowShown
+    visible: true
     width: 600; height: 400
     property int serial: 0
     property bool commandDone: false
@@ -39,7 +40,6 @@ TestCase {
         tryVerify(() => backend.preview !== null, 3000);
     }
     function initTestCase() {
-        verify(NM.Server.init());
         verify(NM.Server.valid);
         wait(100); // Finish seeding existing history before sending fixtures.
     }
@@ -47,6 +47,12 @@ TestCase {
         for (let row=center.count-1;row>=0;--row) center.close(center.index(row,0));
         backend.hidePreviews(); tryCompare(center,"count",0);
         backend.history.blacklistedDesktopEntries=[];
+    }
+    function init() {
+        // Synthetic senders have no desktop entry and use KDE's fallback service.
+        // Do not let the user's/default @other blacklist hide fixture history.
+        backend.history.blacklistedDesktopEntries=[];
+        backend.history.blacklistedNotifyRcNames=[];
     }
     function test_native_reminder_joins_shared_history() {
         deliveredSpy.clear(); reminderOpenedSpy.clear();
@@ -56,7 +62,8 @@ TestCase {
         const id=deliveredSpy.signalArguments[0][1];
         verify(backend.canOpenId(id)); verify(backend.openId(id,null));
         tryCompare(reminderOpenedSpy,"count",1,3000);
-        backend.closeId(id); tryCompare(center,"count",0,3000);
+        tryCompare(center,"count",0,3000); tryCompare(backend,"count",0,3000);
+        tryCompare(backend,"preview",null,3000);
     }
     function test_preview_independent_of_history_filter() {
         backend.history.blacklistedDesktopEntries=["@other"];
@@ -65,6 +72,25 @@ TestCase {
         backend.closeId(id);
         tryCompare(center,"count",0);
         tryCompare(backend,"preview",null);
+    }
+    function test_async_launch_success_and_failure() {
+        send();
+        const id=backend.preview.id;
+        backend.completeAsyncLaunch(id,false);
+        compare(center.count,1); compare(backend.count,1); compare(backend.preview.id,id);
+        backend.completeAsyncLaunch(id,true);
+        tryCompare(center,"count",0); tryCompare(backend,"count",0); tryCompare(backend,"preview",null);
+    }
+    function test_shared_launch_removes_each_clicked_notification() {
+        send(); const first=backend.preview.id;
+        send(2,2);
+        const ids=[];
+        for (let row=0; row<backend.history.rowCount(); ++row) ids.push(String(backend.history.data(backend.history.index(row,0),NM.Notifications.IdRole)));
+        const second=ids.find(id=>id!==first);
+        const command="python3 -c 'import time; time.sleep(0.1)'";
+        backend.launchApplication(command,first);
+        backend.launchApplication(command,second);
+        tryCompare(backend,"count",0,3000); tryCompare(center,"count",0,3000);
     }
     function test_timeout_keeps_both_histories() {
         send();
@@ -82,6 +108,7 @@ TestCase {
         send(); send(2,2);
         const id=backend.history.data(backend.history.index(0,0),NM.Notifications.IdRole);
         tryVerify(() => findChild(page,"deleteNotification_"+id) !== null);
+        verify(waitForRendering(page));
         mouseClick(findChild(page,"deleteNotification_"+id));
         tryCompare(center,"count",1); tryCompare(backend,"count",1);
         verify(backend.history.data(backend.history.index(0,0),NM.Notifications.IdRole)!==id);

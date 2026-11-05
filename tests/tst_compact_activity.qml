@@ -99,5 +99,12 @@ Item {
             verify(findChild(compact,"compactBattery").visible);
             compare(Activity.timeLabel(3661000000),"1:01:01"); compare(Activity.timeLabel(-10),"0:00");
         }
+        function test_idle_date_has_no_time_and_updates_at_midnight() {
+            const locale=Qt.locale("en_GB"), before=new Date(2026,10,5,23,59), after=new Date(2026,10,6,0,0);
+            compare(Activity.idleText("date",before,locale),"5 Nov 2026");
+            compare(Activity.idleText("date",after,locale),"6 Nov 2026");
+            compare(Activity.idleText("clock",before,locale),"23:59");
+            compare(Activity.idleText("dateClock",before,locale),"5 Nov 2026 · 23:59");
+        }
     }
 }

@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.4.1; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.4.2; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.4.1.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.4.2.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -109,7 +109,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.1.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.2.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -185,7 +185,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.4.1.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.4.2.plasmoid
 plasmawindowed ./package
 ```
 
@@ -223,8 +223,9 @@ Licencja GPL-3.0-only. Autorzy i źródło inspiracji: [NOTICE.md](NOTICE.md).
 
 ## Automatyczne wydania
 
-[Workflow GitHub Actions](.github/workflows/release.yml) sprawdza testy podstawowe
-i pakiet dla PR. Po pushu/scaleniu do `main` publikuje wydanie z `.plasmoid`
+[Workflow GitHub Actions](.github/workflows/release.yml) sprawdza testy podstawowe,
+aktualizator, natywne formularze/okna/powiadomienia KDE, rzeczywistą aktualizację
+w izolowanym profilu i pakiet dla PR. Po pushu/scaleniu do `main` publikuje wydanie z `.plasmoid`
 i sumą SHA256; można go też uruchomić ręcznie dla `main`. Użyte najnowsze stabilne
 wersje sprawdzone 2026-11-05: checkout 7.0.1, setup-python 7.1.0. Publikacja
 korzysta z GitHub CLI i wbudowanego tokena; nie wymaga dodatkowych sekretów.
@@ -234,8 +235,9 @@ kolejne scalenie automatycznie zwiększa numer poprawki; podniesienie wersji
 w metadanych pozwala rozpocząć nową wersję minor/major. Wersja jest wpisywana
 do zbudowanego pakietu bez dodatkowego commita bota. Ponowienie zadania używa
 tagu tego samego commita i nie nadpisuje istniejącego wydania. Publikacje są
-kolejkowane, aby nie powstały dwa identyczne numery. CI nie zastępuje testów
-natywnego centrum powiadomień i interaktywnego pulpitu Wayland.
+kolejkowane, aby nie powstały dwa identyczne numery. Publikacja wymaga sukcesu
+obu zadań: podstawowego i natywnego. Interaktywny pulpit Wayland oraz rzeczywisty
+sprzęt nadal wymagają sprawdzenia na komputerze użytkownika.
 
 ### Rozwijanie i fokus (0.3.2)
 
@@ -411,7 +413,8 @@ pozostaje zaczepiony w tym samym miejscu. Ruch jest ograniczony do rozmiaru ekra
 
 ## Bieżąca aktywność zwinięcia (0.4.0)
 
-**Widok spoczynkowy:** zegar i bateria (domyślnie), data/zegar/bateria albo sama
+**Widok spoczynkowy:** zegar i bateria (domyślnie), data/zegar/bateria, data i bateria
+(bez godziny) albo sama
 bateria. Przy ukrytej lub niedostępnej baterii ostatnia opcja pokazuje zegar.
 Dotychczasowe ustawienie procentu baterii pozostaje aktywne.
 
@@ -454,5 +457,34 @@ podświetlenie po najechaniu. Preferowana jest natywna akcja KDE, która może p
 do konkretnej wiadomości lub dokumentu. W historii, gdy akcja wygasła, widżet
 próbuje uruchomić zarejestrowaną aplikację przez `kioclient`/`kioclient6`. Treść
 powiadomienia nie jest wykonywana jako polecenie. Przy braku akcji i znanego
-identyfikatora aplikacji przycisk otwierania jest nieaktywny. Usuwanie i otwieranie
-są niezależne. Aktywacja okna zależy również od aplikacji i polityki kompozytora.
+identyfikatora aplikacji przycisk otwierania jest nieaktywny. Udane przekazanie akcji
+otwarcia usuwa powiadomienie z widżetu i historii KDE. Nieudana próba uruchomienia
+aplikacji zachowuje wpis. × nadal usuwa bez otwierania aplikacji.
+Aktywacja okna zależy również od aplikacji i polityki kompozytora.
+
+## Ustawienia i aktualizacje (0.4.2)
+
+Formularz ustawień ma stale widoczny pionowy pasek przewijania. Na samym dole
+znajduje się **Przywróć ustawienia domyślne**; reset zapiszesz przez Zastosuj/OK,
+a skróty na półce zostają zachowane. Kategorie i ich zawartość są wyśrodkowane,
+również przy zawijaniu kategorii do kolejnych wierszy i przy szerszym rozwinięciu.
+Podglądy powiadomień mają symetryczne marginesy po bokach.
+
+Otwórz ustawienia → **About / O programie** → **Sprawdź aktualizacje**. Gdy dostępne
+jest nowsze stabilne wydanie, **Zainstaluj aktualizację** pobiera pakiet z wydań
+naszego repozytorium na GitHubie. Sprawdzane są SHA-256 z pliku SHA256SUMS,
+identyfikator i wersja pakietu. Instalacja używa `kpackagetool6` jako Twój użytkownik.
+Potrzebne są Python 3 i `kpackagetool6`; hasło roota ani biblioteki kalendarza nie
+są wymagane. Ustawienia pozostają zachowane. Sprawdzanie i instalowanie aktualizacji
+odbywa się wyłącznie po kliknięciu, nie automatycznie w tle.
+
+Po instalacji kliknij **Uruchom ponownie Plasmę** lub wyloguj się i zaloguj.
+Restart to osobny przycisk i zamknie widżet oraz okno ustawień. Po błędzie sieci
+lub limicie GitHuba można ponowić próbę; błąd weryfikacji blokuje instalację.
+Nadal można pobierać i instalować pakiety ręcznie. Wersję 0.4.2 zainstaluj raz
+ręcznie, aby otrzymać te przyciski dla następnych wydań.
+
+Natywny test powiadomień (`./scripts/test-notifications.sh`) wymaga też CMake,
+kompilatora C++, `gdbus` i pakietów deweloperskich Plasma Workspace, Qt Quick Test
+oraz KF6 Config (np. `plasma-workspace-dev`). Działa na prywatnej magistrali D-Bus
+i w tymczasowym profilu ustawień.

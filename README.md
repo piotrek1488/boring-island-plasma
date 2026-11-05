@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.4.1** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.4.2** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -147,7 +147,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.1.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.2.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -196,7 +196,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.4.1.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.4.2.plasmoid
 plasmawindowed ./package
 ```
 
@@ -211,7 +211,9 @@ The core activity, queue and expansion suites can also run without Plasma:
 ./scripts/test-core.sh
 ```
 
-The shared notification integration test requires Plasma 6.6+ modules and `gdbus`:
+The shared notification integration test requires Plasma 6.6+ modules, `gdbus`,
+CMake, a C++ compiler and Plasma Workspace development files
+(`plasma-workspace-dev`, Qt Quick Test and KF6 Config development packages):
 
 ```bash
 ./scripts/test-notifications.sh
@@ -248,8 +250,9 @@ Licensed under GPL-3.0-only. See [NOTICE.md](NOTICE.md) for attribution.
 
 ## Automated releases
 
-[GitHub Actions](.github/workflows/release.yml) runs core tests and validates the
-package on pull requests. Every push/merge to `main` then publishes a GitHub release
+[GitHub Actions](.github/workflows/release.yml) runs core/updater tests, native KDE
+forms/popup/notification tests and an isolated package-upgrade test, then validates
+the package on pull requests. Every push/merge to `main` then publishes a GitHub release
 with the `.plasmoid` and `SHA256SUMS`; it can also be run manually on `main`.
 The workflow uses actions/checkout **7.0.1** and actions/setup-python **7.1.0**
 (the latest stable releases checked on 2026-11-05), and the GitHub CLI to publish.
@@ -260,8 +263,8 @@ Subsequent merges increment the latest patch version automatically; raising the
 metadata version selects a new minor/major release. The built package embeds that
 version without a bot commit to the source. A rerun reuses an existing tag on the
 same commit and leaves an already published release unchanged. Jobs are serialized
-to avoid version collisions. Native Plasma/Wayland checks still need a desktop;
-passing the core CI suite does not certify those integrations.
+to avoid version collisions. Publication requires both core and native jobs.
+Interactive Wayland behavior and real hardware still need desktop testing.
 
 ### Overlay interaction (0.3.2)
 
@@ -434,7 +437,7 @@ attached to its original edge, and motion is bounded by the screen dimensions.
 ## Live compact activity (0.4.0)
 
 The idle view is configurable: **Clock and battery** (default), **Date, clock and
-battery**, or **Battery only**. Battery-only falls back to the clock when the
+battery**, **Date and battery** (without the time), or **Battery only**. Battery-only falls back to the clock when the
 battery is hidden or unavailable. Existing battery percentage placement is kept.
 A playing MPRIS source takes precedence over shelf/history/preferences. The
 collapsed title cycles upward to **elapsed / total time**, then back to the title,
@@ -477,5 +480,28 @@ links to the original message/document and native activation. In history, an
 installed sender's desktop entry can be launched through `kioclient`/`kioclient6`
 when the original action has expired. No command is constructed from notification
 body text. If no action or recognized application identifier is available, opening
-is disabled. Delete remains independent from opening. Actual window activation is
+is disabled. Successfully handing off an open action removes that notification
+from both the widget and KDE history. A failed application launch keeps the entry;
+× still deletes without opening anything. Actual window activation is
 subject to the application's behavior and compositor policy.
+
+## Settings and updates (0.4.2)
+
+The settings form has a permanent vertical scrollbar. Scroll to its bottom to
+reach **Restore default settings**; Apply/OK saves the reset and preserves shelf
+shortcuts. The tab rows and category content are centered, including wrapped tab
+rows and wider expanded widgets. Preview notifications have symmetric side margins.
+
+Open settings → **About / O programie** → **Check for updates**. If a newer stable
+release is available, **Install update** downloads it from this repository's GitHub
+releases. The updater checks SHA-256 against the release's SHA256SUMS, checks the
+package ID/version and upgrades with `kpackagetool6` as your user. Python 3 and
+`kpackagetool6` are required; no root password or calendar dependencies are needed.
+Your settings stay in place. Installation is only performed on button click;
+updates are not checked or installed automatically.
+
+After installation, click **Restart Plasma**, or log out and back in. Restart is
+separate from installation and closes the widget/settings window. Network/rate-limit
+errors can be retried; a failed verification does not install the package. The
+manual download/install method remains available. Install 0.4.2 manually once to
+get these controls for subsequent releases.

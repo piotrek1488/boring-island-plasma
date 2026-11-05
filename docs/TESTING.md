@@ -1,3 +1,44 @@
+# Verification of 0.4.2
+
+Settings are tested with real Kirigami/KDE controls on Plasma 6.7.4 / Qt 6.11.2.
+The scroll fixture reaches and clicks the final reset button in 640×360 English
+and 460×240 Polish windows with ICS controls shown, checks the date-only choice,
+and exercises About/check/install/restart UI states with a mock updater. The real
+updater backend is also checked for reading the installed version without a
+network request. This adds seven native configuration cases to the popup suite.
+
+Expansion checks cover centered tab rows at 420/600/1000 px, both languages,
+bounded centered category/media content and symmetric notification-preview margins.
+The expansion suite passes 34 cases on Qt 6.4.2 and KDE-styled Qt 6.11.2. Idle tests
+cover date-only formatting and midnight rollover. Full panel hover cycles still
+pass for both shapes and animation profiles.
+
+The shared-notification fixture now starts Server::init through a C++ Qt Quick
+Test runner: this API is not callable from QML. Its visible UI runs on a private
+bus; the script also isolates XDG configuration/cache/data. Synthetic senders are
+excluded from default @other/service blacklists only in the fixture. Eleven cases
+pass, including native default-action removal, successful/failed async handoff,
+coalesced launches for two clicked notifications, individual ×, both deletion directions, expiry/history filtering and reminder
+delivery. A stale count caused by proxy countChanged ordering is covered by these
+tests; the backend now counts after row changes settle.
+
+Updater Python tests cover version ordering/no downgrade, draft/prerelease/assets,
+bad checksums, wrong package IDs/versions, oversized downloads, installer failures
+and temporary-file cleanup. `scripts/test-update-install.py` additionally installs
+and upgrades real generated packages using kpackagetool6 in a temporary XDG profile,
+checks installed metadata and preserves a sentinel settings file. Only release
+network responses are mocked in that installation test. A live read-only API check
+in this environment returned GitHub's request-limit error; error handling works,
+but a live release download/install was not performed here. No notification sender
+application was launched and the user's Plasma was not restarted by tests.
+
+CI includes core/updater tests, native configuration/popup/expansion tests, full
+panel hover, the C++ notification fixture and a real isolated package upgrade.
+README translations, setup/update instructions and this evidence are included in
+the same source commit as the implementation.
+
+---
+
 # Verification of 0.4.1
 
 The full applet reproduced an invalid `Window.window.screen.width` read and
