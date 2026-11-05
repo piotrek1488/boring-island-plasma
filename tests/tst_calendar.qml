@@ -10,6 +10,7 @@ Item {
         property date selectedDate: new Date(2026, 10, 3, 12)
         property bool providerAvailable: true
         property string errorMessage: ""
+        property var eventDays: ({"2026-11-03":true})
         property var events: [
             {title: "Design review", description: "Discuss the new island", isAllDay: false, startDateTime: new Date(2026,10,3,14), endDateTime: new Date(2026,10,3,15), eventColor: "#c4b5fd"},
             {title: "Release day", description: "", isAllDay: true, eventColor: "#a7e7b8"}

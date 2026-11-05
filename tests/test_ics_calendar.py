@@ -97,6 +97,21 @@ END:VEVENT'''))
             self.assertEqual(output['error'], '')
             self.assertEqual(output['events'][0]['title'], 'CLI event')
 
+    def test_month_markers_include_recurrence_and_exclusive_end(self):
+        payload = calendar('BEGIN:VEVENT\nUID:trip\nDTSTART;VALUE=DATE:20261105\nDTEND;VALUE=DATE:20261108\nSUMMARY:Trip\nEND:VEVENT\nBEGIN:VEVENT\nUID:weekly\nDTSTART;VALUE=DATE:20261102\nRRULE:FREQ=WEEKLY;COUNT=3\nEXDATE;VALUE=DATE:20261109\nSUMMARY:Weekly\nEND:VEVENT')
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            file = folder / 'calendar.ics'; file.write_bytes(payload)
+            result = ics.agenda([str(file)], date(2026,11,6), folder / 'cache')
+            self.assertEqual(result['monthDays'], ['2026-11-02','2026-11-05','2026-11-06','2026-11-07','2026-11-16'])
+            self.assertEqual([e['title'] for e in result['events']], ['Trip'])
+
+    def test_event_markers_clip_to_month_and_keep_zero_length_events(self):
+        event = {'startDateTime':'2026-10-31T23:00:00+00:00','endDateTime':'2026-11-02T00:00:00+00:00'}
+        self.assertEqual(list(ics.event_dates(event,date(2026,11,1),date(2026,12,1))), [date(2026,11,1)])
+        event['startDateTime']=event['endDateTime']='2026-11-05T12:00:00+00:00'
+        self.assertEqual(list(ics.event_dates(event,date(2026,11,1),date(2026,12,1))), [date(2026,11,5)])
+
     def test_network_cache_and_explicit_refresh(self):
         payload = calendar('')
         with tempfile.TemporaryDirectory() as directory:

@@ -1,3 +1,18 @@
+# Verification of 0.3.8
+
+The core month-calendar fixture runs without Plasma modules using an injected
+backend. It checks left/right pane order, grid bounds at normal/narrow/compact
+sizes, day selection and agenda updates, month/year navigation, leap-year clamping,
+Monday/Sunday week starts, localized month names, Today and event dots. The rendered
+568 × 200 calendar pane was visually inspected with offscreen Qt 6.4.2.
+
+Python tests cover whole-month recurrence markers, EXDATE, exclusive multi-day ends,
+month-boundary clipping and zero-length events. Existing calendar/notification/UI
+suites remain in the core run. Native KDE event marker population and live ICS
+refresh still require target-desktop verification; no personal account was used.
+
+---
+
 # Verification of 0.3.7
 
 Core tests cover minimum compact width fitting/overrides/scaling, 600 × 330 total

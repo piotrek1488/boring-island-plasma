@@ -38,8 +38,9 @@ Item {
     HoverHandler { onHoveredChanged: view.hoverChanged(hovered) }
     DropArea { anchors.fill: parent; onDropped: drop => { if (drop.hasUrls) { view.addFiles(drop.urls); drop.acceptProposedAction(); } } }
     ColumnLayout {
-        anchors.fill: parent; anchors.margins: 26; spacing: 12
+        anchors.fill: parent; anchors.margins: view.page === 3 ? 16 : 26; spacing: view.page === 3 ? 8 : 12
         RowLayout {
+            visible: view.page !== 3
             Layout.fillWidth: true
             Text { text: "BORING / ISLAND"; color: "#aaa0c9"; font.pixelSize: 10; font.letterSpacing: 2 }
             Item { Layout.fillWidth: true }

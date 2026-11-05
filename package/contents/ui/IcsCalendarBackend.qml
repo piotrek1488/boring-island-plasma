@@ -7,6 +7,7 @@ Item {
     property string sources: ""
     property date selectedDate: new Date()
     property var events: []
+    property var eventDays: ({})
     readonly property bool providerAvailable: true
     property string errorMessage: "Loading calendar…"
     property string currentCommand: ""
@@ -26,8 +27,8 @@ Item {
     }
     function moveDay(offset) { selectedDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + offset, 12); }
     function resetToday() { selectedDate = new Date(); }
-    onSelectedDateChanged: debounce.restart()
-    onSourcesChanged: { debounce.restart(); syncRetry.remaining = 4; syncRetry.restart(); }
+    onSelectedDateChanged: { currentCommand = ""; events = []; errorMessage = "Loading calendar…"; debounce.restart(); }
+    onSourcesChanged: { currentCommand = ""; events = []; eventDays = ({}); debounce.restart(); syncRetry.remaining = 4; syncRetry.restart(); }
     onAppletIdChanged: debounce.restart()
     Plasma5Support.DataSource {
         id: collector
@@ -41,8 +42,11 @@ Item {
                 backend.events = result.events.map(event => Object.assign({}, event, {
                     startDateTime: new Date(event.startDateTime), endDateTime: new Date(event.endDateTime)
                 }));
+                const markers = {};
+                for (const day of result.monthDays || []) markers[day] = true;
+                backend.eventDays = markers;
                 backend.errorMessage = result.error || "";
-            } catch (error) { backend.events = []; backend.errorMessage = "Calendar data could not be loaded."; }
+            } catch (error) { backend.eventDays = ({}); backend.events = []; backend.errorMessage = "Calendar data could not be loaded."; }
         }
     }
     // KConfig may flush an Apply asynchronously. Retry briefly without putting

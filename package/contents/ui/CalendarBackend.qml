@@ -1,9 +1,11 @@
 import QtQuick
+import "../code/CalendarMath.js" as CalendarMath
 import org.kde.plasma.workspace.calendar as PlasmaCalendar
 Item {
     id: backend
     property date selectedDate: new Date()
     property var events: []
+    property var eventDays: ({})
     property bool providerAvailable: false
     property bool ready: false
     readonly property string errorMessage: calendar.errorMessage
@@ -17,10 +19,15 @@ Item {
     }
     function refreshAgenda() {
         if (!ready) return;
-        // Plasma 6.6 only invalidates its cached agenda for today's dataReady.
-        // Read a different date first so late results for another month are visible.
-        calendar.daysModel.eventsForDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() - 1, 12));
-        // KDE handles recurrence, timezone conversion and multi-day incidences.
+        // Reading each date also invalidates Plasma 6.6's cached agenda for
+        // non-today dataReady updates. Read the selected date last for the list.
+        const markers = {};
+        const days = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
+        for (let day = 1; day <= days; ++day) {
+            const date = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), day, 12);
+            if (calendar.daysModel.eventsForDate(date).length > 0) markers[CalendarMath.key(date)] = true;
+        }
+        eventDays = markers;
         events = calendar.daysModel.eventsForDate(selectedDate);
     }
     function moveDay(offset) {

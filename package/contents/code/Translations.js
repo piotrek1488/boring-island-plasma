@@ -1,6 +1,9 @@
 .pragma library
 
 var polish = {
+    "Previous month": "Poprzedni miesiąc",
+    "Next month": "Następny miesiąc",
+    "Selected day": "Wybrany dzień",
     "Calendar setup instructions": "Instrukcja konfiguracji kalendarza",
     "Calendar source:": "Źródło kalendarza:",
     "ICS addresses or file paths:": "Adresy ICS lub ścieżki plików:",

@@ -64,11 +64,11 @@ def read_source(source, cache_dir, refresh=False):
     return payload
 
 
-def events_for_day(payload, selected, timezone):
+def events_for_range(payload, first, until, timezone):
     from icalendar import Calendar
     import recurring_ical_events
-    start = datetime.combine(selected, time.min, timezone)
-    end = datetime.combine(selected + timedelta(days=1), time.min, timezone)
+    start = datetime.combine(first, time.min, timezone)
+    end = datetime.combine(until, time.min, timezone)
     calendar = Calendar.from_ical(payload)
     result = []
     for event in recurring_ical_events.of(calendar).between(start, end):
@@ -89,22 +89,45 @@ def events_for_day(payload, selected, timezone):
     return result
 
 
+def events_for_day(payload, selected, timezone):
+    return events_for_range(payload, selected, selected + timedelta(days=1), timezone)
+
+
+def event_dates(event, first, until):
+    begin = datetime.fromisoformat(event['startDateTime'])
+    end = datetime.fromisoformat(event['endDateTime'])
+    # DTEND is exclusive, including for multi-day all-day events.
+    last = (end - timedelta(microseconds=1)).date() if end > begin else begin.date()
+    current = max(first, begin.date())
+    while current <= last and current < until:
+        yield current
+        current += timedelta(days=1)
+
+
 def agenda(sources, selected, cache_dir, refresh=False):
     import icalendar  # noqa: F401 - explicit dependency check, including empty source lists
     import recurring_ical_events  # noqa: F401
     if not sources:
         return {'events': [], 'error': 'Add an ICS calendar address or local file in widget settings.'}
     events = []
+    month_days = set()
+    first = selected.replace(day=1)
+    until = (first.replace(day=28) + timedelta(days=4)).replace(day=1)
     errors = 0
     timezone = local_timezone()
     for source in sources:
         try:
-            events.extend(events_for_day(read_source(source, cache_dir, refresh), selected, timezone))
+            month_events = events_for_range(read_source(source, cache_dir, refresh), first, until, timezone)
+            for event in month_events:
+                days = set(event_dates(event, first, until))
+                month_days.update(day.isoformat() for day in days)
+                if selected in days:
+                    events.append(event)
         except Exception:
             # Exception text can contain the private subscription URL. Never return it.
             errors += 1
     events.sort(key=lambda e: (not e['isAllDay'], e['startDateTime'], e['title']))
-    return {'events': events[:500], 'error': 'Some calendars could not be loaded. Check the ICS addresses and network connection.' if errors else ''}
+    return {'events': events[:500], 'monthDays': sorted(month_days), 'error': 'Some calendars could not be loaded. Check the ICS addresses and network connection.' if errors else ''}
 
 
 def main():

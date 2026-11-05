@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.3.7** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.3.8** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -144,7 +144,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.7.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.8.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -193,7 +193,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.3.7.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.3.8.plasmoid
 plasmawindowed ./package
 ```
 
@@ -374,3 +374,18 @@ python3 -m pip install -r package/contents/code/requirements-calendar.txt
 ```
 
 Run this inside a development venv where system Python enforces PEP 668.
+
+### Month calendar (0.3.8)
+
+The Calendar tab shows the selected day's agenda on the **left** and a complete
+six-week month grid on the **right**. Select any day to update the agenda. Month
+arrows cross year boundaries and clamp the selected day to the destination month's
+length; **Today** restores the current month/day. Names and week start follow the
+widget language. Today's date, the selected date and days with events have distinct
+markers. Both KDE/Akonadi and ICS sources provide current-month event markers.
+ICS recurrence is expanded once per month; the agenda still lists only the selected
+day. Older asynchronous ICS responses are discarded after changing the selection.
+
+The calendar tab hides the duplicate brand/date row and uses tighter outer spacing
+to fit both panes within the default 600 × 330 expanded widget. Event lists and
+status messages scroll independently of the month grid.

@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.3.7; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.3.8; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.3.7.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.3.8.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -107,7 +107,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.7.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.8.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -183,7 +183,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.3.7.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.3.8.plasmoid
 plasmawindowed ./package
 ```
 
@@ -351,3 +351,20 @@ Reset ustawień usuwa konfigurację źródeł kalendarza, zachowując półkę.
 
 Testy deweloperskie wymagają dodatkowo bibliotek z
 `package/contents/code/requirements-calendar.txt`, instalowanych w środowisku venv.
+
+### Widok całego miesiąca (0.3.8)
+
+Zakładka kalendarza ma **wydarzenia po lewej** i pełną, sześciotygodniową siatkę
+miesiąca **po prawej**. Kliknięcie dnia zmienia listę wydarzeń. Strzałki miesięcy
+obsługują zmianę roku i dopasowują dzień do długości miesiąca, np. 31 stycznia →
+28 lutego. Przycisk **Dzisiaj** wraca do bieżącej daty i miesiąca. Nazwy oraz
+początek tygodnia odpowiadają językowi widżetu.
+
+Dzisiejszy i wybrany dzień są wyróżnione, a dni z wydarzeniami mają kropki.
+Znaczniki bieżącego miesiąca działają zarówno dla KDE/Akonadi, jak i ICS.
+Zapytanie ICS rozwija cykliczność dla całego miesiąca, a lewa kolumna nadal pokazuje
+tylko wybrany dzień. Spóźniona odpowiedź dla poprzedniego wyboru jest ignorowana.
+
+Widok mieści się przy domyślnych 600 × 330 px: w tej zakładce ukryty jest dodatkowy
+wiersz marki/daty i zmniejszone są zewnętrzne odstępy. Lista wydarzeń i komunikaty
+przewijają się niezależnie od siatki miesiąca.
