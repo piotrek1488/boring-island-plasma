@@ -21,6 +21,7 @@ Item {
     TestCase {
         name: "AgendaOrder"; when: windowShown
         function init() {
+            page.showEarlier=false;
             fake.selectedDate=new Date(2026,10,5,12);
             fake.events=[
                 {title:"Past",startDateTime:at(9),endDateTime:at(10)},
@@ -33,9 +34,9 @@ Item {
             page.currentTime=at(10,30); wait(30);
         }
         function test_ongoing_then_upcoming_and_past_last() {
-            compare(page.eventOrder,"2,4,1,3,0,5");
+            compare(page.eventOrder,"2,4,1,3");
             compare(page.orderedEvents[0].title,"Ongoing");
-            compare(findChild(page,"eventList").count,6);
+            compare(findChild(page,"eventList").count,4);
         }
         function test_nearest_upcoming_when_nothing_ongoing() {
             page.currentTime=at(10,5);
@@ -49,7 +50,8 @@ Item {
             compare(page.orderedEvents[0].title,"Future");
             page.currentTime=at(14);
             compare(page.orderedEvents[0].title,"All day");
-            compare(page.orderedEvents[1].title,"Future");
+            compare(page.orderedEvents.length,1);
+            verify(findChild(page,"earlierEventsButton").visible);
         }
         function test_other_dates_are_chronological() {
             fake.selectedDate=new Date(2026,10,6,12);
@@ -59,17 +61,56 @@ Item {
         }
         function test_same_order_keeps_scroll_position() {
             const list=findChild(page,"eventList");
-            list.contentY=60;
+            list.contentY=20;
             page.currentTime=at(10,31); wait(20);
-            compare(page.eventOrder,"2,4,1,3,0,5");
-            compare(list.contentY,60);
+            compare(page.eventOrder,"2,4,1,3");
+            compare(list.contentY,20);
         }
         function test_returning_to_today_starts_at_current_event() {
             fake.selectedDate=new Date(2026,10,6,12); wait(20);
-            const list=findChild(page,"eventList"); list.contentY=60;
+            const list=findChild(page,"eventList"); list.contentY=20;
             fake.selectedDate=new Date(2026,10,5,12);
             tryCompare(list,"contentY",0);
             compare(page.orderedEvents[0].title,"Ongoing");
+        }
+        function test_earlier_events_toggle_and_date_reset() {
+            const arrow=findChild(page,"earlierEventsButton");
+            verify(arrow.visible); compare(page.earlierCount,2);
+            compare(arrow.text,"↑");
+            mouseClick(arrow); verify(page.showEarlier);
+            compare(page.eventOrder,"5,0,2,4,1,3");
+            compare(page.orderedEvents[0].title,"Early");
+            compare(findChild(page,"eventList").count,6);
+            compare(arrow.text,"↓");
+            mouseClick(arrow); verify(!page.showEarlier);
+            compare(page.orderedEvents[0].title,"Ongoing");
+            mouseClick(arrow);
+            fake.selectedDate=new Date(2026,10,6,12);
+            verify(!page.showEarlier); verify(!arrow.visible);
+            compare(page.orderedEvents.length,6);
+        }
+        function test_revealed_overlapping_events_sort_by_start_time() {
+            const rows=[
+                {startDateTime:at(8),endDateTime:at(10)},
+                {startDateTime:at(9),endDateTime:at(9,30)},
+                {startDateTime:at(10),endDateTime:at(11)}
+            ];
+            compare(AgendaOrder.visibleIndices(rows,fake.selectedDate,at(10,30),false).join(","),"2");
+            compare(AgendaOrder.visibleIndices(rows,fake.selectedDate,at(10,30),true).join(","),"0,1,2");
+        }
+        function test_all_finished_shows_message_and_reveal_button() {
+            fake.events=[{title:"Ended",startDateTime:at(9),endDateTime:at(10)}];
+            compare(page.orderedEvents.length,0);
+            verify(findChild(page,"calendarStatus").visible);
+            compare(findChild(page,"calendarStatus").text,"No remaining events for today.");
+            mouseClick(findChild(page,"earlierEventsButton"));
+            compare(page.orderedEvents.length,1);
+            verify(!findChild(page,"calendarStatus").visible);
+        }
+        function test_no_finished_events_hide_the_reveal_button() {
+            fake.events=fake.events.filter(e=>e.title!=="Past" && e.title!=="Early");
+            compare(page.earlierCount,0);
+            verify(!findChild(page,"earlierEventsButton").visible);
         }
         function test_overnight_zero_length_and_missing_times() {
             const rows=[

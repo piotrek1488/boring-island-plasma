@@ -26,6 +26,7 @@ var values = {
     "showAudioDevice": true,
     "showBattery": true,
     "batteryPercentPosition": "right",
+    "animationStyle": "smooth",
     "animationDuration": 400,
     "reduceMotion": false
 };

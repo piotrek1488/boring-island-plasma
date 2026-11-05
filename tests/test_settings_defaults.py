@@ -20,6 +20,7 @@ class SettingsDefaults(unittest.TestCase):
             expected[entry.get('name')] = int(value) if kind == 'Int' else value == 'true' if kind == 'Bool' else value
         self.assertEqual(actual, expected)
         self.assertEqual(actual['animationDuration'], 400)
+        self.assertEqual(actual['animationStyle'], 'smooth')
         self.assertEqual(actual['compactMinimumWidth'], 180)
         self.assertEqual(actual['expandedWidth'], 600)
         self.assertEqual(actual['expandedHeight'], 400)

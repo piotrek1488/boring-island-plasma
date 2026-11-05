@@ -33,3 +33,20 @@ function indices(events, selectedDate, now) {
         return left.index - right.index;
     }).map(row => row.index);
 }
+
+function visibleIndices(events, selectedDate, now, showEarlier) {
+    const ordered = indices(events, selectedDate, now);
+    if (!sameDay(selectedDate, now)) return ordered;
+    const finished = [];
+    const remaining = [];
+    for (const index of ordered) {
+        const event = events[index];
+        const start = stamp(event.startDateTime);
+        const rawEnd = stamp(event.endDateTime);
+        const end = rawEnd === null || (start !== null && rawEnd < start) ? start : rawEnd;
+        if (!event.isAllDay && start !== null && start < now.getTime() && end <= now.getTime()) finished.push(index);
+        else remaining.push(index);
+    }
+    // Earlier events are revealed above the current agenda, oldest first.
+    return showEarlier ? finished.sort((left, right) => stamp(events[left].startDateTime) - stamp(events[right].startDateTime) || left - right).concat(remaining) : remaining;
+}

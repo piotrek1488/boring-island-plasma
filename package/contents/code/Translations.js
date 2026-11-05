@@ -1,6 +1,12 @@
 .pragma library
 
 var polish = {
+    "Show earlier events": "Pokaż wcześniejsze wydarzenia",
+    "Hide earlier events": "Ukryj wcześniejsze wydarzenia",
+    "No remaining events for today.": "Brak kolejnych wydarzeń na dziś.",
+    "Animation style:": "Styl animacji:",
+    "Smooth": "Płynna",
+    "Dynamic Island — spring": "Dynamic Island — sprężysta",
     "Previous month": "Poprzedni miesiąc",
     "Next month": "Następny miesiąc",
     "Selected day": "Wybrany dzień",

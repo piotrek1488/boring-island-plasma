@@ -21,6 +21,7 @@ PlasmoidItem {
         close();
     }
     readonly property bool notch: Plasmoid.configuration.shape === 0
+    readonly property string animationStyle: Plasmoid.configuration.animationStyle === "spring" ? "spring" : "smooth"
     readonly property int animationDuration: Math.max(50, Math.min(1000, Plasmoid.configuration.animationDuration))
     readonly property var configureAction: Plasmoid.internalAction("configure")
     readonly property bool configureEnabled: configureAction !== null && configureAction.enabled
@@ -204,6 +205,7 @@ PlasmoidItem {
             language: root.language; displayText: root.displayText; accentColor: root.accentColor
             notch: root.notch; bottomEdge: Plasmoid.location === PlasmaCore.Types.BottomEdge
             batteryWarning: root.batteryWarning
+            animationStyle: root.animationStyle
             animationDuration: root.animationDuration
             batteryPercentPosition: Plasmoid.configuration.batteryPercentPosition
             configureEnabled: root.configureEnabled
@@ -246,6 +248,7 @@ PlasmoidItem {
             opened: !root.inPanel && root.wantOpen; fullView: root.opened
             language: root.language; displayText: root.displayText; accentColor: root.accentColor
             batteryWarning: root.batteryWarning
+            animationStyle: root.animationStyle
             animationDuration: root.animationDuration
             batteryPercentPosition: Plasmoid.configuration.batteryPercentPosition
             configureEnabled: root.configureEnabled

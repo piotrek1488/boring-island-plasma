@@ -26,6 +26,8 @@ Item {
     property bool bottomEdge: false
     property bool showBattery: true
     property bool reduceMotion: false
+    property string animationStyle: "smooth"
+    readonly property bool springMotion: animationStyle === "spring" && !reduceMotion
     property int animationDuration: 400
     property string batteryWarning: ""
     property string batteryPercentPosition: "right"
@@ -52,18 +54,24 @@ Item {
     readonly property real targetWidth: Math.min(maximumWidth, Math.max(compactWidth, expandedWidth * uiScale))
     readonly property real expandedHeaderHeight: Math.max(compactHeight, 56 * uiScale)
     readonly property real bodyHeight: Math.max(0, Math.min(maximumHeight - expandedHeaderHeight, (presentedFullView ? expandedHeight * uiScale - expandedHeaderHeight : 126 * uiScale)))
-    readonly property real surfaceWidth: compactWidth + (targetWidth - compactWidth) * progress
+    // OutBack with overshoot 0.85 peaks below 1.027. Reserve a static 4% envelope
+    // before showing the dialog so the bounce cannot resize/move its native window.
+    readonly property real horizontalMotionMargin: springMotion ? Math.ceil(Math.max(0, targetWidth - compactWidth) * 0.04 / 2) : 0
+    readonly property real verticalMotionMargin: springMotion ? Math.ceil(Math.max(0, expandedHeaderHeight + bodyHeight - compactHeight) * 0.04) : 0
+    readonly property real reveal: Math.max(0, Math.min(1, progress))
+    readonly property real surfaceWidth: Math.min(maximumWidth, compactWidth + (targetWidth - compactWidth) * progress)
     readonly property real headerHeight: compactHeight + (expandedHeaderHeight - compactHeight) * progress
-    readonly property real surfaceHeight: headerHeight + bodyHeight * progress
-    width: fixedViewport ? targetWidth : surfaceWidth
-    height: fixedViewport ? expandedHeaderHeight + bodyHeight : surfaceHeight
+    readonly property real surfaceHeight: Math.min(maximumHeight, headerHeight + bodyHeight * progress)
+    width: fixedViewport ? Math.min(maximumWidth, targetWidth + 2 * horizontalMotionMargin) : surfaceWidth
+    height: fixedViewport ? Math.min(maximumHeight, expandedHeaderHeight + bodyHeight + verticalMotionMargin) : surfaceHeight
     readonly property int collapseDuration: Math.max(100, Math.min(220, Math.round(animationDuration * 0.7)))
     Behavior on progress {
         id: morphAnimation
         enabled: !shell.editing
         NumberAnimation {
             duration: shell.reduceMotion ? 0 : (morphAnimation.targetValue > 0 ? Math.max(50, Math.min(1000, shell.animationDuration)) : shell.collapseDuration)
-            easing.type: morphAnimation.targetValue > 0 ? Easing.OutQuint : Easing.InOutCubic
+            easing.type: morphAnimation.targetValue > 0 ? (shell.springMotion ? Easing.OutBack : Easing.OutQuint) : Easing.InOutCubic
+            easing.overshoot: 0.85
         }
     }
     Item {
@@ -97,7 +105,7 @@ Item {
             x: (morph.width - width) / 2
             y: shell.bottomEdge ? morph.height - height : 0
             expandedHeader: true; minimumTextScale: 1; compactScale: 1
-            opacity: Math.max(0, (shell.progress - 0.25) / 0.75)
+            opacity: Math.max(0, (shell.reveal - 0.25) / 0.75)
             visible: opacity > 0
             backend: shell.backend; language: shell.language; notch: shell.notch
             showBattery: shell.showBattery; displayText: shell.displayText
@@ -109,11 +117,11 @@ Item {
             onFilesDropped: urls => shell.filesDropped(urls)
         }
         Item {
-            y: shell.bottomEdge ? 0 : shell.headerHeight
+            y: shell.bottomEdge ? 0 : shell.headerHeight + (shell.springMotion ? (1 - shell.reveal) * 8 * shell.uiScale : 0)
             x: (morph.width - width) / 2
             width: shell.targetWidth
             height: shell.bodyHeight
-            opacity: Math.max(0, (shell.progress - 0.25) / 0.75)
+            opacity: Math.max(0, (shell.reveal - 0.25) / 0.75)
             Item {
                 width: parent.width / shell.uiScale; height: parent.height / shell.uiScale
                 scale: shell.uiScale; transformOrigin: Item.TopLeft

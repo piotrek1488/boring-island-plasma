@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.3.9** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.3.10** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -144,7 +144,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.9.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.10.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -193,7 +193,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.3.9.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.3.10.plasmoid
 plasmawindowed ./package
 ```
 
@@ -404,3 +404,26 @@ Calendar. The default expanded size is **600 × 400 logical pixels**, leaving ro
 for the original header, spacing and the full month grid. Existing saved heights
 are preserved: if yours is 330, change **Expanded height (px)** to **400**. This
 avoids resetting other preferences or configured calendar sources.
+
+### Earlier events and animation styles (0.3.10)
+
+Finished timed events are hidden by default in today's agenda. A circular **↑**
+button appears beside the day controls when earlier events exist; its tooltip and
+accessible name include their count. Clicking it reveals earlier events above the
+current agenda, oldest first. **↓** hides them again. Changing the day or reopening
+the calendar resets this toggle. Explicitly selected past/future dates still show
+their full day. When only finished events remain, the empty-state message and ↑
+button let you choose whether to show them. Calendar source data is never deleted.
+
+**Animation style** offers **Smooth** (the existing default) and **Dynamic Island —
+spring**. Smooth opens with OutQuint and closes with InOutCubic. The new style uses
+a bounded OutBack curve (overshoot 0.85) for a small spring-like expansion and soft
+settling, plus a short content reveal. It is inspired by Dynamic Island, using our
+own Qt animation rather than Apple's implementation. Closing remains quick and
+smooth. Both styles respect the configured duration and Reduce motion; the latter
+also removes overshoot. The style applies to full expansion and notification
+previews, for both notch and island shapes.
+
+Spring motion reserves a small static transparent envelope before the popup opens,
+so the native window does not resize or shift during the bounce. The shape remains
+attached to its original edge, and motion is bounded by the screen dimensions.

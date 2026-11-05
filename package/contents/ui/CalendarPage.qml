@@ -12,17 +12,20 @@ ColumnLayout {
     property string calendarSources: ""
     property int calendarAppletId: 0
     property date currentTime: new Date()
+    property bool showEarlier: false
     property var backend: null
     readonly property var activeBackend: backend || calendarLoader.item || fallback
     // A stable signature avoids rebuilding the list every clock tick when the
     // order is unchanged, preserving a user's scroll position in older events.
-    readonly property string eventOrder: AgendaOrder.indices(activeBackend.events, activeBackend.selectedDate, currentTime).join(",")
+    readonly property string remainingOrder: AgendaOrder.visibleIndices(activeBackend.events, activeBackend.selectedDate, currentTime, false).join(",")
+    readonly property int earlierCount: activeBackend.events.length - (remainingOrder.length ? remainingOrder.split(",").length : 0)
+    readonly property string eventOrder: showEarlier ? AgendaOrder.visibleIndices(activeBackend.events, activeBackend.selectedDate, currentTime, true).join(",") : remainingOrder
     readonly property var orderedEvents: eventOrder.length ? eventOrder.split(",").map(index => activeBackend.events[Number(index)]) : []
     Timer { interval: 30000; running: agenda.visible; repeat: true; onTriggered: agenda.currentTime = new Date() }
-    onVisibleChanged: if (visible) currentTime = new Date()
+    onVisibleChanged: if (visible) { currentTime = new Date(); showEarlier = false; }
     Connections {
         target: agenda.activeBackend
-        function onSelectedDateChanged() { Qt.callLater(() => eventList.positionViewAtBeginning()); }
+        function onSelectedDateChanged() { agenda.showEarlier = false; Qt.callLater(() => eventList.positionViewAtBeginning()); }
     }
     QtObject {
         id: fallback
@@ -71,11 +74,20 @@ ColumnLayout {
                 ActionButton { objectName: "todayButton"; text: strings.text("Today"); implicitHeight: 24; textSize: 11; onClicked: agenda.activeBackend.resetToday() }
                 ActionButton { objectName: "nextDay"; text: "›"; implicitWidth: 26; implicitHeight: 24; leftPadding: 2; rightPadding: 2; Accessible.description: strings.text("Next day"); onClicked: agenda.activeBackend.moveDay(1) }
                 Item { Layout.fillWidth: true }
+                ActionButton {
+                    objectName: "earlierEventsButton"
+                    visible: agenda.earlierCount > 0
+                    text: agenda.showEarlier ? "↓" : "↑"; textSize: 14
+                    implicitWidth: 24; implicitHeight: 24; leftPadding: 0; rightPadding: 0
+                    Accessible.name: (agenda.showEarlier ? strings.text("Hide earlier events") : strings.text("Show earlier events")) + " · " + agenda.earlierCount
+                    Accessible.description: Accessible.name
+                    onClicked: { agenda.showEarlier = !agenda.showEarlier; Qt.callLater(() => eventList.positionViewAtBeginning()); }
+                }
             }
             ScrollView {
                 id: statusScroll
-                visible: !agenda.activeBackend.providerAvailable || agenda.activeBackend.errorMessage.length > 0 || agenda.activeBackend.events.length === 0
-                Layout.fillWidth: true; Layout.fillHeight: agenda.activeBackend.events.length === 0
+                visible: !agenda.activeBackend.providerAvailable || agenda.activeBackend.errorMessage.length > 0 || agenda.orderedEvents.length === 0
+                Layout.fillWidth: true; Layout.fillHeight: agenda.orderedEvents.length === 0
                 Layout.preferredHeight: Math.min(statusText.implicitHeight + 6, eventsPane.height / 3)
                 clip: true; contentWidth: availableWidth
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -86,7 +98,7 @@ ColumnLayout {
                     wrapMode: Text.WordWrap; textFormat: Text.PlainText; color: "#aaa9bb"; font.pixelSize: 11
                     text: agenda.activeBackend.errorMessage ? strings.text(agenda.activeBackend.errorMessage) : !agenda.activeBackend.providerAvailable
                         ? strings.text("KDE PIM calendar integration is not installed. Install the PIM Events plugin (kdepim-addons on Ubuntu), then restart this widget. Select calendars in the Plasma clock settings → Calendar → PIM Events.")
-                        : agenda.calendarMode === "ics" ? strings.text("No events for this day.") : strings.text("No events for this day. Calendar sources are shared with Plasma: select your Akonadi calendars in the clock settings → Calendar → PIM Events. Accounts are managed in KOrganizer.")
+                        : agenda.earlierCount > 0 && !agenda.showEarlier ? strings.text("No remaining events for today.") : agenda.calendarMode === "ics" ? strings.text("No events for this day.") : strings.text("No events for this day. Calendar sources are shared with Plasma: select your Akonadi calendars in the clock settings → Calendar → PIM Events. Accounts are managed in KOrganizer.")
                 }
             }
             ListView {
@@ -94,7 +106,7 @@ ColumnLayout {
                 objectName: "eventList"
                 Layout.fillWidth: true; Layout.fillHeight: true; Layout.minimumHeight: 0
                 clip: true; spacing: 5
-                visible: agenda.activeBackend.events.length > 0
+                visible: agenda.orderedEvents.length > 0
                 model: agenda.orderedEvents
                 ScrollBar.vertical: ScrollBar {}
                 delegate: Rectangle {

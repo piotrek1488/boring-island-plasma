@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.3.9; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.3.10; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.3.9.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.3.10.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -107,7 +107,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.9.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.10.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -183,7 +183,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.3.9.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.3.10.plasmoid
 plasmawindowed ./package
 ```
 
@@ -383,3 +383,26 @@ widokach, także kalendarzu. Nowy domyślny rozmiar rozwinięcia to **600 × 400
 z miejscem na pełny nagłówek, dotychczasowe odstępy i siatkę miesiąca. Jeśli masz
 zapisaną wysokość 330, zmień **Wysokość rozwinięcia (px)** na **400**. Pozostałe
 ustawienia i skonfigurowane źródła kalendarza zostaną zachowane.
+
+### Wcześniejsze wydarzenia i style animacji (0.3.10)
+
+Zakończone wydarzenia godzinowe są domyślnie ukryte w dzisiejszej agendzie. Gdy
+istnieją wcześniejsze wydarzenia, obok przycisków dni pojawia się okrągły **↑**.
+Podpowiedź zawiera ich liczbę. Kliknięcie pokazuje je nad bieżącą agendą, od
+najstarszych; przycisk **↓** ponownie je ukrywa. Zmiana dnia lub ponowne otwarcie
+kalendarza przywraca domyślne ukrywanie. Celowo wybrane dni przeszłe/przyszłe nadal
+pokazują całą listę. Gdy na dziś zostały tylko zakończone wydarzenia, komunikat
+oraz ↑ pozwalają je odsłonić. Dane źródłowe kalendarza nie są usuwane.
+
+Pole **Styl animacji** ma opcje **Płynna** (dotychczasowa, domyślna) i **Dynamic
+Island — sprężysta**. Dotychczasowy wariant używa OutQuint przy otwieraniu oraz
+InOutCubic przy zwijaniu. Nowy wariant daje delikatne odbicie i miękkie osiadanie
+przy otwieraniu, z łagodnym odsłonięciem treści. Używa ograniczonej krzywej OutBack
+z parametrem 0,85; jest inspirowany Dynamic Island, bez kopiowania implementacji
+Apple. Zwijanie pozostaje szybkie i płynne. Oba warianty respektują czas animacji
+oraz **Ogranicz animacje**, które wyłącza również odbicie. Styl dotyczy zarówno
+rozwinięcia, jak i podglądów powiadomień oraz obu kształtów widżetu.
+
+Dla nowego stylu okno z góry rezerwuje niewielki przezroczysty margines na ruch.
+Dzięki temu odbicie nie zmienia rozmiaru/pozycji okna w trakcie animacji, a notch
+pozostaje zaczepiony w tym samym miejscu. Ruch jest ograniczony do rozmiaru ekranu.

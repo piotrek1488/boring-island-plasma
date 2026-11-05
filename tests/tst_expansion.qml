@@ -82,7 +82,7 @@ Item {
     }
     TestCase {
         name: "Expansion"; when: windowShown
-        function init() { shell.editing=false; shell.reduceMotion=true; shell.opened=false; shell.fullView=false; shell.presentedFullView=false; shell.fixedViewport=false; shell.reduceMotion=true; shell.notch=false; shell.uiScale=1; shell.animationDuration=400; shell.initialPage=0; historyModel.clear(); wait(20); compare(shell.progress,0); }
+        function init() { shell.animationStyle="smooth"; shell.maximumWidth=4096; shell.maximumHeight=4096; shell.bottomEdge=false; shell.editing=false; shell.reduceMotion=true; shell.opened=false; shell.fullView=false; shell.presentedFullView=false; shell.fixedViewport=false; shell.reduceMotion=true; shell.notch=false; shell.uiScale=1; shell.animationDuration=400; shell.initialPage=0; historyModel.clear(); wait(20); compare(shell.progress,0); }
         function test_shapes_and_scaling_data() {
             return [{tag:"island",notch:false},{tag:"notch",notch:true}];
         }
@@ -131,7 +131,51 @@ Item {
             shell.opened=false; shell.editing=false;
             verify(shell.enabled); compare(shell.progress,0);
         }
-        function test_animation_duration_setting() {
+        function test_spring_motion_bounds_and_fixed_origin_data() {
+            return [{tag:"island-top",notch:false,bottom:false},{tag:"notch-top",notch:true,bottom:false},{tag:"island-bottom",notch:false,bottom:true}];
+        }
+        function test_spring_motion_bounds_and_fixed_origin(data) {
+            shell.animationStyle="spring"; shell.notch=data.notch; shell.bottomEdge=data.bottom;
+            shell.fixedViewport=true; shell.fullView=true; shell.reduceMotion=false;
+            const width=shell.width, height=shell.height;
+            const morph=findChild(shell,"morphSurface");
+            shell.opened=true;
+            let bounced=false;
+            for (let i=0;i<25;++i) {
+                wait(20);
+                bounced=bounced || shell.progress>1.005;
+                verify(shell.progress>=0 && shell.progress<1.04);
+                compare(shell.width,width); compare(shell.height,height);
+                verify(morph.x>=0 && morph.x+morph.width<=width+0.1);
+                verify(morph.y>=0 && morph.y+morph.height<=height+0.1);
+                if (!data.bottom) compare(morph.y,0);
+            }
+            verify(bounced); tryCompare(shell,"progress",1,200);
+            shell.opened=false; tryCompare(shell,"progress",0,400);
+        }
+        function test_spring_interruption_and_accessibility() {
+            shell.animationStyle="spring"; shell.fullView=true; shell.reduceMotion=false;
+            shell.opened=true; wait(80); shell.opened=false; wait(40); shell.opened=true;
+            tryCompare(shell,"progress",1,700);
+            shell.reduceMotion=true; shell.opened=false; compare(shell.progress,0);
+            shell.opened=true; compare(shell.progress,1); verify(!shell.springMotion);
+            shell.reduceMotion=false; shell.editing=true; compare(shell.progress,0);
+        }
+        function test_spring_respects_screen_limits() {
+            shell.animationStyle="spring"; shell.fixedViewport=true;
+            shell.maximumWidth=600; shell.maximumHeight=400; shell.fullView=true; shell.reduceMotion=false;
+            shell.opened=true;
+            for (let i=0;i<24;++i) {
+                wait(20); verify(shell.surfaceWidth<=600); verify(shell.surfaceHeight<=400);
+                verify(shell.width<=600); verify(shell.height<=400);
+            }
+            tryCompare(shell,"progress",1,200);
+        }
+        function test_animation_duration_setting_data() {
+            return [{tag:"smooth",style:"smooth"},{tag:"spring",style:"spring"}];
+        }
+        function test_animation_duration_setting(data) {
+            shell.animationStyle=data.style;
             shell.reduceMotion=false; shell.fullView=true; shell.animationDuration=800; shell.opened=true;
             wait(100); verify(shell.progress>0 && shell.progress<1);
             tryCompare(shell,"progress",1,1200);

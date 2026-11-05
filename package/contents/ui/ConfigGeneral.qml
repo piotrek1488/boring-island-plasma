@@ -30,6 +30,7 @@ Kirigami.FormLayout {
     property alias cfg_compactWidth: size.value
     property alias cfg_showBattery: battery.checked
     property string cfg_batteryPercentPosition: "right"
+    property string cfg_animationStyle: "smooth"
     property alias cfg_animationDuration: animationDuration.value
     property alias cfg_reduceMotion: motion.checked
     function restoreDefaults() { Defaults.restore(config); }
@@ -73,6 +74,14 @@ Kirigami.FormLayout {
         model: [strings.text("Inside the icon"), strings.text("Left of the icon"), strings.text("Right of the icon"), strings.text("Hidden")]
         currentIndex: Math.max(0, ["inside", "left", "right", "hidden"].indexOf(config.cfg_batteryPercentPosition))
         onActivated: index => config.cfg_batteryPercentPosition = ["inside", "left", "right", "hidden"][index]
+    }
+    ComboBox {
+        objectName: "animationStyleSetting"
+        Kirigami.FormData.label: strings.text("Animation style:")
+        model: [strings.text("Smooth"), strings.text("Dynamic Island — spring")]
+        currentIndex: config.cfg_animationStyle === "spring" ? 1 : 0
+        enabled: !motion.checked
+        onActivated: index => config.cfg_animationStyle = index === 1 ? "spring" : "smooth"
     }
     SpinBox { id: animationDuration; objectName: "animationDurationSetting"; Kirigami.FormData.label: strings.text("Animation duration (ms):"); from: 50; to: 1000; value: 400; stepSize: 10; editable: true }
     Label { text: strings.text("Lower values make opening faster. Closing uses 70% of that duration, limited to 100–220 ms. Reduced motion disables animations."); wrapMode: Text.WordWrap }

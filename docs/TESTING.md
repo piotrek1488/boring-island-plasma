@@ -1,3 +1,19 @@
+# Verification of 0.3.10
+
+Agenda tests cover default hiding of finished events, the ↑/↓ toggle, revealing
+history above the current agenda, no-remaining-events state, date reset, historical
+day access, clock boundaries and scroll stability. No calendar data is mutated.
+
+Both animation styles are tested with configurable duration and reduced motion.
+The spring profile is sampled through opening/closing to assert bounded overshoot,
+fixed native viewport dimensions, stable top/bottom anchoring and no surface
+clipping. Cases include island/notch, screen-size limits, interrupted transitions
+and edit-mode dismissal. KConfig/reset parity covers the new style preference.
+Native compositor frame pacing still requires a Plasma/Wayland desktop; these
+checks run offscreen with Qt 6.4.2 software rendering.
+
+---
+
 # Verification of 0.3.9
 
 Core agenda tests use a fixed local clock and cover ongoing/upcoming/past ordering,
