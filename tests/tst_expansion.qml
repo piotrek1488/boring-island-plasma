@@ -86,8 +86,7 @@ Item {
             wait(90); verify(shell.progress>0 && shell.progress<1);
             tryCompare(shell,"progress",1,600);
             shell.opened=false;
-            wait(90); verify(shell.progress>0 && shell.progress<1);
-            tryCompare(shell,"progress",0,600);
+            tryCompare(shell,"progress",0,150);
         }
         function test_animation_duration_setting() {
             shell.reduceMotion=false; shell.fullView=true; shell.animationDuration=800; shell.opened=true;
@@ -153,12 +152,21 @@ Item {
             panelCompact.autoHeight=true; panelCompact.compactScale=1; wait(30);
             const initialWidth=panelCompact.width;
             panelCompact.compactScale=1.5; wait(30);
-            verify(panelCompact.width>initialWidth); compare(panelCompact.effectiveHeight,64);
+            verify(panelCompact.width>initialWidth); compare(panelCompact.effectiveHeight,96);
+        }
+        function test_panel_padding_does_not_clip_manual_height() {
+            panelCompact.panelItem=panelCompact.parent.parent;
+            panelCompact.autoHeight=false; panelCompact.notch=true;
+            panelCompact.compactHeight=80; panelCompact.compactScale=1.5;
+            compare(panelCompact.effectiveHeight,120);
+            compare(panelCompact.visualItem.parent,panelCompact.parent.parent);
+            compare(panelCompact.visualItem.y,0);
+            panelCompact.panelItem=null; panelCompact.notch=false;
         }
         function test_compact_scale_and_manual_height() {
             compactTest.autoHeight=true; compactTest.compactScale=0.5;
             compare(compactTest.effectiveHeight,32);
-            compactTest.compactScale=2; compare(compactTest.effectiveHeight,64);
+            compactTest.compactScale=2; compare(compactTest.effectiveHeight,128);
             compactTest.autoHeight=false; compactTest.compactHeight=20; compactTest.compactScale=1.5;
             compare(compactTest.effectiveHeight,30);
         }

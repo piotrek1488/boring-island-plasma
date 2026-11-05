@@ -21,6 +21,7 @@ Item {
     property bool showBattery: true
     property bool reduceMotion: false
     property int animationDuration: 280
+    property string batteryWarning: ""
     property string batteryPercentPosition: "right"
     property bool configureEnabled: true
     signal configureRequested()
@@ -49,7 +50,13 @@ Item {
     readonly property real surfaceHeight: headerHeight + bodyHeight * progress
     width: fixedViewport ? targetWidth : surfaceWidth
     height: fixedViewport ? expandedHeaderHeight + bodyHeight : surfaceHeight
-    Behavior on progress { NumberAnimation { duration: shell.reduceMotion ? 0 : Math.max(50, Math.min(1000, shell.animationDuration)); easing.type: Easing.OutQuint } }
+    Behavior on progress {
+        id: morphAnimation
+        NumberAnimation {
+            duration: shell.reduceMotion ? 0 : (morphAnimation.targetValue > shell.progress ? Math.max(50, Math.min(1000, shell.animationDuration)) : 60)
+            easing.type: Easing.OutQuint
+        }
+    }
     Item {
         id: morph
         objectName: "morphSurface"
@@ -111,9 +118,18 @@ Item {
                     onInteractionHeldChangedByUser: held => shell.interactionHeldChangedByUser(held)
                     onPinRequested: mode => shell.pinRequested(mode)
                 }
+                Label {
+                    objectName: "lowBatteryMessage"
+                    anchors.fill: parent; anchors.margins: 24
+                    visible: !shell.presentedFullView && shell.batteryWarning !== ""
+                    text: shell.batteryWarning; color: "#ff9494"
+                    font.pixelSize: 16; wrapMode: Text.Wrap
+                    verticalAlignment: Text.AlignVCenter
+                    textFormat: Text.PlainText
+                }
                 RowLayout {
                     anchors.fill: parent; anchors.margins: 18
-                    visible: !shell.presentedFullView && shell.notifications.preview !== null
+                    visible: !shell.presentedFullView && shell.batteryWarning === "" && shell.notifications.preview !== null
                     ColumnLayout {
                         Layout.fillWidth: true
                         Label { Layout.fillWidth: true; text: shell.notifications.preview ? shell.notifications.preview.application : ""; textFormat: Text.PlainText; color: "#aaa0c9"; elide: Text.ElideRight }

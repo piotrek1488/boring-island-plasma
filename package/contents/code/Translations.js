@@ -1,6 +1,10 @@
 .pragma library
 
 var polish = {
+    "Lower values make opening faster. Closing takes 60 ms. Reduced motion disables animations.": "Mniejsze wartości przyspieszają otwieranie. Zamykanie trwa 60 ms. Ograniczenie animacji wyłącza ruch.",
+    "Low battery": "Niski poziom baterii",
+    "Connect the charger.": "Podłącz ładowarkę.",
+    "Manual height and scale apply to the visible shape. Use a non-floating top panel to attach a notch to the screen edge.": "Wysokość ręczna i skala zmieniają widoczny kształt. Użyj niepływającego górnego panelu, aby połączyć notch z krawędzią ekranu.",
     "Fit height to panel": "Dopasuj wysokość do panelu",
     "Compact height (px):": "Wysokość zwiniętego widżetu (px):",
     "Manual height is limited to the space available in the panel. Width is adjusted separately.": "Wysokość ręczna jest ograniczona do miejsca dostępnego w panelu. Szerokość ustawisz osobno.",

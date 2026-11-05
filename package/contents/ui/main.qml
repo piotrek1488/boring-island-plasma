@@ -39,12 +39,13 @@ PlasmoidItem {
     property Item anchorItem: null
     property int selectedPage: 0
     readonly property var savedShelf: Shelf.decode(Plasmoid.configuration.shelfJson)
-    readonly property bool wantOpen: opened || notifications.preview !== null
+    readonly property bool wantOpen: opened || notifications.preview !== null || lowBattery.active
     readonly property string mode: Activity.resolve(Plasmoid.configuration.pinnedMode || "auto", notifications.preview !== null,
         activities.packages.active, systemBackend.playing, activities.llm.active)
     readonly property color accentColor: ({notifications: "#f6c177", packages: "#7ac7ff", media: "#b9a3ff", llm: "#a7e7b8", system: "#89dceb", clock: "#77798d"})[mode] || "#b9a3ff"
     property string clockText: Qt.formatTime(new Date(), "hh:mm")
     readonly property string displayText: {
+        if (lowBattery.active) return strings.text("Low battery") + " · " + systemBackend.percent + "%";
         if (mode === "notifications") return notifications.preview ? notifications.preview.summary : strings.text("Notifications") + " · " + notifications.count;
         if (mode === "media") return systemBackend.title || strings.text("Nothing playing");
         if (mode === "packages") return activities.packages.active ? activities.packages.tool + " · " + activities.packages.operation + " " + (activities.packages.package || "") : strings.text("No package operations detected");
@@ -58,6 +59,14 @@ PlasmoidItem {
     }
     Translations { id: strings; language: root.language }
     SystemBackend { id: systemBackend }
+    LowBatteryMonitor {
+        id: lowBattery
+        hasBattery: systemBackend.hasBattery
+        percent: systemBackend.percent
+        powered: systemBackend.powerConnected
+        duration: Plasmoid.configuration.notificationDuration * 1000
+    }
+    readonly property string batteryWarning: lowBattery.active ? strings.text("Low battery") + " · " + systemBackend.percent + "% — " + strings.text("Connect the charger.") : ""
     NotificationBackend {
         id: notifications
         previewDuration: Plasmoid.configuration.notificationDuration * 1000
@@ -82,7 +91,7 @@ PlasmoidItem {
         opened = true;
         if (keyboard) Qt.callLater(() => { attachedDialog.requestActivate(); popupShell.forceActiveFocus(); });
     }
-    function close() { opened = false; if (notifications) notifications.hidePreviews(); }
+    function close() { if (lowBattery) lowBattery.dismiss(); opened = false; if (notifications) notifications.hidePreviews(); }
     function hoverChanged(compact, hovered) {
         if (compact) compactHovered = hovered; else fullHovered = hovered;
         if (hovered) { closeTimer.stop(); if (!opened && Plasmoid.configuration.hoverOpen) openTimer.restart(); }
@@ -112,10 +121,11 @@ PlasmoidItem {
         attachedDialog.y = Math.round(Math.max(top, Math.min(bottom - popupShell.height, y)));
     }
     Timer { id: openTimer; interval: Math.max(100, Plasmoid.configuration.hoverDelay); onTriggered: root.open() }
-    Timer { id: closeTimer; interval: 500; onTriggered: if (!root.interactionHeld && !root.compactHovered && !root.fullHovered) root.opened = false }
+    Timer { id: closeTimer; interval: 30; onTriggered: if (!root.interactionHeld && !root.compactHovered && !root.fullHovered && root.opened) root.close() }
     Timer { interval: 1000; running: true; repeat: true; onTriggered: root.clockText = Qt.formatTime(new Date(), "hh:mm") }
     compactRepresentation: CompactView {
         id: compact
+        panelItem: root.inPanel && compact.Window.window ? compact.Window.window.contentItem : null
         Component.onCompleted: root.anchorItem = compact
         opacity: attachedDialog.visible ? 0 : 1
         language: root.language; backend: systemBackend; notch: root.notch
@@ -165,6 +175,7 @@ PlasmoidItem {
             opened: root.inPanel && root.popupReady && root.wantOpen; fullView: root.opened
             language: root.language; displayText: root.displayText; accentColor: root.accentColor
             notch: root.notch; bottomEdge: Plasmoid.location === PlasmaCore.Types.BottomEdge
+            batteryWarning: root.batteryWarning
             animationDuration: root.animationDuration
             batteryPercentPosition: Plasmoid.configuration.batteryPercentPosition
             configureEnabled: root.configureEnabled
@@ -201,6 +212,7 @@ PlasmoidItem {
             backend: systemBackend; notifications: root.notificationBackend; activities: root.activityBackend
             opened: !root.inPanel && root.wantOpen; fullView: root.opened
             language: root.language; displayText: root.displayText; accentColor: root.accentColor
+            batteryWarning: root.batteryWarning
             animationDuration: root.animationDuration
             batteryPercentPosition: Plasmoid.configuration.batteryPercentPosition
             configureEnabled: root.configureEnabled

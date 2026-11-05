@@ -12,12 +12,15 @@ Item {
     property bool connected: false
     property bool animateMedia: false
     property bool reduceMotion: false
-    readonly property real unscaledHeight: autoHeight ? height : Math.max(16, Math.min(128, compactHeight))
+    readonly property real unscaledHeight: autoHeight ? (panelItem ? panelItem.height : height) : Math.max(16, Math.min(128, compactHeight))
     readonly property real naturalScale: Math.max(0.5, Math.min(2, unscaledHeight / 42))
-    readonly property real naturalWidth: naturalMetrics.width + (64 + 22 + (showBattery && backend.hasBattery ? batteryIndicator.implicitWidth / contentScale : 0)) * naturalScale
+    readonly property real naturalWidth: naturalMetrics.width + (64 + (expandedHeader ? 22 : 0) + (showBattery && backend.hasBattery ? batteryIndicator.implicitWidth / contentScale : 0)) * naturalScale
     TextMetrics { id: naturalMetrics; text: compact.displayText || compact.backend.title || compact.clockText; font.pixelSize: Math.round(13 * compact.naturalScale) }
     readonly property real textWidth: textMetrics.width + 86 * contentScale + (showBattery && backend.hasBattery ? batteryIndicator.implicitWidth : 0)
     TextMetrics { id: textMetrics; text: compact.displayText || compact.backend.title || compact.clockText; font.pixelSize: Math.round(13 * compact.contentScale) }
+    // Paint in the panel content item so applet padding/clipping cannot crop the notch.
+    property Item panelItem: null
+    PanelAnchor { id: panelAnchor; source: compact; targetItem: compact.panelItem }
     property bool notch: false
     property bool showBattery: true
     property string batteryPercentPosition: "right"
@@ -30,7 +33,7 @@ Item {
     property real batteryFontSize: expandedHeader ? 14 : 11
     property bool autoHeight: true
     property int compactHeight: 42
-    readonly property real effectiveHeight: Math.max(0, Math.min(height, unscaledHeight * compactScale))
+    readonly property real effectiveHeight: Math.max(0, unscaledHeight * compactScale)
     readonly property real contentScale: Math.max(minimumTextScale, Math.min(2, effectiveHeight / 42))
     property string clockText: Qt.formatTime(new Date(), "hh:mm")
     onVisibleChanged: { if (!visible) hoverChanged(false); }
@@ -38,19 +41,23 @@ Item {
     signal keyboardActivated()
     signal hoverChanged(bool hovered)
     signal filesDropped(var urls)
-    implicitWidth: 240; implicitHeight: autoHeight ? 42 : Math.max(16, Math.min(128, compactHeight))
+    implicitWidth: 240; implicitHeight: (autoHeight ? 42 : Math.max(16, Math.min(128, compactHeight))) * compactScale
     Item {
         id: visual
         objectName: "compactVisual"
+        parent: compact.panelItem || compact
+        visible: compact.visible
+        opacity: compact.panelItem ? compact.opacity : 1
+        x: panelAnchor.origin.x
         width: compact.width
         height: compact.effectiveHeight
-        y: compact.notch ? 0 : (compact.height - height) / 2
+        y: compact.notch ? 0 : panelAnchor.origin.y + (compact.height - height) / 2
         IslandSurface { anchors.fill: parent; notch: compact.notch; visible: compact.drawSurface; connected: compact.connected }
         MouseArea {
             anchors.fill: parent
             onClicked: mouse => {
                 const point = settingsButton.mapFromItem(visual, mouse.x, mouse.y);
-                if (!settingsButton.contains(point)) compact.activated();
+                if (!settingsButton.visible || !settingsButton.contains(point)) compact.activated();
             }
         }
         RowLayout {
@@ -70,6 +77,7 @@ Item {
             ActionButton {
                 id: settingsButton
                 objectName: "settingsButton"
+                visible: compact.expandedHeader
                 text: "⚙"; textSize: Math.max(9, 16 * compact.contentScale)
                 implicitWidth: Math.max(16, 22 * compact.contentScale); implicitHeight: implicitWidth
                 leftPadding: 3; rightPadding: 3

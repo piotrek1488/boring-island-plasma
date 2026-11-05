@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.3.3; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.3.4; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.3.3.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.3.4.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -38,17 +38,17 @@ PPM → ustawienia Boring Island → **Boring Island**:
 
 - **Language / Język** — domyślnie English, opcjonalnie Polski. Wybór jest zapisywany
   osobno dla każdego widżetu i działa niezależnie od języka systemu.
-- **Notch** — płaska górna krawędź i zaokrąglony dół.
+- **Notch** — górne narożniki wygięte na zewnątrz i zaokrąglony dół.
 - **Dynamic Island** — zaokrąglona kapsuła; ustawienie domyślne.
 - **Dopasuj wysokość do panelu** — domyślnie włączone; widżet korzysta z wysokości
-  przydzielonej przez Plasma.
+  okna panelu.
 - Zmień **Wysokość zwiniętego widżetu (px)**, aby wyłączyć dopasowanie automatyczne. Wartość jest
-  w zakresie 16–128. Widoczna wysokość nie przekroczy dostępnego miejsca w panelu.
+  w zakresie 16–128. Kształt ma podaną wysokość pomnożoną przez skalę zwinięcia.
   Tekst, wskaźnik i odstępy skalują się razem z wysokością; szerokość ustawisz osobno.
-- Mniejszy notch przylega do góry przydzielonego obszaru, a wyspa jest wyśrodkowana
+- Mniejszy notch przylega do górnej krawędzi okna panelu, a wyspa jest wyśrodkowana
   w pionie. Na pulpicie automatyczna wysokość wynosi 42 px.
 - Wymiary są podane w pikselach logicznych Qt — nadal obowiązuje skalowanie ekranu.
-  Marginesami panelu zarządza Plasma. Rozwinięty widok ma osobną szerokość, wysokość i skalę 60–200%.
+  Notch omija wewnętrzne odstępy i przycinanie obszaru plasmoidu. Rozwinięty widok ma osobną szerokość, wysokość i skalę 60–200%.
 - Opóźnienie najechania, pokazywanie baterii i ograniczenie animacji.
 
 Nazwy urządzeń, plików, utworów i treść wydarzeń pozostają w oryginalnym języku.
@@ -92,7 +92,7 @@ Na pulpicie używany jest ten sam komponent. Nie emuluje fizycznego wycięcia ek
 - **Rozmiar:** wybór Notch/Dynamic Island, automatyczna lub ręczna wysokość,
   szerokość 80–1000 px, automatyczna szerokość z limitem oraz osobne wymiary
   i skala rozwinięcia. **Skala zwiniętego widżetu (%)** (50–200%) zmienia też
-  wysokość, szerokość i tekst zwinięcia w granicach przydzielonych przez panel. Opcja ograniczenia animacji wyłącza animację rozwijania.
+  wysokość, szerokość i tekst zwinięcia niezależnie od mniejszego obszaru przydzielonego plasmoidowi. Opcja ograniczenia animacji wyłącza animację rozwijania.
 
 Monitoring wymaga **Python 3** i modułu Plasma `org.kde.plasma.plasma5support`.
 Krótki proces zbiera dane co około 3 sekundy, bez usługi i autostartu. Poszczególne
@@ -107,7 +107,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.3.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.4.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -183,7 +183,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.3.3.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.3.4.plasmoid
 plasmawindowed ./package
 ```
 
@@ -243,28 +243,37 @@ lub Enter/Spacją jawnie włącza fokus dla obsługi klawiaturą. Pozycję okna 
 przed pierwszą klatką rozwijania, bez automatycznego pozycjonowania popupu Plasma.
 Punkt początkowy i zwinięte wymiary pozostają stałe podczas animacji.
 
-Widżet otrzymuje pełną wysokość panelu, a wewnętrzny kształt reaguje na ręczną
-wysokość i skalę. Kształt nie przekroczy dostępnego miejsca w panelu — aby uzyskać
-wyższy notch, zwiększ wysokość panelu. Skala zmienia szerokość także po osiągnięciu
-limitu wysokości. Nagłówki o stałym rozmiarze tekstu przenikają się podczas animacji.
+Od 0.3.4 kształt jest rysowany bezpośrednio w oknie panelu, poza odstępami
+i przycinaniem obszaru plasmoidu. Wysokość jest mnożona przez skalę zwinięcia.
+Okno panelu nadal wyznacza fizyczną granicę rysowania: jeśli notch ma być wyższy
+od tego okna, zwiększ wysokość panelu. Aby przylegał do krawędzi ekranu, użyj
+górnego panelu z wyłączonym trybem pływającym. Nagłówki o stałym rozmiarze tekstu przenikają się podczas animacji.
 
 `./scripts/test-popup.sh` sprawdza natywne flagi fokusu i pozycję przy otwieraniu
 i zmianie rozmiaru; wymaga modułów Plasma 6. Płynność i zachowanie aktywnego okna
 trzeba również sprawdzić na rzeczywistym pulpicie Wayland.
 
-### Bateria, ustawienia i czas animacji (0.3.3)
+### Bateria, ustawienia i czas animacji (0.3.4)
 
-**Zębatka** po prawej stronie baterii otwiera ustawienia konkretnego plasmoidu.
+**Zębatka** po prawej stronie baterii jest widoczna tylko po rozwinięciu
+i otwiera ustawienia konkretnego plasmoidu.
 Pozostaje widoczna także po ukryciu baterii i na komputerze bez baterii. Korzysta
 z natywnej akcji konfiguracji Plasma; kliknięcie nie przełącza rozwinięcia.
 
 Pole **Procent baterii** pozwala wybrać: wewnątrz ikony, po lewej, po prawej
-(domyślnie) lub ukryty. Błyskawica oznacza rzeczywiste ładowanie, wtyczka —
-podłączone zasilanie bez ładowania, a znacznik ✓ — pełne naładowanie. Podpowiedź
+(domyślnie) lub ukryty. Błyskawica po lewej stronie baterii jest widoczna tylko
+podczas rzeczywistego ładowania. Pozostałe stany nie mają dodatkowej ikony. Podpowiedź
 pokazuje stan po polsku lub angielsku oraz dokładny procent. Dane pochodzą
 z dotychczasowego modelu KDE, bez dodatkowego odpytywania systemu.
 
-**Czas animacji (ms)** obejmuje otwieranie, zamykanie i automatyczną zmianę
+Przy 20% i mniej ikona jest czerwona. Podczas rozładowywania pojawia się komunikat
+„Niski poziom baterii” na czas ustawiony dla podglądu powiadomień. Nie powtarza się
+przy każdym spadku procentów; ponownie uzbraja się po podłączeniu zasilania lub
+wzroście poziomu powyżej 20%. To komunikat widżetu, bez dodawania wpisu do historii KDE.
+
+**Czas animacji (ms)** obejmuje otwieranie i automatyczną zmianę
 szerokości. Zakres: 50–1000 ms, nowa wartość domyślna **280 ms** zamiast 420 ms.
 Mniej oznacza szybciej; pole nie zmienia częstotliwości odświeżania ekranu.
-Opóźnienie najechania jest osobne, a ograniczenie animacji wyłącza ruch.
+Opóźnienie najechania jest osobne. Po opuszczeniu ręcznie otwartego widżetu
+zamykanie startuje po 30 ms i trwa 60 ms niezależnie od czasu otwierania.
+Ograniczenie animacji wyłącza ruch.

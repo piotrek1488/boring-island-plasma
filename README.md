@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.3.3** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.3.4** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -41,16 +41,15 @@ Right-click the widget and open its settings, then select **Boring Island**.
 - **Language:** English by default, or Polski. The selection is saved for each
   widget separately and does not follow the system language. Labels, hints,
   accessibility descriptions and dates update when the setting is applied.
-- **Notch:** a flat top edge and rounded bottom corners.
+- **Notch:** outward-curving top shoulders and rounded bottom corners.
 - **Dynamic Island:** a rounded capsule; the default shape.
-- **Fit height to panel:** enabled by default; follows the space Plasma gives the widget.
+- **Fit height to panel:** enabled by default; follows the panel window height.
 - Edit **Compact height (px)** from 16 to 128 to disable automatic fitting. The
-  visible height is capped to the available panel space. Text, indicator and padding
+  shape uses the requested height multiplied by compact scale. Text, indicator and padding
   scale with the height; compact width remains independently configurable.
-- A smaller notch stays aligned to the top of its allocated area; a smaller island
+- A smaller notch stays aligned to the top edge of the panel window; a smaller island
   is centered vertically. On the desktop, automatic height is 42 px.
-- Sizes use Qt logical pixels, so desktop display scaling still applies. Panel
-  margins are controlled by Plasma; the expanded content has separate width, height and 60–200% scale controls.
+- Sizes use Qt logical pixels, so desktop display scaling still applies. The notch bypasses internal applet padding/clipping; the expanded content has separate width, height and 60–200% scale controls.
 - Configure hover delay, battery visibility and reduced motion.
 
 Device names, filenames, track metadata and event content remain in their original
@@ -77,7 +76,9 @@ It does not create an independent overlay above every window or a physical cutou
 - Battery icon with charge level and actual KDE charge state: charging, discharging,
   fully charged or plugged in without charging. Hidden without an internal battery.
   Percentage can appear inside, left/right of the icon, or be hidden. The old `+`
-  power indicator has been replaced by distinct charging/plug/full markers.
+  power indicator has been replaced by a bolt to the left, only while charging.
+  At 20% or less the icon turns red; an unplugged battery shows a temporary low
+  battery message once per discharge episode, using the notification preview duration.
 - A persistent shelf of up to 24 local file/folder shortcuts: drop, open, drag out
   or remove a shortcut with ×. Removing a shortcut never deletes the original.
 - Independent settings and shelf contents for each widget instance.
@@ -124,7 +125,7 @@ Cover art may be fetched from URLs supplied by the player.
   height. Compact width now supports 80–1000 logical pixels, optionally used as an
   automatic-width limit. Expanded width, height and content scale are independent.
   **Compact scale (%)** (50–200%) also adjusts the collapsed height, width and text;
-  the panel still limits the visible height. Editing manual height disables auto-fit.
+  the shape bypasses the smaller applet allocation. Editing manual height disables auto-fit.
   Reduced motion disables the expansion and pulse animations.
 
 The optional activity provider requires **Python 3** and Plasma's
@@ -143,7 +144,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.3.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.4.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -192,7 +193,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.3.3.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.3.4.plasmoid
 plasmawindowed ./package
 ```
 
@@ -266,29 +267,32 @@ current application. Mouse buttons inside the widget remain usable. Opening with
 a keyboard shortcut/Enter/Space explicitly enables focus for keyboard navigation.
 The overlay has no automatic Plasma visual parent: its position is set before
 the first expansion frame, and its compact origin/size are held during expansion.
-The panel now allocates full height while the inner notch/island follows manual
-height and compact scale. The height still cannot exceed panel space; increase
-the panel height for a taller notch. Compact scale changes width even when height
-is capped. Fixed-size header text layers cross-fade instead of resizing each frame.
+The compact shape follows manual height multiplied by compact scale. Since 0.3.4,
+it renders directly in the panel content item, bypassing applet padding and clipping.
+The panel window remains the physical drawing boundary; increase the panel height
+if the requested shape is taller than that window. A non-floating top panel is
+required to reach the physical screen edge. Fixed-size header text layers cross-fade instead of resizing each frame.
 
 `./scripts/test-popup.sh` adds native Plasma tests for nonactivating hover, stable
 show/resize position and explicit keyboard focus. It needs Plasma 6 modules;
 real compositor animation and focus should also be checked on Wayland.
 
-### Battery, settings and animation speed (0.3.3)
+### Battery, settings and animation speed (0.3.4)
 
 The header's **gear button**, to the right of the battery, opens this widget
-instance's native Plasma settings. It remains available when battery display is
+instance's native Plasma settings, only in the expanded header. It remains available there when battery display is
 disabled or the computer has no internal battery. It follows the availability of
 Plasma's configure action; clicking it does not toggle the expansion.
 
 In settings, **Battery percentage** selects Inside the icon / Left of the icon /
-Right of the icon (default) / Hidden. A bolt means actual charging, a plug means
-external power without charging, and a check means fully charged; hover for the
+Right of the icon (default) / Hidden. Only actual charging shows a bolt, positioned
+to the left of the battery. Full and plugged-in states have no badge; hover for the
 localized status and exact percentage. These use the existing private KDE battery
 model, with no extra polling or service.
 
-**Animation duration (ms)** controls opening, closing and automatic width changes,
+**Animation duration (ms)** controls opening and automatic width changes,
 from 50 to 1000 ms. The new default is **280 ms** (previously 420 ms). Lower values
 are faster; this changes duration, not display refresh rate. Hover delay remains
-independent, and Reduce motion overrides the duration with no animation.
+independent. After the pointer leaves, a manually opened view waits 30 ms for
+header/body hover handoff and closes in 60 ms, regardless of opening duration.
+Reduce motion overrides both durations with no animation.

@@ -35,8 +35,8 @@ Item {
             var visual = findChild(compact, "compactVisual");
             compare(visual.height, 32); compare(visual.y, 16);
             compact.notch = true; compare(visual.y, 0);
-            compact.compactHeight = 128; compare(visual.height, 64);
-            compact.height = 24; compare(visual.height, 24);
+            compact.compactHeight = 128; compare(visual.height, 128);
+            compact.height = 24; compare(visual.height, 128);
             compact.autoHeight = true; compact.height = 48;
             compare(visual.height, 48);
         }
@@ -51,7 +51,7 @@ Item {
         function test_compact_scale() {
             compact.autoHeight=true; compact.height=64; compact.compactScale=0.5;
             compare(compact.effectiveHeight,32);
-            compact.compactScale=2; compare(compact.effectiveHeight,64);
+            compact.compactScale=2; compare(compact.effectiveHeight,128);
             compact.autoHeight=false; compact.compactHeight=20; compact.compactScale=1.5;
             compare(compact.effectiveHeight,30);
         }

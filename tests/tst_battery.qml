@@ -21,7 +21,7 @@ Item {
         name: "BatteryAndSettings"; when: windowShown
         function init() {
             indicator.percentPosition="right"; indicator.status="discharging"; indicator.language="en";
-            compact.showBattery=true; compact.configureEnabled=true;
+            compact.expandedHeader=true; compact.showBattery=true; compact.configureEnabled=true;
             compact.batteryPercentPosition="right"; fake.hasBattery=true;
             configureSpy.clear(); activationSpy.clear();
         }
@@ -38,9 +38,10 @@ Item {
         function test_power_states() {
             indicator.status="plugged";
             compare(indicator.statusText,"Plugged in, not charging");
-            verify(indicator.hasStatusMark);
-            indicator.status="charging"; compare(indicator.statusText,"Charging");
-            indicator.status="full"; compare(indicator.statusText,"Fully charged");
+            verify(!indicator.hasStatusMark);
+            indicator.status="charging"; compare(indicator.statusText,"Charging"); verify(indicator.hasStatusMark);
+            wait(30); verify(findChild(indicator,"batteryStatusMark").x < findChild(indicator,"batteryIcon").x);
+            indicator.status="full"; compare(indicator.statusText,"Fully charged"); verify(!indicator.hasStatusMark);
             indicator.status="discharging"; verify(!indicator.hasStatusMark);
             indicator.language="pl"; compare(indicator.statusText,"Rozładowywanie");
             indicator.percent=-10; compare(indicator.level,0);
@@ -61,6 +62,17 @@ Item {
             verify(!findChild(compact,"compactBattery").visible);
             verify(findChild(compact,"settingsButton").visible);
             mouseClick(findChild(compact,"settingsButton")); compare(configureSpy.count,1);
+        }
+        function test_settings_hidden_when_collapsed() {
+            compact.expandedHeader=false;
+            verify(!findChild(compact,"settingsButton").visible);
+            mouseClick(findChild(compact,"compactTitle")); compare(activationSpy.count,1);
+        }
+        function test_low_battery_color() {
+            indicator.percent=20; compare(indicator.levelColor.toString(),"#ff9494");
+            indicator.status="charging"; compare(indicator.levelColor.toString(),"#ff9494");
+            indicator.percent=21; compare(indicator.levelColor.toString(),"#a7e7b8");
+            indicator.percent=82;
         }
         function test_background_still_opens() {
             mouseClick(findChild(compact,"compactTitle")); compare(activationSpy.count,1);
