@@ -46,7 +46,7 @@ Kirigami.FormLayout {
     CheckBox { id: autoWidth; text: strings.text("Fit width to content (compact width is the limit)") }
     SpinBox { id: minimumWidth; objectName: "compactMinimumWidthSetting"; Kirigami.FormData.label: strings.text("Minimum compact width (px):"); from: 80; to: 1000; value: 180; stepSize: 10; editable: true; enabled: autoWidth.checked }
     SpinBox { id: expandedWidth; Kirigami.FormData.label: strings.text("Expanded width (px):"); from: 420; to: 1000; value: 600; editable: true }
-    SpinBox { id: expandedHeight; Kirigami.FormData.label: strings.text("Expanded height (px):"); from: 320; to: 800; value: 330; editable: true }
+    SpinBox { id: expandedHeight; Kirigami.FormData.label: strings.text("Expanded height (px):"); from: 320; to: 800; value: 400; editable: true }
     SpinBox { id: expandedScale; Kirigami.FormData.label: strings.text("Expanded scale (%):"); from: 60; to: 200; value: 100; stepSize: 5; editable: true }
     SpinBox { id: compactScale; objectName: "compactScaleSetting"; Kirigami.FormData.label: strings.text("Compact scale (%):"); from: 50; to: 200; value: 100; stepSize: 5; editable: true }
     CheckBox { id: autoSize; objectName: "autoHeightSetting"; text: strings.text("Fit height to panel") }

@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "../code/AgendaOrder.js" as AgendaOrder
 ColumnLayout {
     id: agenda
     objectName: "calendarPage"
@@ -10,8 +11,19 @@ ColumnLayout {
     property string calendarMode: "kde"
     property string calendarSources: ""
     property int calendarAppletId: 0
+    property date currentTime: new Date()
     property var backend: null
     readonly property var activeBackend: backend || calendarLoader.item || fallback
+    // A stable signature avoids rebuilding the list every clock tick when the
+    // order is unchanged, preserving a user's scroll position in older events.
+    readonly property string eventOrder: AgendaOrder.indices(activeBackend.events, activeBackend.selectedDate, currentTime).join(",")
+    readonly property var orderedEvents: eventOrder.length ? eventOrder.split(",").map(index => activeBackend.events[Number(index)]) : []
+    Timer { interval: 30000; running: agenda.visible; repeat: true; onTriggered: agenda.currentTime = new Date() }
+    onVisibleChanged: if (visible) currentTime = new Date()
+    Connections {
+        target: agenda.activeBackend
+        function onSelectedDateChanged() { Qt.callLater(() => eventList.positionViewAtBeginning()); }
+    }
     QtObject {
         id: fallback
         property date selectedDate: new Date()
@@ -83,11 +95,12 @@ ColumnLayout {
                 Layout.fillWidth: true; Layout.fillHeight: true; Layout.minimumHeight: 0
                 clip: true; spacing: 5
                 visible: agenda.activeBackend.events.length > 0
-                model: agenda.activeBackend.events
+                model: agenda.orderedEvents
                 ScrollBar.vertical: ScrollBar {}
                 delegate: Rectangle {
                     id: eventRow
                     required property var modelData
+                    objectName: "agendaEvent_" + modelData.title
                     width: eventList.width - 10; height: 48; radius: 8; color: "#20212a"
                     Rectangle { x: 0; y: 7; width: 3; height: parent.height - 14; radius: 2; color: eventRow.modelData.eventColor || "#c4b5fd" }
                     Column {

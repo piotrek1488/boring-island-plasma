@@ -12,3 +12,4 @@ qml_runner=${QMLTESTRUNNER:-/usr/lib/qt6/bin/qmltestrunner}
 "$qml_runner" -input "$project_dir/tests/tst_notch.qml" -o -,txt
 "$qml_runner" -input "$project_dir/tests/tst_settings_defaults.qml" -o -,txt
 "$qml_runner" -input "$project_dir/tests/tst_calendar_month.qml" -o -,txt
+"$qml_runner" -input "$project_dir/tests/tst_agenda_order.qml" -o -,txt

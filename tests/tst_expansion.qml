@@ -51,8 +51,20 @@ Item {
         property string error: ""
         function open(kind) {}
     }
+    QtObject {
+        id: calendarFixture
+        property date selectedDate: new Date(2026,8,19,12)
+        property var events: []
+        property var eventDays: ({})
+        property bool providerAvailable: true
+        property string errorMessage: ""
+        function moveDay(offset) {}
+        function resetToday() {}
+        function reload() {}
+    }
     UI.ExpandingIsland {
         id: shell
+        calendarBackend: calendarFixture
         backend: media; notifications: notifications; activities: activities
         onPinRequested: mode => pinnedMode = mode
     }
@@ -76,9 +88,9 @@ Item {
         }
         function test_shapes_and_scaling(data) {
             shell.notch=data.notch; shell.fullView=true; shell.opened=true;
-            compare(shell.width,600); compare(shell.height,330);
+            compare(shell.width,600); compare(shell.height,400);
             shell.uiScale=1.5;
-            compare(shell.width,900); compare(shell.height,495);
+            compare(shell.width,900); compare(shell.height,600);
             shell.opened=false;
             compare(shell.width,240); compare(shell.height,42);
         }
@@ -225,10 +237,24 @@ Item {
             const label=findChild(shell,"headerDate");
             verify(label.text.indexOf(String(new Date().getFullYear()))>=0);
         }
+        function test_calendar_keeps_brand_date_and_tab_position() {
+            shell.fullView=true; shell.opened=true; wait(40);
+            const brand=findChild(shell,"brandLabel"), date=findChild(shell,"headerDate"), tabs=findChild(shell,"tabs");
+            const before=tabs.mapToItem(shell,0,0).y;
+            shell.initialPage=3;
+            tryVerify(() => findChild(shell,"calendarPage") !== null);
+            verify(brand.visible); verify(date.visible);
+            compare(tabs.mapToItem(shell,0,0).y,before);
+            const pane=findChild(shell,"calendarMonthPane");
+            verify(pane.height>=200);
+            const bottom=pane.mapToItem(shell,pane.width,pane.height);
+            verify(bottom.y<=shell.height-25);
+            compare(shell.height,400);
+        }
         function test_activity_page() {
             shell.fullView=true; shell.opened=true; shell.initialPage=5;
             tryVerify(() => findChild(shell,"activityPage") !== null);
-            verify(shell.height>=330);
+            verify(shell.height>=400);
         }
     }
 }

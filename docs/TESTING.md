@@ -1,3 +1,18 @@
+# Verification of 0.3.9
+
+Core agenda tests use a fixed local clock and cover ongoing/upcoming/past ordering,
+end-exclusive boundaries, all-day events, overnight events, zero-length/missing
+times, chronological ordering for other dates, clock-driven updates, preserving
+scroll when order is unchanged, and returning to today's first event.
+
+The expansion fixture injects a calendar backend and verifies that brand/date stay
+visible, tab coordinates match the media page, the month grid retains at least
+200 px of height, and all content fits inside the default 600 × 400 shell. The
+KConfig/default-reset parity test verifies the new 400 px height. All core tests
+run offscreen; native provider synchronization still needs a Plasma desktop.
+
+---
+
 # Verification of 0.3.8
 
 The core month-calendar fixture runs without Plasma modules using an injected

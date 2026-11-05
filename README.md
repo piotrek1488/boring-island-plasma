@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.3.8** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.3.9** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -144,7 +144,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.8.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.9.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -193,7 +193,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.3.8.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.3.9.plasmoid
 plasmawindowed ./package
 ```
 
@@ -389,3 +389,18 @@ day. Older asynchronous ICS responses are discarded after changing the selection
 The calendar tab hides the duplicate brand/date row and uses tighter outer spacing
 to fit both panes within the default 600 × 330 expanded widget. Event lists and
 status messages scroll independently of the month grid.
+
+### Current events and consistent calendar layout (0.3.9)
+
+Today's agenda puts ongoing timed events first, then upcoming events from nearest
+to latest, all-day events, and finished events from most recently ended to oldest.
+Finished events remain available below. Other dates use chronological order with
+all-day events first. The order is refreshed every 30 seconds and on data changes;
+an unchanged order preserves the user's scroll position. Selecting another date
+starts its agenda at the top.
+
+The brand/date row and tab positions now stay identical across pages, including
+Calendar. The default expanded size is **600 × 400 logical pixels**, leaving room
+for the original header, spacing and the full month grid. Existing saved heights
+are preserved: if yours is 330, change **Expanded height (px)** to **400**. This
+avoids resetting other preferences or configured calendar sources.

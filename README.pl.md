@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.3.8; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.3.9; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.3.8.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.3.9.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -107,7 +107,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.8.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.9.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -183,7 +183,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.3.8.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.3.9.plasmoid
 plasmawindowed ./package
 ```
 
@@ -368,3 +368,18 @@ tylko wybrany dzień. Spóźniona odpowiedź dla poprzedniego wyboru jest ignoro
 Widok mieści się przy domyślnych 600 × 330 px: w tej zakładce ukryty jest dodatkowy
 wiersz marki/daty i zmniejszone są zewnętrzne odstępy. Lista wydarzeń i komunikaty
 przewijają się niezależnie od siatki miesiąca.
+
+### Bieżące wydarzenia i stały układ kalendarza (0.3.9)
+
+Dzisiejsza agenda pokazuje najpierw trwające wydarzenia godzinowe, następnie
+nadchodzące od najbliższego, wydarzenia całodniowe oraz zakończone — od ostatnio
+zakończonego do najstarszego. Wydarzenia minione pozostają dostępne niżej.
+W pozostałych dniach obowiązuje kolejność chronologiczna, z całodniowymi na początku.
+Kolejność jest sprawdzana co 30 sekund i przy zmianie danych. Jeśli pozostaje taka
+sama, pozycja przewijania jest zachowana. Zmiana wybranego dnia przewija listę do góry.
+
+Napis Boring Island, data i zakładki są teraz na tych samych pozycjach we wszystkich
+widokach, także kalendarzu. Nowy domyślny rozmiar rozwinięcia to **600 × 400 px**,
+z miejscem na pełny nagłówek, dotychczasowe odstępy i siatkę miesiąca. Jeśli masz
+zapisaną wysokość 330, zmień **Wysokość rozwinięcia (px)** na **400**. Pozostałe
+ustawienia i skonfigurowane źródła kalendarza zostaną zachowane.

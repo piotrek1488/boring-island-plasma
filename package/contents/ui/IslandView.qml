@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import "../code/Shelf.js" as Shelf
 Item {
     id: view
+    property var calendarBackend: null
     property string calendarMode: "kde"
     property string calendarSources: ""
     property int calendarAppletId: 0
@@ -38,11 +39,10 @@ Item {
     HoverHandler { onHoveredChanged: view.hoverChanged(hovered) }
     DropArea { anchors.fill: parent; onDropped: drop => { if (drop.hasUrls) { view.addFiles(drop.urls); drop.acceptProposedAction(); } } }
     ColumnLayout {
-        anchors.fill: parent; anchors.margins: view.page === 3 ? 16 : 26; spacing: view.page === 3 ? 8 : 12
+        anchors.fill: parent; anchors.margins: 26; spacing: 12
         RowLayout {
-            visible: view.page !== 3
             Layout.fillWidth: true
-            Text { text: "BORING / ISLAND"; color: "#aaa0c9"; font.pixelSize: 10; font.letterSpacing: 2 }
+            Text { objectName: "brandLabel"; text: "BORING / ISLAND"; color: "#aaa0c9"; font.pixelSize: 10; font.letterSpacing: 2 }
             Item { Layout.fillWidth: true }
             Text { objectName: "headerDate"; text: view.today; color: "#c1c2d0"; font.pixelSize: 13 }
         }
@@ -144,9 +144,16 @@ Item {
                 Text { anchors.fill: parent; visible: shareLoader.status === Loader.Error; text: strings.text("Install KDE Connect and its QML module to send files."); color: "#aaa9bb"; wrapMode: Text.WordWrap }
             }
             Loader {
+                id: calendarLoader
                 active: view.page === 3
-                source: "CalendarPage.qml"
+                function loadCalendar() {
+                    if (active) setSource("CalendarPage.qml", {backend: view.calendarBackend, language: view.language,
+                        calendarMode: view.calendarMode, calendarSources: view.calendarSources, calendarAppletId: view.calendarAppletId});
+                }
+                onActiveChanged: loadCalendar()
+                Component.onCompleted: loadCalendar()
                 onLoaded: {
+                    item.backend = Qt.binding(() => view.calendarBackend);
                     item.language = Qt.binding(() => view.language);
                     item.calendarMode = Qt.binding(() => view.calendarMode);
                     item.calendarSources = Qt.binding(() => view.calendarSources);

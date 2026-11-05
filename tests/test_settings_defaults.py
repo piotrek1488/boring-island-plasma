@@ -22,5 +22,5 @@ class SettingsDefaults(unittest.TestCase):
         self.assertEqual(actual['animationDuration'], 400)
         self.assertEqual(actual['compactMinimumWidth'], 180)
         self.assertEqual(actual['expandedWidth'], 600)
-        self.assertEqual(actual['expandedHeight'], 330)
+        self.assertEqual(actual['expandedHeight'], 400)
         self.assertNotIn('shelfJson', actual)

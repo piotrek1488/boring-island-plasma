@@ -8,6 +8,7 @@ Item {
     required property var backend
     required property var notifications
     required property var activities
+    property var calendarBackend: null
     property string calendarMode: "kde"
     property string calendarSources: ""
     property int calendarAppletId: 0
@@ -35,7 +36,7 @@ Item {
     property real compactWidth: 240
     property real compactHeight: 42
     property real expandedWidth: 600
-    property real expandedHeight: 330
+    property real expandedHeight: 400
     property var shelf: []
     property int initialPage: 0
     property real progress: opened && !editing ? 1 : 0
@@ -120,6 +121,7 @@ Item {
                     id: content
                     anchors.fill: parent
                     visible: shell.presentedFullView
+                    calendarBackend: shell.calendarBackend
                     calendarMode: shell.calendarMode; calendarSources: shell.calendarSources; calendarAppletId: shell.calendarAppletId
                     language: shell.language; backend: shell.backend; notifications: shell.notifications; activities: shell.activities
                     drawSurface: false; notch: shell.notch; reduceMotion: shell.reduceMotion; showBattery: shell.showBattery

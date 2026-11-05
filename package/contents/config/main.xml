@@ -13,7 +13,7 @@
     <entry name="compactMinimumWidth" type="Int"><default>180</default><min>80</min><max>1000</max></entry>
     <entry name="autoWidth" type="Bool"><default>true</default></entry>
     <entry name="expandedWidth" type="Int"><default>600</default><min>420</min><max>1000</max></entry>
-    <entry name="expandedHeight" type="Int"><default>330</default><min>320</min><max>800</max></entry>
+    <entry name="expandedHeight" type="Int"><default>400</default><min>320</min><max>800</max></entry>
     <entry name="expandedScale" type="Int"><default>100</default><min>60</min><max>200</max></entry>
     <entry name="notificationDuration" type="Int"><default>4</default><min>1</min><max>60</max></entry>
     <entry name="notificationPreviews" type="Bool"><default>true</default></entry>

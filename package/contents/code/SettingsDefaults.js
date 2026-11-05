@@ -15,7 +15,7 @@ var values = {
     "autoWidth": true,
     "compactMinimumWidth": 180,
     "expandedWidth": 600,
-    "expandedHeight": 330,
+    "expandedHeight": 400,
     "expandedScale": 100,
     "notificationDuration": 4,
     "notificationPreviews": true,
