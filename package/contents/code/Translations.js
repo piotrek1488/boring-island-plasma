@@ -85,6 +85,7 @@ var polish = {
     "Detect package operations": "Wykrywaj operacje na pakietach",
     "Monitor Ollama and LM Studio": "Monitoruj Ollama i LM Studio",
     "Show audio output device": "Pokazuj urządzenie wyjściowe dźwięku",
+    "Editing the height disables automatic fitting. Height cannot exceed the panel; increase the panel height to grow further. Compact scale also changes width, even at the height limit.": "Zmiana wysokości wyłącza dopasowanie automatyczne. Wysokość nie przekroczy panelu; aby ją zwiększyć, powiększ panel. Skala zwinięcia zmienia też szerokość, także przy limicie wysokości.",
     "Compact scale (%):": "Skala zwiniętego widżetu (%):",
     "Editing the height disables automatic fitting. Compact scale adjusts height, width and text within the available panel space.": "Zmiana wysokości wyłącza dopasowanie automatyczne. Skala zwinięcia zmienia wysokość, szerokość i tekst w granicach miejsca w panelu."
 };

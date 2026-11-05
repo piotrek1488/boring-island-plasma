@@ -1,5 +1,6 @@
 import QtQuick
 import QtTest
+import QtQuick.Layouts
 import "../package/contents/ui" as UI
 
 Item {
@@ -56,6 +57,16 @@ Item {
         onPinRequested: mode => pinnedMode = mode
     }
     UI.CompactView { id: compactTest; backend: media; width: 240; height: 64; visible: false }
+    RowLayout {
+        width: 900; height: 64
+        visible: false
+        UI.CompactView {
+            id: panelCompact
+            backend: media
+            Layout.fillHeight: true
+            Layout.preferredWidth: Math.min(500, naturalWidth) * compactScale
+        }
+    }
     TestCase {
         name: "Expansion"; when: windowShown
         function init() { shell.opened=false; shell.fullView=false; shell.presentedFullView=false; shell.fixedViewport=false; shell.reduceMotion=true; shell.notch=false; shell.uiScale=1; shell.initialPage=0; historyModel.clear(); }
@@ -114,6 +125,27 @@ Item {
             compare(findChild(shell,"notificationsTab").text,"Powiadomienia · 0");
             shell.language="en";
         }
+        function test_expansion_keeps_origin_and_text_layout() {
+            shell.fixedViewport=true; shell.notch=true; shell.fullView=true; shell.reduceMotion=false;
+            const morph=findChild(shell,"morphSurface"), header=findChild(shell,"expandedHeader");
+            const layoutWidth=header.width, fontSize=findChild(header,"compactTitle").font.pixelSize;
+            shell.opened=true;
+            for (let i=0;i<4;++i) {
+                wait(60); compare(morph.y,0); compare(header.width,layoutWidth);
+                compare(findChild(header,"compactTitle").font.pixelSize,fontSize);
+            }
+            tryCompare(shell,"progress",1,600);
+        }
+        function test_panel_manual_height_and_scale() {
+            panelCompact.autoHeight=false; panelCompact.compactScale=1; panelCompact.compactHeight=24;
+            wait(30); compare(panelCompact.height,64); compare(panelCompact.effectiveHeight,24);
+            panelCompact.compactHeight=48; compare(panelCompact.effectiveHeight,48);
+            panelCompact.compactScale=0.5; wait(30); compare(panelCompact.effectiveHeight,24);
+            panelCompact.autoHeight=true; panelCompact.compactScale=1; wait(30);
+            const initialWidth=panelCompact.width;
+            panelCompact.compactScale=1.5; wait(30);
+            verify(panelCompact.width>initialWidth); compare(panelCompact.effectiveHeight,64);
+        }
         function test_compact_scale_and_manual_height() {
             compactTest.autoHeight=true; compactTest.compactScale=0.5;
             compare(compactTest.effectiveHeight,32);
@@ -123,7 +155,8 @@ Item {
         }
         function test_expanded_header_insets() {
             shell.fullView=true; shell.opened=true; wait(30);
-            const title=findChild(shell,"compactTitle"), battery=findChild(shell,"compactBattery");
+            const header=findChild(shell,"expandedHeader");
+            const title=findChild(header,"compactTitle"), battery=findChild(header,"compactBattery");
             const morph=findChild(shell,"morphSurface");
             const a=title.mapToItem(morph,0,0), b=battery.mapToItem(morph,battery.width,battery.height);
             verify(a.x>=30); verify(b.x<=morph.width-30);

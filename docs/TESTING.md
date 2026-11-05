@@ -1,3 +1,18 @@
+# Verification of 0.3.2
+
+Core offscreen tests additionally cover panel fill-height allocation, manual
+height updates, scale affecting width at the height cap, stable top-edge origin
+and constant expanded text layout during animation. Core suites and archive/QML
+validation pass on Ubuntu 24.04 / Qt 6.4.2.
+
+The native `AttachedDialog` regression fixture (`./scripts/test-popup.sh`) covers
+WindowDoesNotAcceptFocus on hover, explicit keyboard focus, no visualParent and
+unchanged x/y across show and content resize. It requires Plasma 6 and cannot
+run in this development environment. Test compositor-level focus preservation
+and first-frame positioning on the user's Wayland desktop.
+
+---
+
 # Verification of 0.3.1
 
 Ubuntu 24.04 / Qt 6.4.2, offscreen. Current tests cover 17 Python cases

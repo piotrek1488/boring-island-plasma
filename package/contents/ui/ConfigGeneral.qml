@@ -43,7 +43,7 @@ Kirigami.FormLayout {
     SpinBox { id: compactScale; objectName: "compactScaleSetting"; Kirigami.FormData.label: strings.text("Compact scale (%):"); from: 50; to: 200; value: 100; stepSize: 5; editable: true }
     CheckBox { id: autoSize; objectName: "autoHeightSetting"; text: strings.text("Fit height to panel") }
     SpinBox { id: heightSize; objectName: "compactHeightSetting"; Kirigami.FormData.label: strings.text("Compact height (px):"); from: 16; to: 128; value: 42; stepSize: 1; editable: true; onValueModified: autoSize.checked = false }
-    Label { text: strings.text("Editing the height disables automatic fitting. Compact scale adjusts height, width and text within the available panel space."); wrapMode: Text.WordWrap }
+    Label { text: strings.text("Editing the height disables automatic fitting. Height cannot exceed the panel; increase the panel height to grow further. Compact scale also changes width, even at the height limit."); wrapMode: Text.WordWrap }
     CheckBox { id: hover; text: strings.text("Expand on hover") }
     SpinBox { id: delay; Kirigami.FormData.label: strings.text("Hover delay (ms):"); from: 100; to: 1500; stepSize: 50 }
     CheckBox { id: battery; text: strings.text("Show battery status") }

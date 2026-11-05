@@ -45,7 +45,7 @@ Item {
     readonly property real surfaceHeight: headerHeight + bodyHeight * progress
     width: fixedViewport ? targetWidth : surfaceWidth
     height: fixedViewport ? expandedHeaderHeight + bodyHeight : surfaceHeight
-    Behavior on progress { NumberAnimation { duration: shell.reduceMotion ? 0 : 460; easing.type: Easing.OutCubic } }
+    Behavior on progress { NumberAnimation { duration: shell.reduceMotion ? 0 : 420; easing.type: Easing.OutQuint } }
     Item {
         id: morph
         objectName: "morphSurface"
@@ -54,12 +54,28 @@ Item {
         y: shell.bottomEdge ? shell.height - height : 0
         clip: true
         IslandSurface { anchors.fill: parent; notch: shell.notch }
+        // Cross-fade two fixed text layouts instead of re-eliding and changing
+        // font sizes on every frame of the expansion.
         CompactView {
-            width: morph.width; height: shell.headerHeight
-            expandedHeader: shell.progress > 0.5; minimumTextScale: 0.5 + 0.5 * shell.progress; compactScale: 1
-            edgeInset: 16 + 16 * shell.progress
-            batteryFontSize: 11 + 3 * shell.progress
+            width: shell.compactWidth; height: shell.compactHeight
+            x: (morph.width - width) / 2
             y: shell.bottomEdge ? morph.height - height : 0
+            opacity: Math.max(0, 1 - shell.progress * 3)
+            visible: opacity > 0
+            backend: shell.backend; language: shell.language; notch: shell.notch
+            showBattery: shell.showBattery; displayText: shell.displayText
+            drawSurface: false; accentColor: shell.accentColor
+            onActivated: shell.activated()
+            onFilesDropped: urls => shell.filesDropped(urls)
+        }
+        CompactView {
+            objectName: "expandedHeader"
+            width: shell.targetWidth; height: shell.expandedHeaderHeight
+            x: (morph.width - width) / 2
+            y: shell.bottomEdge ? morph.height - height : 0
+            expandedHeader: true; minimumTextScale: 1; compactScale: 1
+            opacity: Math.max(0, (shell.progress - 0.25) / 0.75)
+            visible: opacity > 0
             backend: shell.backend; language: shell.language; notch: shell.notch
             showBattery: shell.showBattery; displayText: shell.displayText
             drawSurface: false; accentColor: shell.accentColor

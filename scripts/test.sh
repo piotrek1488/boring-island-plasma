@@ -11,3 +11,5 @@ dbus-run-session -- "$project_dir/scripts/test-mpris.sh"
 dbus-run-session -- "$project_dir/scripts/test-connect.sh"
 
 "$project_dir/scripts/test-notifications.sh"
+
+"$project_dir/scripts/test-popup.sh"

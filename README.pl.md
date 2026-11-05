@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.3.1; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.3.2; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.3.1.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.3.2.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -107,7 +107,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.1.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.2.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -181,7 +181,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.3.1.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.3.2.plasmoid
 plasmawindowed ./package
 ```
 
@@ -232,3 +232,20 @@ do zbudowanego pakietu bez dodatkowego commita bota. Ponowienie zadania używa
 tagu tego samego commita i nie nadpisuje istniejącego wydania. Publikacje są
 kolejkowane, aby nie powstały dwa identyczne numery. CI nie zastępuje testów
 natywnego centrum powiadomień i interaktywnego pulpitu Wayland.
+
+### Rozwijanie i fokus (0.3.2)
+
+Hover i podgląd powiadomienia nie żądają fokusu klawiatury i nie dezaktywują
+bieżącej aplikacji. Przyciski nadal działają myszą. Otwarcie skrótem klawiaturowym
+lub Enter/Spacją jawnie włącza fokus dla obsługi klawiaturą. Pozycję okna ustawiamy
+przed pierwszą klatką rozwijania, bez automatycznego pozycjonowania popupu Plasma.
+Punkt początkowy i zwinięte wymiary pozostają stałe podczas animacji.
+
+Widżet otrzymuje pełną wysokość panelu, a wewnętrzny kształt reaguje na ręczną
+wysokość i skalę. Kształt nie przekroczy dostępnego miejsca w panelu — aby uzyskać
+wyższy notch, zwiększ wysokość panelu. Skala zmienia szerokość także po osiągnięciu
+limitu wysokości. Nagłówki o stałym rozmiarze tekstu przenikają się podczas animacji.
+
+`./scripts/test-popup.sh` sprawdza natywne flagi fokusu i pozycję przy otwieraniu
+i zmianie rozmiaru; wymaga modułów Plasma 6. Płynność i zachowanie aktywnego okna
+trzeba również sprawdzić na rzeczywistym pulpicie Wayland.

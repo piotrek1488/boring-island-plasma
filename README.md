@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.3.1** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.3.2** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -141,7 +141,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.1.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.2.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -190,7 +190,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.3.1.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.3.2.plasmoid
 plasmawindowed ./package
 ```
 
@@ -256,3 +256,19 @@ version without a bot commit to the source. A rerun reuses an existing tag on th
 same commit and leaves an already published release unchanged. Jobs are serialized
 to avoid version collisions. Native Plasma/Wayland checks still need a desktop;
 passing the core CI suite does not certify those integrations.
+
+### Overlay interaction (0.3.2)
+
+Hover and notification previews do not request keyboard focus or deactivate the
+current application. Mouse buttons inside the widget remain usable. Opening with
+a keyboard shortcut/Enter/Space explicitly enables focus for keyboard navigation.
+The overlay has no automatic Plasma visual parent: its position is set before
+the first expansion frame, and its compact origin/size are held during expansion.
+The panel now allocates full height while the inner notch/island follows manual
+height and compact scale. The height still cannot exceed panel space; increase
+the panel height for a taller notch. Compact scale changes width even when height
+is capped. Fixed-size header text layers cross-fade instead of resizing each frame.
+
+`./scripts/test-popup.sh` adds native Plasma tests for nonactivating hover, stable
+show/resize position and explicit keyboard focus. It needs Plasma 6 modules;
+real compositor animation and focus should also be checked on Wayland.
