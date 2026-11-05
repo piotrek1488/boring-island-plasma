@@ -1,3 +1,38 @@
+# Verification of 0.4.1
+
+The full applet reproduced an invalid `Window.window.screen.width` read and
+height/bodyHeight binding loops during hover expansion. Geometry now uses the
+source item's Screen attachment, caches screen bounds/available height before
+opening, and queues position updates after native Dialog size synchronization.
+Positioning no longer writes the height limit from a height-change callback.
+
+The new full-applet probe copies the package to a temporary directory and invokes
+the real hover handler through four open/close cycles (notch/island × smooth/spring).
+It isolates XDG configuration/data/cache, checks completion and rejects applet QML
+errors. The unchanged 0.4.0 package fails this probe on its screen/geometry errors;
+0.4.1 passes on Plasma 6.7.4 / Qt 6.11.2 under X11 and headless KWin Wayland,
+with software Qt Quick and Mesa OpenGL. Top and bottom panel locations pass.
+Native popup tests pass (11 cases), as does the existing Qt 6.4.2 core suite.
+The expansion suite also passes all 30 cases on Qt 6.11.2 with KDE controls;
+its loader tests now wait for layout/rendering before checking geometry or clicks.
+
+Run in an isolated bus on a Plasma 6.6+ test machine:
+
+```bash
+QT_QPA_PLATFORM=xcb xvfb-run -a dbus-run-session -- python3 scripts/test-panel-hover.py
+QT_QPA_PLATFORM=xcb xvfb-run -a dbus-run-session -- python3 scripts/test-panel-hover.py --location bottomedge
+QT_QPA_PLATFORM=xcb xvfb-run -a ./scripts/test-popup.sh
+```
+
+CI now runs native popup/full-applet tests in addition to core tests, and release
+publication requires both jobs. The user's process crash itself was not reproduced
+in this environment; a target-system backtrace is still needed to conclusively
+associate that crash with these geometry faults. This test environment also emits
+unrelated SDK desktop-containment, missing system-bus/device and theme warnings;
+the probe rejects errors from the package under test.
+
+---
+
 # Verification of 0.4.0
 
 Core Qt tests exercise activity precedence and zero-notification fallback, media

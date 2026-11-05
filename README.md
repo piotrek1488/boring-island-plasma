@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.4.0** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.4.1** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -147,7 +147,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.0.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.1.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -196,7 +196,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.4.0.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.4.1.plasmoid
 plasmawindowed ./package
 ```
 

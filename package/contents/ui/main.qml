@@ -38,6 +38,8 @@ PlasmoidItem {
     property point popupAnchorPoint: Qt.point(0, 0)
     property real popupAnchorWidth: 240
     property real popupAnchorHeight: 42
+    property rect popupScreenGeometry: Qt.rect(0, 0, 1920, 1080)
+    property real popupMaximumHeight: 1080
     readonly property int configuredHeight: Plasmoid.configuration.compactHeight
     readonly property bool configuredAutoHeight: Plasmoid.configuration.autoHeight
     onConfiguredAutoHeightChanged: close()
@@ -162,18 +164,23 @@ PlasmoidItem {
         popupAnchorPoint = visual.mapToGlobal(0, 0);
         popupAnchorWidth = visual.width;
         popupAnchorHeight = visual.height;
+        // Native Plasma windows expose their screen to items through Screen;
+        // Window.window.screen is only available on the QML Window wrapper.
+        const screen = visual.Screen;
+        popupScreenGeometry = Qt.rect(screen.virtualX, screen.virtualY, screen.width, screen.height);
+        popupMaximumHeight = Math.max(1, Plasmoid.location === PlasmaCore.Types.BottomEdge
+            ? popupAnchorPoint.y + popupAnchorHeight - popupScreenGeometry.y
+            : popupScreenGeometry.y + popupScreenGeometry.height - popupAnchorPoint.y);
         geometryLocked = true;
         positionDialog();
     }
     function positionDialog() {
-        if (!anchorItem) return;
-        const point = geometryLocked ? popupAnchorPoint : anchorItem.visualItem.mapToGlobal(0, 0);
-        const screen = anchorItem.Window.window ? anchorItem.Window.window.screen : attachedDialog.screen;
-        const left = screen ? screen.virtualX : 0;
-        const top = screen ? screen.virtualY : 0;
-        const right = left + (screen ? screen.width : 1920);
-        const bottom = top + (screen ? screen.height : 1080);
-        popupShell.maximumHeight = Plasmoid.location === PlasmaCore.Types.BottomEdge ? point.y + popupAnchorHeight - top : bottom - point.y;
+        if (!anchorItem || !geometryLocked) return;
+        const point = popupAnchorPoint;
+        const left = popupScreenGeometry.x;
+        const top = popupScreenGeometry.y;
+        const right = left + popupScreenGeometry.width;
+        const bottom = top + popupScreenGeometry.height;
         attachedDialog.x = Math.round(Math.max(left, Math.min(right - popupShell.width, point.x + popupAnchorWidth / 2 - popupShell.width / 2)));
         const y = Plasmoid.location === PlasmaCore.Types.BottomEdge ? point.y + popupAnchorHeight - popupShell.height : point.y;
         attachedDialog.y = Math.round(Math.max(top, Math.min(bottom - popupShell.height, y)));
@@ -234,8 +241,10 @@ PlasmoidItem {
             calendarAppletId: Plasmoid.id
             editing: root.editing
             fixedViewport: true
-            onWidthChanged: root.positionDialog()
-            onHeightChanged: root.positionDialog()
+            // Dialog synchronizes its native size in these same signals. Move
+            // after that update, and never feed the new size back into its limit.
+            onWidthChanged: Qt.callLater(root.positionDialog)
+            onHeightChanged: Qt.callLater(root.positionDialog)
             backend: systemBackend; notifications: root.notificationBackend; activities: root.activityBackend
             opened: root.inPanel && root.popupReady && root.wantOpen; fullView: root.opened
             language: root.language; displayText: root.displayText; accentColor: root.accentColor
@@ -252,7 +261,8 @@ PlasmoidItem {
             onConfigureRequested: root.configure()
             onInteractionRequested: root.activateFromInteraction()
             reduceMotion: root.reduceMotion; uiScale: root.uiScale
-            maximumWidth: root.anchorItem && root.anchorItem.Window.window ? root.anchorItem.Window.window.screen.width : 4096
+            maximumWidth: root.popupScreenGeometry.width
+            maximumHeight: root.popupMaximumHeight
             compactWidth: root.geometryLocked ? root.popupAnchorWidth : (root.anchorItem ? root.anchorItem.width : Plasmoid.configuration.compactWidth)
             compactHeight: root.geometryLocked ? root.popupAnchorHeight : (root.anchorItem ? root.anchorItem.effectiveHeight : 42)
             expandedWidth: Plasmoid.configuration.expandedWidth; expandedHeight: Plasmoid.configuration.expandedHeight

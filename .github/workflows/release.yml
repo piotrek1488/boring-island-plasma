@@ -45,9 +45,40 @@ jobs:
           python3 scripts/package.py
           python3 scripts/validate-package.py --qml
 
+  plasma:
+    runs-on: ubuntu-24.04
+    container: debian:unstable-slim
+    timeout-minutes: 20
+    env:
+      QT_QUICK_BACKEND: software
+      QT_QUICK_CONTROLS_STYLE: org.kde.desktop
+      LANG: C.UTF-8
+    steps:
+      - name: Install native Plasma test environment
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            git ca-certificates python3 plasma-sdk plasma-desktop plasma-workspace \
+            qt6-declarative-dev-tools qml6-module-qttest qml6-module-qtquick \
+            qml6-module-qtquick-controls qml6-module-qtquick-templates \
+            qml6-module-qtquick-layouts qml6-module-qtquick-window qml6-module-qtqml \
+            qml6-module-qtqml-models qml6-module-qtqml-workerscript \
+            dbus-x11 xvfb xauth
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test native popup lifecycle and focus flags
+        run: QT_QPA_PLATFORM=xcb xvfb-run -a ./scripts/test-popup.sh
+      - name: Test expansion with the current Qt and KDE controls
+        run: QT_QPA_PLATFORM=xcb xvfb-run -a dbus-run-session -- /usr/lib/qt6/bin/qmltestrunner -input tests/tst_expansion.qml -o -,txt
+      - name: Test full panel applet hover
+        run: |
+          QT_QPA_PLATFORM=xcb xvfb-run -a dbus-run-session -- python3 scripts/test-panel-hover.py
+          QT_QPA_PLATFORM=xcb xvfb-run -a dbus-run-session -- python3 scripts/test-panel-hover.py --location bottomedge
+
   release:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    needs: build
+    needs: [build, plasma]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

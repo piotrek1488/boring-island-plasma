@@ -271,9 +271,11 @@ Item {
             historyModel.append({notificationId:"second",applicationName:"Fixture",summary:"Second",body:""});
             shell.fullView=true; shell.opened=true; shell.initialPage=4;
             tryVerify(() => findChild(shell,"deleteNotification_first") !== null);
+            verify(waitForRendering(shell)); // Loader completion precedes layout on newer Qt.
             mouseClick(findChild(shell,"deleteNotification_first"));
             compare(historyModel.count,1); compare(historyModel.get(0).notificationId,"second");
             tryVerify(() => findChild(shell,"deleteNotification_second") !== null);
+            verify(waitForRendering(shell));
             mouseClick(findChild(shell,"deleteNotification_second")); compare(historyModel.count,0);
         }
         function test_year_in_header() {
@@ -290,7 +292,7 @@ Item {
             verify(brand.visible); verify(date.visible);
             compare(tabs.mapToItem(shell,0,0).y,before);
             const pane=findChild(shell,"calendarMonthPane");
-            verify(pane.height>=200);
+            tryVerify(() => pane.height>=200);
             const bottom=pane.mapToItem(shell,pane.width,pane.height);
             verify(bottom.y<=shell.height-25);
             compare(shell.height,400);
