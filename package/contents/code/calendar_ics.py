@@ -83,7 +83,7 @@ def events_for_range(payload, first, until, timezone):
             if value.tzinfo is None:
                 value = value.replace(tzinfo=timezone)
             return value.astimezone(timezone).isoformat()
-        result.append({'title': str(event.get('SUMMARY', '')), 'description': str(event.get('DESCRIPTION', '')),
+        result.append({'uid': str(event.get('UID', '')), 'title': str(event.get('SUMMARY', '')), 'description': str(event.get('DESCRIPTION', '')),
                        'isAllDay': all_day, 'startDateTime': timestamp(begin), 'endDateTime': timestamp(finish),
                        'eventColor': '#89b4fa'})
     return result
@@ -104,22 +104,27 @@ def event_dates(event, first, until):
         current += timedelta(days=1)
 
 
-def agenda(sources, selected, cache_dir, refresh=False):
+def agenda(sources, selected, cache_dir, refresh=False, reminders=False):
     import icalendar  # noqa: F401 - explicit dependency check, including empty source lists
     import recurring_ical_events  # noqa: F401
     if not sources:
         return {'events': [], 'error': 'Add an ICS calendar address or local file in widget settings.'}
     events = []
     month_days = set()
+    reminder_events = []
     first = selected.replace(day=1)
     until = (first.replace(day=28) + timedelta(days=4)).replace(day=1)
     errors = 0
     timezone = local_timezone()
     for source in sources:
         try:
-            month_events = events_for_range(read_source(source, cache_dir, refresh), first, until, timezone)
+            query_until = max(until, selected + timedelta(days=2)) if reminders else until
+            month_events = events_for_range(read_source(source, cache_dir, refresh), first, query_until, timezone)
             for event in month_events:
+                event['sourceKey'] = hashlib.sha256(source.encode()).hexdigest()
                 days = set(event_dates(event, first, until))
+                if reminders and not event['isAllDay'] and list(event_dates(event, selected, selected + timedelta(days=2))):
+                    reminder_events.append(event)
                 month_days.update(day.isoformat() for day in days)
                 if selected in days:
                     events.append(event)
@@ -127,19 +132,23 @@ def agenda(sources, selected, cache_dir, refresh=False):
             # Exception text can contain the private subscription URL. Never return it.
             errors += 1
     events.sort(key=lambda e: (not e['isAllDay'], e['startDateTime'], e['title']))
-    return {'events': events[:500], 'monthDays': sorted(month_days), 'error': 'Some calendars could not be loaded. Check the ICS addresses and network connection.' if errors else ''}
+    return {'events': events[:500], 'monthDays': sorted(month_days), 'reminderEvents': reminder_events, 'error': 'Some calendars could not be loaded. Check the ICS addresses and network connection.' if errors else ''}
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--applet-id', type=int, required=True)
     parser.add_argument('--date', type=date.fromisoformat, required=True)
+    parser.add_argument('--reminders', action='store_true')
     parser.add_argument('--refresh', action='store_true')
     args = parser.parse_args()
     try:
         config_dir = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config'))
         cache_dir = Path(os.environ.get('XDG_CACHE_HOME', Path.home() / '.cache')) / 'boring-island/calendars'
-        result = agenda(read_sources(config_dir / 'plasma-org.kde.plasma.desktop-appletsrc', args.applet_id), args.date, cache_dir, args.refresh)
+        sources = read_sources(config_dir / 'plasma-org.kde.plasma.desktop-appletsrc', args.applet_id)
+        result = agenda(sources, args.date, cache_dir, args.refresh, args.reminders)
+        # Correlation only, not authentication: keep subscription URLs out of argv.
+        result['sourceFingerprint'] = hashlib.md5('\n'.join(sources).encode(), usedforsecurity=False).hexdigest()
     except ImportError:
         result = {'events': [], 'error': 'ICS support requires Python calendar dependencies. See the calendar setup instructions.'}
     except Exception:

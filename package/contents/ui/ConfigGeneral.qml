@@ -4,6 +4,12 @@ import "../code/SettingsDefaults.js" as Defaults
 import org.kde.kirigami as Kirigami
 Kirigami.FormLayout {
     id: config
+    property string cfg_idleView: "clock"
+    property alias cfg_mediaCycleSeconds: mediaCycleSeconds.value
+    property alias cfg_showOsd: showOsd.checked
+    property alias cfg_osdDuration: osdDuration.value
+    property alias cfg_remindersEnabled: reminders.checked
+    property alias cfg_reminderLeadMinutes: reminderLead.value
     property string cfg_calendarMode: "kde"
     property alias cfg_calendarSources: calendarSources.text
     property string cfg_language: "en"
@@ -64,6 +70,18 @@ Kirigami.FormLayout {
         currentIndex: Math.max(0, ["auto", "clock", "media", "system", "packages", "llm", "notifications"].indexOf(config.cfg_pinnedMode))
         onActivated: index => config.cfg_pinnedMode = ["auto", "clock", "media", "system", "packages", "llm", "notifications"][index]
     }
+    ComboBox {
+        objectName: "idleViewSetting"
+        Kirigami.FormData.label: strings.text("Idle view:")
+        model: [strings.text("Clock and battery"), strings.text("Date, clock and battery"), strings.text("Battery only")]
+        currentIndex: Math.max(0,["clock","dateClock","battery"].indexOf(config.cfg_idleView))
+        onActivated: index => config.cfg_idleView=["clock","dateClock","battery"][index]
+    }
+    Label { text: strings.text("Live activity takes priority over the preferred panel view. Empty notifications fall back to the idle view."); wrapMode: Text.WordWrap }
+    SpinBox { id: mediaCycleSeconds; Kirigami.FormData.label: strings.text("Media text rotation (seconds):"); from:1; to:15; value:4; editable:true }
+    CheckBox { id: showOsd; text: strings.text("Show volume and brightness in the compact widget") }
+    Label { visible:showOsd.checked; text:strings.text("These indicators appear alongside KDE system indicators."); wrapMode:Text.WordWrap }
+    SpinBox { id: osdDuration; Kirigami.FormData.label: strings.text("Volume/brightness display (seconds):"); from:1; to:15; value:2; enabled:showOsd.checked; editable:true }
     CheckBox { id: monitorSystem; text: strings.text("Monitor CPU, RAM and GPU") }
     CheckBox { id: monitorPackages; text: strings.text("Detect package operations") }
     CheckBox { id: monitorLlm; text: strings.text("Monitor Ollama and LM Studio") }
@@ -93,6 +111,9 @@ Kirigami.FormLayout {
         currentIndex: config.cfg_calendarMode === "ics" ? 1 : 0
         onActivated: index => config.cfg_calendarMode = index === 1 ? "ics" : "kde"
     }
+    CheckBox { id: reminders; text: strings.text("Calendar reminders before events and at their start") }
+    SpinBox { id: reminderLead; Kirigami.FormData.label: strings.text("Reminder lead time (minutes):"); from:0; to:120; value:15; enabled:reminders.checked; editable:true }
+    Label { text: strings.text("Reminders work with the calendar tab closed. All-day events are excluded. Zero minutes enables start reminders only."); wrapMode:Text.WordWrap }
     TextArea {
         id: calendarSources
         objectName: "calendarSourcesSetting"

@@ -69,13 +69,13 @@ TestCase {
     }
     function test_priority() {
         compare(Activity.resolve("auto", true, true, true, true), "notifications");
-        compare(Activity.resolve("auto", false, true, true, true), "packages");
+        compare(Activity.resolve("auto", false, true, true, true), "media");
         compare(Activity.resolve("auto", false, false, true, true), "media");
         compare(Activity.resolve("auto", false, false, false, true), "llm");
         compare(Activity.resolve("auto", false, false, false, false), "clock");
-        compare(Activity.resolve("clock", false, true, true, true), "clock");
+        compare(Activity.resolve("clock", false, true, true, true), "media");
         compare(Activity.resolve("clock", true, true, true, true), "notifications");
-        compare(Activity.resolve("notifications",false,true,true,true),"notifications");
+        compare(Activity.resolve("notifications",false,true,true,true),"media");
         compare(Activity.page("notifications"), 4);
         compare(Activity.page("packages"), 5);
     }

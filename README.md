@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.3.10** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.4.0** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -100,9 +100,12 @@ Cover art may be fetched from URLs supplied by the player.
   separate native model so history filters and early expiry do not drop previews. Do Not Disturb and
   application popup/history preferences are respected. Transient notifications
   still follow KDE's retention rules; the widget does not keep a private archive.
-- **Automatic priority:** temporary notification → package operation → playing
-  media → loaded local AI model → clock. Pin Clock, Media, System, Packages, Local AI or Notifications in settings or on the **Activity** tab. A temporary notification takes
-  precedence over a pin, then restores it. Pins persist per widget instance.
+- **Automatic priority:** volume/brightness feedback → new notification → playing
+  media → nonempty shelf → package activity → local AI → preferred view/idle.
+  The preferred panel view is a fallback, not a hard pin: Notifications with a zero
+  count falls back to idle. Temporary messages restore the current underlying
+  activity without sending playback commands. Manual tabs remain selected while
+  the expanded widget is in use.
 - **System:** CPU/RAM and available GPU utilization. AMD-compatible sysfs counters
   and optional `nvidia-smi`/`intel_gpu_top` are supported; unsupported GPUs are omitted. Click ↗
   to launch Plasma System Monitor, or `top` in Konsole as a fallback.
@@ -144,7 +147,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.10.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.0.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -193,7 +196,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.3.10.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.4.0.plasmoid
 plasmawindowed ./package
 ```
 
@@ -427,3 +430,52 @@ previews, for both notch and island shapes.
 Spring motion reserves a small static transparent envelope before the popup opens,
 so the native window does not resize or shift during the bounce. The shape remains
 attached to its original edge, and motion is bounded by the screen dimensions.
+
+## Live compact activity (0.4.0)
+
+The idle view is configurable: **Clock and battery** (default), **Date, clock and
+battery**, or **Battery only**. Battery-only falls back to the clock when the
+battery is hidden or unavailable. Existing battery percentage placement is kept.
+A playing MPRIS source takes precedence over shelf/history/preferences. The
+collapsed title cycles upward to **elapsed / total time**, then back to the title,
+every four seconds by default (configurable 1–15). Missing total duration displays
+an em dash. KDE's MPRIS metadata supplies the title or filename when available.
+Reduced motion switches the text without sliding. Text-width measurement reserves
+both frames so the notch does not alternate widths on each cycle.
+
+Notifications only take over the display. They **never pause, stop, seek or resume
+the player**. Playback position continues to update while a preview is visible;
+afterward the current activity is shown again. A nonempty shelf shows its item
+count and becomes the default opening tab when nothing is playing. Emptying the
+shelf restores the next activity/fallback. A manually opened tab is not replaced
+by automatic activity changes.
+
+**Show volume and brightness in the compact widget** adds a live icon/bar/percent
+using Plasma's OSD signals, with a configurable timeout (default two seconds after
+the last change). Notification previews and the low-battery message are held while
+this feedback is visible, then receive their full display duration. KDE's own OSD
+remains enabled: these are additional indicators, not a global OSD replacement.
+The feature depends on KDE emitting OSD events for the change; unsupported hardware
+or other applications' private sliders may not emit them.
+
+**Calendar reminders** run independently of the Calendar tab for the configured
+KDE/Akonadi or ICS source. Defaults: 15 minutes before and at the start, for timed
+events; all-day events are excluded. Set lead time to zero for start-only reminders,
+or disable reminders entirely. Tomorrow is included for reminders before midnight,
+including month/year boundaries. ICS uses its normal five-minute refresh/cache.
+Delivery uses KDE's notification service and shared history; clicking a live
+reminder opens the widget's Calendar tab. Do Not Disturb and notification popup
+preferences still apply. The per-widget delivery journal survives normal restarts
+and prevents refresh duplicates. Start reminders have a two-minute catch-up window;
+old missed reminders are not replayed after long sleep/offline periods. Existing
+KOrganizer/provider alarms can also notify independently. Resetting preferences
+preserves the delivery journal, as well as shelf data.
+
+Notification cards and previews now have **↗ before ×**, a clickable body and a
+subtle hover highlight. The default notification action is preferred, preserving
+links to the original message/document and native activation. In history, an
+installed sender's desktop entry can be launched through `kioclient`/`kioclient6`
+when the original action has expired. No command is constructed from notification
+body text. If no action or recognized application identifier is available, opening
+is disabled. Delete remains independent from opening. Actual window activation is
+subject to the application's behavior and compositor policy.

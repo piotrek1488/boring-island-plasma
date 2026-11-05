@@ -1,7 +1,14 @@
 .pragma library
 
-// Kept in sync with KConfig by tests/test_settings_defaults.py. Shelf data is preserved.
+// Kept in sync with KConfig by tests/test_settings_defaults.py. Shelf data and reminder delivery state are preserved.
 var values = {
+    "idleView": "clock",
+    "mediaCycleSeconds": 4,
+    "showOsd": true,
+    "osdDuration": 2,
+    "remindersEnabled": true,
+    "reminderLeadMinutes": 15,
+
     "language": "en",
     "calendarMode": "kde",
     "calendarSources": "",

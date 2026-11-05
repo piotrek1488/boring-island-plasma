@@ -49,15 +49,20 @@ PlasmoidItem {
     property Item anchorItem: null
     property int selectedPage: 0
     readonly property var savedShelf: Shelf.decode(Plasmoid.configuration.shelfJson)
-    readonly property bool wantOpen: !editing && (opened || notifications.preview !== null || lowBattery.active)
-    readonly property string mode: Activity.resolve(Plasmoid.configuration.pinnedMode || "auto", notifications.preview !== null,
-        activities.packages.active, systemBackend.playing, activities.llm.active)
+    readonly property bool wantOpen: !editing && (opened || (!osdState.active && (notifications.preview !== null || lowBattery.active)))
+    readonly property string baseMode: Activity.resolve(Plasmoid.configuration.pinnedMode || "auto", false,
+        activities.packages.active, systemBackend.playing, activities.llm.active, savedShelf.length, notifications.count)
+    readonly property string mode: osdState.active ? "osd" : notifications.preview !== null ? "notifications" : baseMode
+    readonly property bool compactBatteryOnly: mode === "clock" && !lowBattery.active && Plasmoid.configuration.idleView === "battery" && Plasmoid.configuration.showBattery && systemBackend.hasBattery
+    readonly property string mediaTimeText: Activity.timeLabel(systemBackend.position) + " / " + (systemBackend.duration > 0 ? Activity.timeLabel(systemBackend.duration) : "—")
     readonly property color accentColor: ({notifications: "#f6c177", packages: "#7ac7ff", media: "#b9a3ff", llm: "#a7e7b8", system: "#89dceb", clock: "#77798d"})[mode] || "#b9a3ff"
     property string clockText: Qt.formatTime(new Date(), "hh:mm")
     readonly property string displayText: {
+        if (mode === "osd") return osdState.current.kind === "brightness" ? strings.text("Brightness") : strings.text("Volume");
         if (lowBattery.active) return strings.text("Low battery") + " · " + systemBackend.percent + "%";
         if (mode === "notifications") return notifications.preview ? notifications.preview.summary : strings.text("Notifications") + " · " + notifications.count;
         if (mode === "media") return systemBackend.title || strings.text("Nothing playing");
+        if (mode === "shelf") return strings.text("Shelf") + " · " + savedShelf.length;
         if (mode === "packages") return activities.packages.active ? activities.packages.tool + " · " + activities.packages.operation + " " + (activities.packages.package || "") : strings.text("No package operations detected");
         if (mode === "llm") {
             if (!activities.llm.active) return strings.text("No local models detected");
@@ -65,12 +70,39 @@ PlasmoidItem {
             return activities.llm.model + (speed !== undefined && speed !== null ? " · " + Number(speed).toFixed(1) + " tok/s" : "");
         }
         if (mode === "system") return "CPU " + (activities.system.cpu === undefined || activities.system.cpu === null ? "—" : activities.system.cpu + "%") + " · RAM " + (activities.system.ram === undefined ? "—" : activities.system.ram + "%");
-        return clockText;
+        return Plasmoid.configuration.idleView === "dateClock" ? new Date().toLocaleDateString(strings.locale,"d MMM yyyy") + " · " + clockText : clockText;
     }
     Translations { id: strings; language: root.language }
     SystemBackend { id: systemBackend }
+    OsdState { id: osdState; enabled: Plasmoid.configuration.showOsd && !root.editing; duration: Plasmoid.configuration.osdDuration * 1000 }
+    NativeServices {
+        id: nativeServices
+        language: root.language
+        onReminderActivated: { root.open(true); root.selectedPage=3; }
+        osdEnabled: osdState.enabled
+        onProgressReceived: (icon,value,maximum,description) => osdState.progress(icon,value,maximum,description)
+        onTextReceived: (icon,description) => osdState.text(icon,description)
+        onDelivered: (key,notificationId) => reminderScheduler.acknowledge(key)
+    }
+    ReminderCalendar {
+        id: reminderCalendar
+        enabled: Plasmoid.configuration.remindersEnabled
+        mode: Plasmoid.configuration.calendarMode; sources: Plasmoid.configuration.calendarSources; appletId: Plasmoid.id
+    }
+    ReminderScheduler {
+        id: reminderScheduler
+        enabled: Plasmoid.configuration.remindersEnabled
+        events: reminderCalendar.events
+        leadMinutes: Plasmoid.configuration.reminderLeadMinutes
+        stateJson: Plasmoid.configuration.reminderStateJson
+        onStateEdited: json => Plasmoid.configuration.reminderStateJson = json
+        onReminder: (event,phase,key) => nativeServices.notify(key,
+            (phase === "start" ? strings.text("Event starting now") : strings.text("Upcoming event")) + " · " + event.title,
+            event.title + " — " + Qt.formatTime(new Date(event.startDateTime), "hh:mm"))
+    }
     LowBatteryMonitor {
         id: lowBattery
+        suspended: osdState.active
         hasBattery: systemBackend.hasBattery
         percent: systemBackend.percent
         powered: systemBackend.powerConnected
@@ -79,6 +111,7 @@ PlasmoidItem {
     readonly property string batteryWarning: lowBattery.active ? strings.text("Low battery") + " · " + systemBackend.percent + "% — " + strings.text("Connect the charger.") : ""
     NotificationBackend {
         id: notifications
+        previewsSuspended: osdState.active || lowBattery.active
         previewDuration: Plasmoid.configuration.notificationDuration * 1000
         previewsEnabled: !root.editing && Plasmoid.configuration.notificationPreviews
     }
@@ -99,7 +132,7 @@ PlasmoidItem {
         if (editing) return;
         if (!opened) focusRequested = keyboard;
         else if (keyboard) focusRequested = true;
-        if (!opened) selectedPage = Activity.page(mode);
+        if (!opened) selectedPage = Activity.page(mode === "osd" ? baseMode : mode);
         opened = true;
         if (keyboard) {
             activateFromInteraction();
@@ -156,6 +189,9 @@ PlasmoidItem {
         opacity: attachedDialog.visible ? 0 : 1
         language: root.language; backend: systemBackend; notch: root.notch
         displayText: root.displayText; accentColor: root.accentColor
+        alternateText: root.mediaTimeText; cycleText: root.mode === "media" && systemBackend.playing && !lowBattery.active
+        cycleInterval: Plasmoid.configuration.mediaCycleSeconds * 1000
+        batteryOnly: root.compactBatteryOnly; osd: osdState.current
         batteryPercentPosition: Plasmoid.configuration.batteryPercentPosition
         configureEnabled: root.configureEnabled
         onConfigureRequested: root.configure()
@@ -205,6 +241,10 @@ PlasmoidItem {
             language: root.language; displayText: root.displayText; accentColor: root.accentColor
             notch: root.notch; bottomEdge: Plasmoid.location === PlasmaCore.Types.BottomEdge
             batteryWarning: root.batteryWarning
+            compactAlternateText: root.mediaTimeText
+            compactCycleText: root.mode === "media" && systemBackend.playing && !lowBattery.active
+            compactCycleInterval: Plasmoid.configuration.mediaCycleSeconds * 1000
+            compactBatteryOnly: root.compactBatteryOnly; osd: osdState.current
             animationStyle: root.animationStyle
             animationDuration: root.animationDuration
             batteryPercentPosition: Plasmoid.configuration.batteryPercentPosition
@@ -248,6 +288,10 @@ PlasmoidItem {
             opened: !root.inPanel && root.wantOpen; fullView: root.opened
             language: root.language; displayText: root.displayText; accentColor: root.accentColor
             batteryWarning: root.batteryWarning
+            compactAlternateText: root.mediaTimeText
+            compactCycleText: root.mode === "media" && systemBackend.playing && !lowBattery.active
+            compactCycleInterval: Plasmoid.configuration.mediaCycleSeconds * 1000
+            compactBatteryOnly: root.compactBatteryOnly; osd: osdState.current
             animationStyle: root.animationStyle
             animationDuration: root.animationDuration
             batteryPercentPosition: Plasmoid.configuration.batteryPercentPosition

@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.3.10; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.4.0; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.3.10.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.4.0.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -71,9 +71,11 @@ Na pulpicie używany jest ten sam komponent. Nie emuluje fizycznego wycięcia ek
   strony. Stara historia nie jest ponownie wyświetlana po uruchomieniu widżetu.
   Respektowane są tryb Nie przeszkadzać i ustawienia aplikacji. Powiadomienia
   tymczasowe podlegają regułom przechowywania KDE; nie tworzymy osobnego archiwum.
-- **Priorytety:** podgląd powiadomienia → operacja na pakietach → odtwarzana muzyka
-  → lokalny model AI → zegar. W ustawieniach lub zakładce **Aktywność** można
-  przypiąć konkretny widok, w tym **Powiadomienia**. Podgląd chwilowo przerywa przypięcie, po czym je przywraca.
+- **Priorytety:** wskaźnik głośności/jasności → nowe powiadomienie → multimedia →
+  niepusta półka → pakiety → lokalne AI → preferowany widok lub spoczynek.
+  Wybór widoku panelu jest preferencją, a nie sztywnym przypięciem. Powiadomienia
+  z licznikiem zero ustępują widokowi spoczynkowemu. Chwilowy komunikat nie steruje
+  odtwarzaniem, a ręcznie wybrana zakładka nie zmienia się podczas pracy.
 - **System:** CPU, RAM i obsługiwane GPU (liczniki sysfs, opcjonalnie `nvidia-smi`/`intel_gpu_top`).
   Nieobsługiwane GPU są pomijane. ↗ otwiera Monitor systemu lub `top` w Konsole.
 - **Pakiety:** wykrywanie poleceń APT/dpkg, pacman, DNF/Yum, Zypper, Flatpak, pip
@@ -107,7 +109,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.10.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.0.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -183,7 +185,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.3.10.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.4.0.plasmoid
 plasmawindowed ./package
 ```
 
@@ -406,3 +408,51 @@ rozwinięcia, jak i podglądów powiadomień oraz obu kształtów widżetu.
 Dla nowego stylu okno z góry rezerwuje niewielki przezroczysty margines na ruch.
 Dzięki temu odbicie nie zmienia rozmiaru/pozycji okna w trakcie animacji, a notch
 pozostaje zaczepiony w tym samym miejscu. Ruch jest ograniczony do rozmiaru ekranu.
+
+## Bieżąca aktywność zwinięcia (0.4.0)
+
+**Widok spoczynkowy:** zegar i bateria (domyślnie), data/zegar/bateria albo sama
+bateria. Przy ukrytej lub niedostępnej baterii ostatnia opcja pokazuje zegar.
+Dotychczasowe ustawienie procentu baterii pozostaje aktywne.
+
+Odtwarzane multimedia mają pierwszeństwo przed półką i ustawionym widokiem.
+Tytuł/nazwa pliku przewija się **w górę** na **czas bieżący / czas całkowity**, a potem
+wraca. Domyślny odstęp to cztery sekundy, regulowany od 1 do 15. Brak czasu
+całkowitego jest oznaczony „—”. Dane pochodzą z MPRIS odtwarzacza. Ograniczenie
+animacji wyłącza przewijanie, zachowując przełączanie tekstu. Szerokość jest liczona
+dla obu tekstów, aby widżet nie zmieniał jej przy każdym przełączeniu.
+
+Powiadomienie **nie pauzuje, nie zatrzymuje i nie wznawia odtwarzania**. Przejmuje
+wyłącznie widok; po jego zniknięciu wracają aktualne dane aktywności. Po pauzie lub
+zakończeniu pliku działa kolejny priorytet. Niepusta półka pokazuje liczbę elementów
+i staje się domyślną zakładką otwierania, jeśli nic nie jest odtwarzane. Ręcznie
+wybrana zakładka pozostaje na miejscu podczas korzystania z rozwinięcia.
+
+Opcja **Pokazuj głośność i jasność w zwiniętym widżecie** dodaje ikonę, pasek i procent
+na czas ustawiony przez użytkownika (domyślnie dwie sekundy od ostatniej zmiany).
+Powiadomienia i ostrzeżenie baterii czekają na koniec wskaźnika, po czym dostają
+pełny czas prezentacji. Systemowe OSD KDE nadal działa obok wskaźnika notcha.
+Obsługa wymaga, aby KDE emitowało zdarzenie OSD; prywatne suwaki aplikacji lub
+nieobsługiwany sprzęt mogą go nie wysyłać.
+
+**Przypomnienia kalendarza** działają także bez otwartej zakładki dla wybranego
+źródła KDE/Akonadi lub ICS. Domyślnie: 15 minut przed wydarzeniem oraz w chwili
+rozpoczęcia. Nie obejmują wydarzeń całodniowych. Wyprzedzenie zero oznacza tylko
+start; całą funkcję można wyłączyć. Uwzględniany jest także następny dzień,
+więc działa przypomnienie przed północą o wydarzeniu po północy. ICS korzysta
+z dotychczasowego odświeżania/pamięci podręcznej co pięć minut.
+
+Przypomnienia trafiają do wspólnej historii KDE i respektują ustawienia podglądów
+oraz Nie przeszkadzać. Kliknięcie aktywnego przypomnienia otwiera zakładkę kalendarza
+w widżecie. Dziennik dostarczenia jest zapisywany osobno dla każdego widżetu,
+przetrwa normalny restart i nie jest zerowany resetem preferencji. Start można
+nadrobić w ciągu dwóch minut; stare alarmy nie są odtwarzane po długim uśpieniu.
+Niezależne alarmy KOrganizer lub innego dostawcy nadal mogą pojawiać się osobno.
+
+Karty i podglądy powiadomień mają teraz **↗ przed ×**, kliknięcie w treść i lekkie
+podświetlenie po najechaniu. Preferowana jest natywna akcja KDE, która może przejść
+do konkretnej wiadomości lub dokumentu. W historii, gdy akcja wygasła, widżet
+próbuje uruchomić zarejestrowaną aplikację przez `kioclient`/`kioclient6`. Treść
+powiadomienia nie jest wykonywana jako polecenie. Przy braku akcji i znanego
+identyfikatora aplikacji przycisk otwierania jest nieaktywny. Usuwanie i otwieranie
+są niezależne. Aktywacja okna zależy również od aplikacji i polityki kompozytora.

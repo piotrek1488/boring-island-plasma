@@ -82,7 +82,7 @@ Item {
     }
     TestCase {
         name: "Expansion"; when: windowShown
-        function init() { shell.animationStyle="smooth"; shell.maximumWidth=4096; shell.maximumHeight=4096; shell.bottomEdge=false; shell.editing=false; shell.reduceMotion=true; shell.opened=false; shell.fullView=false; shell.presentedFullView=false; shell.fixedViewport=false; shell.reduceMotion=true; shell.notch=false; shell.uiScale=1; shell.animationDuration=400; shell.initialPage=0; historyModel.clear(); wait(20); compare(shell.progress,0); }
+        function init() { media.playing=false; notifications.preview=null; shell.animationStyle="smooth"; shell.maximumWidth=4096; shell.maximumHeight=4096; shell.bottomEdge=false; shell.editing=false; shell.reduceMotion=true; shell.opened=false; shell.fullView=false; shell.presentedFullView=false; shell.fixedViewport=false; shell.reduceMotion=true; shell.notch=false; shell.uiScale=1; shell.animationDuration=400; shell.initialPage=0; historyModel.clear(); wait(20); compare(shell.progress,0); }
         function test_shapes_and_scaling_data() {
             return [{tag:"island",notch:false},{tag:"notch",notch:true}];
         }
@@ -294,6 +294,15 @@ Item {
             const bottom=pane.mapToItem(shell,pane.width,pane.height);
             verify(bottom.y<=shell.height-25);
             compare(shell.height,400);
+        }
+        function test_notification_preserves_manual_shelf_and_playback() {
+            shell.fullView=true; shell.opened=true; shell.initialPage=1; media.playing=true; wait(30);
+            const tabs=findChild(shell,"tabs");
+            const shelf=Array.from(tabs.children).find(child=>child.text && child.text.indexOf("Shelf")===0);
+            verify(shelf.accent);
+            notifications.preview={id:"message",application:"Mail",summary:"Hello",body:"World"}; wait(30);
+            verify(media.playing); verify(shelf.accent);
+            notifications.preview=null; verify(media.playing); verify(shelf.accent);
         }
         function test_activity_page() {
             shell.fullView=true; shell.opened=true; shell.initialPage=5;

@@ -3,6 +3,7 @@ import QtQuick
 Item {
     id: queue
     visible: false
+    property bool suspended: false
     property int duration: 4000
     property bool enabled: true
     property var pending: []
@@ -25,14 +26,15 @@ Item {
         timeout.stop();
         current = pending.length ? pending[0] : null;
         pending = pending.slice(1);
-        if (current) timeout.restart();
+        if (current && !suspended) timeout.restart();
     }
     function retain(ids) {
         pending = pending.filter(n => ids.indexOf(n.id) !== -1);
         if (current && ids.indexOf(current.id) === -1) next();
     }
     function reset() { pending = []; current = null; timeout.stop(); }
+    onSuspendedChanged: { if (suspended) timeout.stop(); else if (active && !suspended) timeout.restart(); }
     onEnabledChanged: if (!enabled) reset()
-    onDurationChanged: if (active) timeout.restart()
+    onDurationChanged: if (active && !suspended) timeout.restart()
     Timer { id: timeout; interval: Math.max(1000, queue.duration); onTriggered: queue.next() }
 }

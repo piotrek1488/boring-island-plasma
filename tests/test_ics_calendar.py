@@ -112,6 +112,19 @@ END:VEVENT'''))
         event['startDateTime']=event['endDateTime']='2026-11-05T12:00:00+00:00'
         self.assertEqual(list(ics.event_dates(event,date(2026,11,1),date(2026,12,1))), [date(2026,11,5)])
 
+    def test_reminder_lookahead_across_month_and_year(self):
+        payload = calendar('BEGIN:VEVENT\nUID:new-year\nDTSTART:20270101T000500Z\nDTEND:20270101T010500Z\nSUMMARY:New year meeting\nEND:VEVENT')
+        with tempfile.TemporaryDirectory() as directory:
+            folder=Path(directory); file=folder/'calendar.ics'; file.write_bytes(payload)
+            with patch.object(ics,'local_timezone',return_value=ZoneInfo('UTC')):
+                result=ics.agenda([str(file)],date(2026,12,31),folder/'cache',reminders=True)
+            self.assertEqual(result['events'],[])
+            self.assertEqual(len(result['reminderEvents']),1)
+            event=result['reminderEvents'][0]
+            self.assertEqual(event['uid'],'new-year')
+            self.assertEqual(len(event['sourceKey']),64)
+            self.assertNotIn('2027-01-01',result['monthDays'])
+
     def test_network_cache_and_explicit_refresh(self):
         payload = calendar('')
         with tempfile.TemporaryDirectory() as directory:

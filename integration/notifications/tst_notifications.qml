@@ -14,6 +14,9 @@ TestCase {
     property bool commandDone: false
     property int commandExit: -1
     UI.NotificationBackend { id: backend; previewDuration: 1000 }
+    UI.NativeServices { id: nativeBridge; osdEnabled:false }
+    SignalSpy { id: reminderOpenedSpy; target:nativeBridge; signalName:"reminderActivated" }
+    SignalSpy { id: deliveredSpy; target:nativeBridge; signalName:"delivered" }
     NM.Notifications { id: center; showExpired: true; showDismissed: true; groupMode: NM.Notifications.GroupDisabled }
     Plasma5Support.DataSource {
         id: sender
@@ -44,6 +47,16 @@ TestCase {
         for (let row=center.count-1;row>=0;--row) center.close(center.index(row,0));
         backend.hidePreviews(); tryCompare(center,"count",0);
         backend.history.blacklistedDesktopEntries=[];
+    }
+    function test_native_reminder_joins_shared_history() {
+        deliveredSpy.clear(); reminderOpenedSpy.clear();
+        nativeBridge.notify("fixture-reminder","Meeting starts","Meeting <fixture> at 10:00");
+        tryCompare(deliveredSpy,"count",1,3000);
+        tryCompare(backend,"count",1,3000); tryCompare(center,"count",1,3000);
+        const id=deliveredSpy.signalArguments[0][1];
+        verify(backend.canOpenId(id)); verify(backend.openId(id,null));
+        tryCompare(reminderOpenedSpy,"count",1,3000);
+        backend.closeId(id); tryCompare(center,"count",0,3000);
     }
     function test_preview_independent_of_history_filter() {
         backend.history.blacklistedDesktopEntries=["@other"];

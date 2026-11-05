@@ -7,6 +7,7 @@ Item {
     property int percent: 100
     property bool powered: false
     property int duration: 4000
+    property bool suspended: false
     property bool active: false
     property bool warned: false
     signal warning()
@@ -18,11 +19,12 @@ Item {
         } else if (!warned && percent >= 0) {
             warned = true;
             active = true;
-            expiry.restart();
+            if (!suspended) expiry.restart();
             warning();
         }
     }
     // Coalesce BatteryControlModel's state/percentage updates during startup.
+    onSuspendedChanged: { if (suspended) expiry.stop(); else if (active) expiry.restart(); }
     onHasBatteryChanged: Qt.callLater(update)
     onPercentChanged: Qt.callLater(update)
     onPoweredChanged: Qt.callLater(update)

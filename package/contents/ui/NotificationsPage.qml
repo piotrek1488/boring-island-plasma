@@ -7,6 +7,7 @@ ColumnLayout {
     id: page
     objectName: "notificationsPage"
     required property var backend
+    signal applicationOpened()
     property string language: "en"
     Translations { id: strings; language: page.language }
     RowLayout {
@@ -24,17 +25,13 @@ ColumnLayout {
         clip: true; spacing: 8
         model: page.backend.history
         ScrollBar.vertical: ScrollBar {}
-        delegate: RowLayout {
+        delegate: NotificationCard {
             id: notification
             required property var model
             width: ListView.view.width - 12
-            ColumnLayout {
-                Layout.fillWidth: true
-                Label { Layout.fillWidth: true; text: notification.model.applicationName || ""; textFormat: Text.PlainText; color: "#aaa0c9"; elide: Text.ElideRight; font.pixelSize: 11 }
-                Label { Layout.fillWidth: true; text: notification.model.summary || ""; textFormat: Text.PlainText; color: "#f3f2fa"; wrapMode: Text.Wrap; font.bold: true }
-                Label { Layout.fillWidth: true; text: notification.model.body || ""; textFormat: Text.StyledText; color: "#9899aa"; wrapMode: Text.Wrap; onLinkActivated: link => Qt.openUrlExternally(link) }
-            }
-            ActionButton { objectName: "deleteNotification_" + notification.model.notificationId; text: "×"; Accessible.description: strings.text("Delete notification"); onClicked: page.backend.closeId(notification.model.notificationId) }
+            backend: page.backend; language: page.language
+            note: ({id:String(model.notificationId), application:model.applicationName || "", summary:model.summary || "", body:model.body || ""})
+            onApplicationOpened: page.applicationOpened()
         }
     }
 }

@@ -13,7 +13,7 @@ class SettingsDefaults(unittest.TestCase):
         ns = {'k': 'http://www.kde.org/standards/kcfg/1.0'}
         expected = {}
         for entry in ET.parse(ROOT / 'package/contents/config/main.xml').findall('.//k:entry', ns):
-            if entry.get('name') == 'shelfJson':
+            if entry.get('name') in ('shelfJson', 'reminderStateJson'):
                 continue
             value = entry.find('k:default', ns).text or ''
             kind = entry.get('type')
@@ -25,3 +25,4 @@ class SettingsDefaults(unittest.TestCase):
         self.assertEqual(actual['expandedWidth'], 600)
         self.assertEqual(actual['expandedHeight'], 400)
         self.assertNotIn('shelfJson', actual)
+        self.assertNotIn('reminderStateJson', actual)

@@ -5,6 +5,7 @@ Item {
     visible: false
     property bool initialized: false
     property var known: ({})
+    property alias suspended: queue.suspended
     property alias duration: queue.duration
     property alias previewsEnabled: queue.enabled
     readonly property alias preview: queue.current

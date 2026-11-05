@@ -161,11 +161,13 @@ Item {
                 }
             }
             Loader {
+                id: notificationsLoader
                 active: view.page === 4 && view.notifications !== null
                 onActiveChanged: if (active) setSource("NotificationsPage.qml", {backend: view.notifications, language: view.language})
                 Component.onCompleted: if (active) setSource("NotificationsPage.qml", {backend: view.notifications, language: view.language})
                 onLoaded: item.language = Qt.binding(() => view.language)
             }
+            Connections { target:notificationsLoader.item; function onApplicationOpened() { view.closeRequested(); } }
             Loader {
                 active: view.page === 5 && view.activities !== null
                 id: activityLoader

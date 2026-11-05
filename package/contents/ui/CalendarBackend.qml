@@ -3,8 +3,10 @@ import "../code/CalendarMath.js" as CalendarMath
 import org.kde.plasma.workspace.calendar as PlasmaCalendar
 Item {
     id: backend
+    property bool reminderMode: false
     property date selectedDate: new Date()
     property var events: []
+    property var reminderEvents: []
     property var eventDays: ({})
     property bool providerAvailable: false
     property bool ready: false
@@ -21,14 +23,20 @@ Item {
         if (!ready) return;
         // Reading each date also invalidates Plasma 6.6's cached agenda for
         // non-today dataReady updates. Read the selected date last for the list.
-        const markers = {};
-        const days = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
-        for (let day = 1; day <= days; ++day) {
-            const date = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), day, 12);
-            if (calendar.daysModel.eventsForDate(date).length > 0) markers[CalendarMath.key(date)] = true;
+        if (!reminderMode) {
+            const markers = {};
+            const days = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
+            for (let day = 1; day <= days; ++day) {
+                const date = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), day, 12);
+                if (calendar.daysModel.eventsForDate(date).length > 0) markers[CalendarMath.key(date)] = true;
+            }
+            eventDays = markers;
+        } else {
+            calendar.daysModel.eventsForDate(new Date(selectedDate.getFullYear(),selectedDate.getMonth(),selectedDate.getDate()-1,12));
         }
-        eventDays = markers;
         events = calendar.daysModel.eventsForDate(selectedDate);
+        const next = new Date(selectedDate.getFullYear(),selectedDate.getMonth(),selectedDate.getDate()+1,12);
+        reminderEvents = Array.from(events).concat(Array.from(calendar.daysModel.eventsForDate(next)));
     }
     function moveDay(offset) {
         selectedDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + offset, 12);

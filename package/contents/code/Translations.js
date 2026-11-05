@@ -1,6 +1,25 @@
 .pragma library
 
 var polish = {
+    "Open calendar": "Otwórz kalendarz",
+    "Open source application": "Otwórz aplikację źródłową",
+    "This notification has no application action.": "To powiadomienie nie udostępnia akcji otwarcia aplikacji.",
+    "These indicators appear alongside KDE system indicators.": "Te wskaźniki są wyświetlane obok systemowych wskaźników KDE.",
+    "Brightness": "Jasność",
+    "Event starting now": "Wydarzenie rozpoczyna się teraz",
+    "Upcoming event": "Nadchodzące wydarzenie",
+    "Idle view:": "Widok spoczynkowy:",
+    "Clock and battery": "Zegar i bateria",
+    "Date, clock and battery": "Data, zegar i bateria",
+    "Battery only": "Tylko bateria",
+    "Live activity takes priority over the preferred panel view. Empty notifications fall back to the idle view.": "Bieżąca aktywność ma pierwszeństwo przed preferowanym widokiem panelu. Przy braku powiadomień pojawi się widok spoczynkowy.",
+    "Media text rotation (seconds):": "Przełączanie tekstu multimediów (sekundy):",
+    "Show volume and brightness in the compact widget": "Pokazuj głośność i jasność w zwiniętym widżecie",
+    "Volume/brightness display (seconds):": "Czas wyświetlania głośności/jasności (sekundy):",
+    "Calendar reminders before events and at their start": "Przypomnienia przed wydarzeniami i w chwili rozpoczęcia",
+    "Reminder lead time (minutes):": "Wyprzedzenie przypomnienia (minuty):",
+    "Reminders work with the calendar tab closed. All-day events are excluded. Zero minutes enables start reminders only.": "Przypomnienia działają także przy zamkniętej zakładce kalendarza. Nie obejmują wydarzeń całodniowych. Zero minut włącza tylko przypomnienie o rozpoczęciu.",
+
     "Show earlier events": "Pokaż wcześniejsze wydarzenia",
     "Hide earlier events": "Ukryj wcześniejsze wydarzenia",
     "No remaining events for today.": "Brak kolejnych wydarzeń na dziś.",

@@ -13,6 +13,11 @@ Item {
     property string calendarSources: ""
     property int calendarAppletId: 0
     property string language: "en"
+    property string compactAlternateText: ""
+    property bool compactCycleText: false
+    property int compactCycleInterval: 4000
+    property bool compactBatteryOnly: false
+    property var osd: null
     property string displayText: ""
     property string pinnedMode: "auto"
     property color accentColor: "#b9a3ff"
@@ -90,11 +95,15 @@ Item {
             y: shell.bottomEdge ? morph.height - height : 0
             opacity: Math.max(0, 1 - shell.progress * 3)
             visible: opacity > 0
+            alternateText: shell.compactAlternateText; cycleText: shell.compactCycleText
+            cycleInterval: shell.compactCycleInterval; batteryOnly: shell.compactBatteryOnly
+            reduceMotion: shell.reduceMotion
             backend: shell.backend; language: shell.language; notch: shell.notch
             showBattery: shell.showBattery; displayText: shell.displayText
             batteryPercentPosition: shell.batteryPercentPosition; configureEnabled: shell.configureEnabled
             onConfigureRequested: shell.configureRequested()
             onCloseRequested: shell.closeRequested()
+            osd: shell.osd
             drawSurface: false; accentColor: shell.accentColor
             onActivated: shell.activated()
             onFilesDropped: urls => shell.filesDropped(urls)
@@ -112,6 +121,7 @@ Item {
             batteryPercentPosition: shell.batteryPercentPosition; configureEnabled: shell.configureEnabled
             onConfigureRequested: shell.configureRequested()
             onCloseRequested: shell.closeRequested()
+            osd: shell.osd
             drawSurface: false; accentColor: shell.accentColor
             onActivated: shell.activated()
             onFilesDropped: urls => shell.filesDropped(urls)
@@ -148,16 +158,13 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                     textFormat: Text.PlainText
                 }
-                RowLayout {
-                    anchors.fill: parent; anchors.margins: 18
+                NotificationCard {
+                    objectName: "notificationPreviewCard"
+                    anchors.fill: parent; anchors.margins: 12
                     visible: !shell.presentedFullView && shell.batteryWarning === "" && shell.notifications.preview !== null
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Label { Layout.fillWidth: true; text: shell.notifications.preview ? shell.notifications.preview.application : ""; textFormat: Text.PlainText; color: "#aaa0c9"; elide: Text.ElideRight }
-                        Label { Layout.fillWidth: true; text: shell.notifications.preview ? shell.notifications.preview.summary : ""; textFormat: Text.PlainText; color: "#f3f2fa"; elide: Text.ElideRight; font.bold: true }
-                        Label { Layout.fillWidth: true; text: shell.notifications.preview ? shell.notifications.preview.body : ""; textFormat: Text.StyledText; color: "#9899aa"; wrapMode: Text.Wrap; maximumLineCount: 2; elide: Text.ElideRight }
-                    }
-                    ActionButton { text: "×"; Accessible.description: strings.text("Delete notification"); onClicked: if (shell.notifications.preview) shell.notifications.closeId(shell.notifications.preview.id) }
+                    backend: shell.notifications; language: shell.language
+                    note: shell.notifications.preview; maximumBodyLines:2; maximumSummaryLines:1
+                    onApplicationOpened: shell.closeRequested()
                 }
             }
         }

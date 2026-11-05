@@ -1,3 +1,27 @@
+# Verification of 0.4.0
+
+Core Qt tests exercise activity precedence and zero-notification fallback, media
+text rotation (including real upward frames), current playback position after a
+notification, zero playback commands, OSD limits/mute/filter/expiry, preview queue
+suspension, battery-only mode, and manual Shelf tab preservation. Reminder tests
+cover lead/start phases, refresh deduplication, acknowledged persistent state,
+failed-delivery retry, all-day exclusion, disabling, and midnight/recurrence.
+Python tests include next-month/year ICS lookahead and registered desktop ID
+lookup (flat/nested) with rejection of paths/shell syntax. Notification-card tests
+cover click-to-open, hover color, icon order, disabled actions, async completion,
+and delete without opening. Existing UI/data suites remain enabled.
+
+The native integration fixture now verifies Notify delivery through the Plasma
+D-Bus QML module into both shared histories and invoking the reminder's default
+action. These modules are unavailable in the Qt 6.4.2 cloud environment, so this
+fixture was added but not run here. API signatures were checked against KDE's
+Plasma/6.6 D-Bus signal/method autotests and NotificationManager API. Actual OSD
+signals, activation tokens, kioclient launching and live Akonadi synchronization
+need target-desktop checks. Tests do not access personal accounts or launch real
+applications.
+
+---
+
 # Verification of 0.3.10
 
 Agenda tests cover default hiding of finished events, the ↑/↓ toggle, revealing

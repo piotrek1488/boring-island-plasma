@@ -3,6 +3,8 @@ import org.kde.plasma.plasma5support as Plasma5Support
 
 Item {
     id: backend
+    property bool reminderMode: false
+    property var reminderEvents: []
     property int appletId: 0
     property string sources: ""
     property date selectedDate: new Date()
@@ -10,6 +12,9 @@ Item {
     property var eventDays: ({})
     readonly property bool providerAvailable: true
     property string errorMessage: "Loading calendar…"
+    // Compare saved KConfig input with the currently applied form value so a
+    // delayed config flush cannot deliver reminders from a removed source.
+    readonly property string sourceFingerprint: Qt.md5(Array.from(new Set(sources.split(/\r?\n/).map(value=>value.trim()).filter(Boolean))).slice(0,16).join("\n"))
     property string currentCommand: ""
     property int serial: 0
     readonly property string script: decodeURIComponent(Qt.resolvedUrl("../code/calendar_ics.py").toString().replace(/^file:\/\//, ""))
@@ -21,7 +26,7 @@ Item {
         // are read from the saved applet configuration, not exposed in argv.
         const launch = 'calendar_python="${XDG_DATA_HOME:-$HOME/.local/share}/boring-island/calendar-venv/bin/python"; '
             + 'if [ ! -x "$calendar_python" ]; then calendar_python=python3; fi; "$calendar_python" ';
-        currentCommand = launch + quote(script) + " --applet-id " + appletId + " --date " + day + (force ? " --refresh" : "") + " # " + (++serial);
+        currentCommand = launch + quote(script) + " --applet-id " + appletId + " --date " + day + (reminderMode ? " --reminders" : "") + (force ? " --refresh" : "") + " # " + (++serial);
         errorMessage = "Loading calendar…";
         collector.connectSource(currentCommand);
     }
@@ -39,14 +44,20 @@ Item {
             try {
                 if (data["exit code"] !== 0) throw new Error("calendar");
                 const result = JSON.parse(data.stdout);
+                if (result.sourceFingerprint && result.sourceFingerprint !== backend.sourceFingerprint) {
+                    backend.events=[]; backend.reminderEvents=[]; backend.eventDays=({}); return;
+                }
                 backend.events = result.events.map(event => Object.assign({}, event, {
                     startDateTime: new Date(event.startDateTime), endDateTime: new Date(event.endDateTime)
+                }));
+                backend.reminderEvents = (result.reminderEvents || []).map(event => Object.assign({},event,{
+                    startDateTime:new Date(event.startDateTime),endDateTime:new Date(event.endDateTime)
                 }));
                 const markers = {};
                 for (const day of result.monthDays || []) markers[day] = true;
                 backend.eventDays = markers;
                 backend.errorMessage = result.error || "";
-            } catch (error) { backend.eventDays = ({}); backend.events = []; backend.errorMessage = "Calendar data could not be loaded."; }
+            } catch (error) { backend.reminderEvents = []; backend.eventDays = ({}); backend.events = []; backend.errorMessage = "Calendar data could not be loaded."; }
         }
     }
     // KConfig may flush an Apply asynchronously. Retry briefly without putting

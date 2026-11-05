@@ -29,6 +29,13 @@
     <entry name="reduceMotion" type="Bool"><default>false</default></entry>
     <entry name="calendarMode" type="String"><default>kde</default></entry>
     <entry name="calendarSources" type="String"><default></default></entry>
+    <entry name="idleView" type="String"><default>clock</default></entry>
+    <entry name="mediaCycleSeconds" type="Int"><default>4</default><min>1</min><max>15</max></entry>
+    <entry name="showOsd" type="Bool"><default>true</default></entry>
+    <entry name="osdDuration" type="Int"><default>2</default><min>1</min><max>15</max></entry>
+    <entry name="remindersEnabled" type="Bool"><default>true</default></entry>
+    <entry name="reminderLeadMinutes" type="Int"><default>15</default><min>0</min><max>120</max></entry>
+    <entry name="reminderStateJson" type="String"><default>{}</default></entry>
     <entry name="shelfJson" type="String"><default>[]</default></entry>
   </group>
 </kcfg>
