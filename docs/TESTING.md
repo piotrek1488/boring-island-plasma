@@ -1,3 +1,23 @@
+# Verification of 0.3.7
+
+Core tests cover minimum compact width fitting/overrides/scaling, 600 × 330 total
+expanded geometry, close button placement and isolated clicks, the year in the
+header, and clicking individual history rows using KDE's notificationId role.
+The isolated native notification fixture now exercises the real delete button
+with two notifications and checks that only one disappears from both histories.
+It requires Plasma modules and cannot run in this cloud workspace.
+
+Python calendar tests use real icalendar/recurring-ical-events libraries with local
+fixtures: recurrence, EXDATE, all-day exclusive ends, cancelled events, overnight
+UTC/local conversion, partial-source errors, private KConfig source loading,
+end-to-end CLI invocation, network caching and explicit refresh. Network calls are
+mocked; no Google/Microsoft account or personal calendar was accessed. Core tests
+require the optional calendar requirements installed in the test environment.
+Native DataSource/KConfig Apply timing and actual provider subscription refresh
+still need target-desktop verification.
+
+---
+
 # Verification of 0.3.6
 
 Core tests verify reset values against every KConfig preference (excluding shelf

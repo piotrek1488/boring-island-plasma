@@ -8,6 +8,9 @@ Item {
     required property var backend
     required property var notifications
     required property var activities
+    property string calendarMode: "kde"
+    property string calendarSources: ""
+    property int calendarAppletId: 0
     property string language: "en"
     property string displayText: ""
     property string pinnedMode: "auto"
@@ -31,8 +34,8 @@ Item {
     property real uiScale: 1
     property real compactWidth: 240
     property real compactHeight: 42
-    property real expandedWidth: 520
-    property real expandedHeight: 390
+    property real expandedWidth: 600
+    property real expandedHeight: 330
     property var shelf: []
     property int initialPage: 0
     property real progress: opened && !editing ? 1 : 0
@@ -47,7 +50,7 @@ Item {
     property real maximumHeight: 4096
     readonly property real targetWidth: Math.min(maximumWidth, Math.max(compactWidth, expandedWidth * uiScale))
     readonly property real expandedHeaderHeight: Math.max(compactHeight, 56 * uiScale)
-    readonly property real bodyHeight: Math.max(0, Math.min(maximumHeight - expandedHeaderHeight, (presentedFullView ? expandedHeight : 126) * uiScale))
+    readonly property real bodyHeight: Math.max(0, Math.min(maximumHeight - expandedHeaderHeight, (presentedFullView ? expandedHeight * uiScale - expandedHeaderHeight : 126 * uiScale)))
     readonly property real surfaceWidth: compactWidth + (targetWidth - compactWidth) * progress
     readonly property real headerHeight: compactHeight + (expandedHeaderHeight - compactHeight) * progress
     readonly property real surfaceHeight: headerHeight + bodyHeight * progress
@@ -82,6 +85,7 @@ Item {
             showBattery: shell.showBattery; displayText: shell.displayText
             batteryPercentPosition: shell.batteryPercentPosition; configureEnabled: shell.configureEnabled
             onConfigureRequested: shell.configureRequested()
+            onCloseRequested: shell.closeRequested()
             drawSurface: false; accentColor: shell.accentColor
             onActivated: shell.activated()
             onFilesDropped: urls => shell.filesDropped(urls)
@@ -98,6 +102,7 @@ Item {
             showBattery: shell.showBattery; displayText: shell.displayText
             batteryPercentPosition: shell.batteryPercentPosition; configureEnabled: shell.configureEnabled
             onConfigureRequested: shell.configureRequested()
+            onCloseRequested: shell.closeRequested()
             drawSurface: false; accentColor: shell.accentColor
             onActivated: shell.activated()
             onFilesDropped: urls => shell.filesDropped(urls)
@@ -115,6 +120,7 @@ Item {
                     id: content
                     anchors.fill: parent
                     visible: shell.presentedFullView
+                    calendarMode: shell.calendarMode; calendarSources: shell.calendarSources; calendarAppletId: shell.calendarAppletId
                     language: shell.language; backend: shell.backend; notifications: shell.notifications; activities: shell.activities
                     drawSurface: false; notch: shell.notch; reduceMotion: shell.reduceMotion; showBattery: shell.showBattery
                     shelf: shell.shelf; pinnedMode: shell.pinnedMode

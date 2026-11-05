@@ -15,6 +15,7 @@ Item {
     }
     UI.CompactView { id: compact; width: 520; height: 56; expandedHeader: true; backend: fake }
     UI.BatteryIndicator { id: indicator; y: 90; percent: 82 }
+    SignalSpy { id: closeSpy; target: compact; signalName: "closeRequested" }
     SignalSpy { id: configureSpy; target: compact; signalName: "configureRequested" }
     SignalSpy { id: activationSpy; target: compact; signalName: "activated" }
     TestCase {
@@ -23,7 +24,7 @@ Item {
             indicator.percentPosition="right"; indicator.status="discharging"; indicator.language="en";
             compact.enabled=true; compact.expandedHeader=true; compact.compactScale=1; compact.notch=false; compact.showBattery=true; compact.configureEnabled=true;
             compact.batteryPercentPosition="right"; fake.hasBattery=true;
-            configureSpy.clear(); activationSpy.clear();
+            configureSpy.clear(); activationSpy.clear(); closeSpy.clear();
         }
         function test_percentage_positions_data() {
             return ["inside","left","right","hidden"].map(p => ({tag:p,position:p}));
@@ -85,6 +86,13 @@ Item {
             verify(!compact.visualItem.enabled);
             mouseClick(findChild(compact,"compactTitle")); compare(activationSpy.count,0);
             compact.panelItem=null; compact.enabled=true;
+        }
+        function test_close_button_after_settings() {
+            const close=findChild(compact,"closeButton"), gear=findChild(compact,"settingsButton");
+            wait(30);
+            verify(close.mapToItem(compact,0,0).x>=gear.mapToItem(compact,gear.width,0).x);
+            mouseClick(close); compare(closeSpy.count,1); compare(configureSpy.count,0); compare(activationSpy.count,0);
+            compact.expandedHeader=false; verify(!close.visible); verify(!gear.visible);
         }
         function test_low_battery_color() {
             indicator.percent=20; compare(indicator.levelColor.toString(),"#ff9494");

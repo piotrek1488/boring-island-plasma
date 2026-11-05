@@ -4,10 +4,13 @@ import "../code/SettingsDefaults.js" as Defaults
 import org.kde.kirigami as Kirigami
 Kirigami.FormLayout {
     id: config
+    property string cfg_calendarMode: "kde"
+    property alias cfg_calendarSources: calendarSources.text
     property string cfg_language: "en"
     readonly property string language: cfg_language
     Translations { id: strings; language: config.language }
     property alias cfg_compactScale: compactScale.value
+    property alias cfg_compactMinimumWidth: minimumWidth.value
     property alias cfg_autoWidth: autoWidth.checked
     property alias cfg_expandedWidth: expandedWidth.value
     property alias cfg_expandedHeight: expandedHeight.value
@@ -30,16 +33,6 @@ Kirigami.FormLayout {
     property alias cfg_animationDuration: animationDuration.value
     property alias cfg_reduceMotion: motion.checked
     function restoreDefaults() { Defaults.restore(config); }
-    Button {
-        objectName: "resetDefaultsButton"
-        text: strings.text("Restore default settings")
-        icon.name: "edit-undo"
-        onClicked: config.restoreDefaults()
-    }
-    Label {
-        text: strings.text("Use Apply or OK to save the reset. Shelf shortcuts are kept.")
-        wrapMode: Text.WordWrap
-    }
     ComboBox {
         id: languageChoice
         objectName: "languageChoice"
@@ -51,8 +44,9 @@ Kirigami.FormLayout {
     ComboBox { id: shape; Kirigami.FormData.label: strings.text("Shape:"); model: [strings.text("Notch"), "Dynamic Island"] }
     SpinBox { id: size; Kirigami.FormData.label: strings.text("Compact width:"); from: 80; to: 1000; stepSize: 10; editable: true }
     CheckBox { id: autoWidth; text: strings.text("Fit width to content (compact width is the limit)") }
-    SpinBox { id: expandedWidth; Kirigami.FormData.label: strings.text("Expanded width (px):"); from: 420; to: 1000; value: 520; editable: true }
-    SpinBox { id: expandedHeight; Kirigami.FormData.label: strings.text("Expanded height (px):"); from: 320; to: 800; value: 390; editable: true }
+    SpinBox { id: minimumWidth; objectName: "compactMinimumWidthSetting"; Kirigami.FormData.label: strings.text("Minimum compact width (px):"); from: 80; to: 1000; value: 180; stepSize: 10; editable: true; enabled: autoWidth.checked }
+    SpinBox { id: expandedWidth; Kirigami.FormData.label: strings.text("Expanded width (px):"); from: 420; to: 1000; value: 600; editable: true }
+    SpinBox { id: expandedHeight; Kirigami.FormData.label: strings.text("Expanded height (px):"); from: 320; to: 800; value: 330; editable: true }
     SpinBox { id: expandedScale; Kirigami.FormData.label: strings.text("Expanded scale (%):"); from: 60; to: 200; value: 100; stepSize: 5; editable: true }
     SpinBox { id: compactScale; objectName: "compactScaleSetting"; Kirigami.FormData.label: strings.text("Compact scale (%):"); from: 50; to: 200; value: 100; stepSize: 5; editable: true }
     CheckBox { id: autoSize; objectName: "autoHeightSetting"; text: strings.text("Fit height to panel") }
@@ -84,4 +78,46 @@ Kirigami.FormLayout {
     Label { text: strings.text("Lower values make opening faster. Closing uses 70% of that duration, limited to 100–220 ms. Reduced motion disables animations."); wrapMode: Text.WordWrap }
     CheckBox { id: motion; text: strings.text("Reduce motion") }
     Label { text: strings.text("For an island at the top of the screen, place this widget in a centered top panel."); wrapMode: Text.WordWrap; LayoutMirroring.enabled: false }
+    ComboBox {
+        Kirigami.FormData.label: strings.text("Calendar source:")
+        model: [strings.text("KDE / Akonadi"), strings.text("ICS subscriptions / files")]
+        currentIndex: config.cfg_calendarMode === "ics" ? 1 : 0
+        onActivated: index => config.cfg_calendarMode = index === 1 ? "ics" : "kde"
+    }
+    TextArea {
+        id: calendarSources
+        objectName: "calendarSourcesSetting"
+        Kirigami.FormData.label: strings.text("ICS addresses or file paths:")
+        visible: config.cfg_calendarMode === "ics"
+        implicitWidth: 320; implicitHeight: 90
+        wrapMode: TextEdit.WrapAnywhere
+        placeholderText: "https://…/calendar.ics"
+        selectByMouse: true
+    }
+    Label {
+        visible: config.cfg_calendarMode === "ics"
+        text: strings.text("One subscription address or local ICS file per line. Read-only; refreshes every five minutes. Google: secret iCal address. Outlook: published ICS link.")
+        wrapMode: Text.WordWrap
+    }
+    Label {
+        visible: config.cfg_calendarMode === "ics"
+        text: strings.text("Install calendar support using the setup instructions. Subscription addresses can grant access to calendar data; keep them private.")
+        wrapMode: Text.WordWrap
+    }
+    Button {
+        visible: config.cfg_calendarMode === "ics"
+        text: strings.text("Calendar setup instructions")
+        onClicked: Qt.openUrlExternally("https://github.com/piotrek1488/boring-island-plasma/blob/main/README.md#google-and-outlook-calendars-without-akonadi")
+    }
+    Label {
+        text: strings.text("Use Apply or OK to save the reset. Shelf shortcuts are kept.")
+        wrapMode: Text.WordWrap
+    }
+    Button {
+        objectName: "resetDefaultsButton"
+        text: strings.text("Restore default settings")
+        icon.name: "edit-undo"
+        onClicked: config.restoreDefaults()
+    }
+
 }

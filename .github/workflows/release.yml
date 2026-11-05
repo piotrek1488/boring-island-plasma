@@ -36,6 +36,8 @@ jobs:
             qml6-module-qtquick-layouts qml6-module-qtquick-window \
             qml6-module-qtqml qml6-module-qtqml-models \
             qml6-module-qtqml-workerscript qml6-module-qttest
+      - name: Install calendar test dependencies
+        run: python -m pip install -r package/contents/code/requirements-calendar.txt
       - name: Run core tests
         run: ./scripts/test-core.sh
       - name: Build and validate package

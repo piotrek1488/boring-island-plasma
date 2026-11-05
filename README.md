@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.3.6** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.3.7** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -144,7 +144,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.6.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.7.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -193,7 +193,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.3.6.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.3.7.plasmoid
 plasmawindowed ./package
 ```
 
@@ -304,7 +304,7 @@ Reduce motion overrides both durations with no animation.
 ### Defaults and panel editing (0.3.6)
 
 The default animation duration is now **400 ms**. Existing saved values are kept;
-use **Restore default settings** at the top of the Boring Island settings page
+use **Restore default settings** at the bottom of the Boring Island settings page
 and then **Apply** or **OK** to reset all appearance/behavior preferences, including
 language and animation duration. **Cancel** discards the draft reset. Shelf
 shortcuts and Plasma's panel placement/global shortcut are preserved.
@@ -314,3 +314,63 @@ mode, expansion is blocked. Existing popups close immediately, hover timers stop
 and notification previews are suppressed without deleting KDE history. The compact
 shape returns inside its applet allocation with input disabled, exposing Plasma's
 edit/remove controls. Closing edit mode restores normal behavior.
+
+### Size, header and notification fixes (0.3.7)
+
+Automatic compact width now has a configurable **Minimum compact width (px)**,
+default **180** (lower it to 80 if preferred). The existing compact width remains
+the upper limit and wins if set below that minimum. Compact scale applies after
+fitting. Expanded defaults are **600 × 330 logical pixels**; expanded height now
+includes the header instead of adding the header to the configured height.
+Saved values remain unchanged; reset preferences to apply the new defaults.
+Reset is the last settings control. The expanded header has **battery → settings
+→ close**; the date includes the year. Individual notification deletion now uses
+KDE's `notificationId` role, preserving shared-history synchronization.
+
+## Google and Outlook calendars without Akonadi
+
+The **ICS subscriptions / files** calendar source reads Google Calendar and
+Outlook subscription feeds independently of Akonadi/PIM Events. It is read-only;
+changes are made in the original calendar service. Up to 16 feed URLs/local ICS
+paths can be entered, one per line. It supports recurring events, exclusions,
+all-day/multi-day events and local timezone conversion. Feeds refresh every five
+minutes while the agenda is loaded; ↻ fetches immediately. Google/Microsoft may
+update their exported feed later than their own application.
+
+From a source checkout, install the optional calendar libraries once:
+
+```bash
+./scripts/install-calendar-deps.sh
+```
+
+This creates a dedicated Python venv in `$XDG_DATA_HOME/boring-island/calendar-venv`
+(default `~/.local/share/boring-island/calendar-venv`). Python 3 with `venv` and pip
+is required; on Debian/Ubuntu install `python3-venv` if venv creation is unavailable.
+Then select **Calendar source → ICS subscriptions / files**, paste the addresses,
+and press **Apply** or **OK**. Existing KDE/Akonadi mode remains available.
+
+- **Google Calendar:** on the website, open Settings → select the calendar →
+  Integrate calendar → **Secret address in iCal format**, then copy that address.
+  [Google instructions](https://support.google.com/calendar/answer/37648).
+- **Outlook:** open Calendar settings → Shared calendars → Publish a calendar,
+  choose the calendar/permissions, publish it and copy the **ICS** subscription
+  link, rather than the HTML link.
+  [Microsoft instructions](https://support.microsoft.com/en-us/outlook/share-your-calendar-in-outlook-com).
+  Work/school policies may prevent calendar publishing; this feature does not
+  bypass those policies or provide Microsoft/Google OAuth sign-in.
+- A local `.ics` file or `file:///…` URL is also supported; it is reread when the
+  agenda refreshes. A downloaded export is a snapshot, not a live subscription.
+
+Subscription URLs can grant access to calendar contents. They are saved in the
+widget's Plasma configuration and are read directly by the helper, never passed
+as process arguments or included in error messages. Downloaded feeds are cached
+under `$XDG_CACHE_HOME/boring-island/calendars` with user-only file permissions.
+Resetting preferences removes the configured sources but preserves shelf data.
+
+Development tests additionally require:
+
+```bash
+python3 -m pip install -r package/contents/code/requirements-calendar.txt
+```
+
+Run this inside a development venv where system Python enforces PEP 668.

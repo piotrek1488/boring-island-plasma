@@ -14,7 +14,7 @@ Item {
     property bool reduceMotion: false
     readonly property real unscaledHeight: autoHeight ? (panelItem ? panelItem.height : height) : Math.max(16, Math.min(128, compactHeight))
     readonly property real naturalScale: Math.max(0.5, Math.min(2, unscaledHeight / 42))
-    readonly property real naturalWidth: naturalMetrics.width + (96 + (expandedHeader ? 22 : 0) + (showBattery && backend.hasBattery ? batteryIndicator.implicitWidth / contentScale : 0)) * naturalScale
+    readonly property real naturalWidth: naturalMetrics.width + (96 + (expandedHeader ? 54 : 0) + (showBattery && backend.hasBattery ? batteryIndicator.implicitWidth / contentScale : 0)) * naturalScale
     TextMetrics { id: naturalMetrics; text: compact.displayText || compact.backend.title || compact.clockText; font.pixelSize: Math.round(13 * compact.naturalScale) }
     readonly property real textWidth: textMetrics.width + 86 * contentScale + (showBattery && backend.hasBattery ? batteryIndicator.implicitWidth : 0)
     TextMetrics { id: textMetrics; text: compact.displayText || compact.backend.title || compact.clockText; font.pixelSize: Math.round(13 * compact.contentScale) }
@@ -26,6 +26,7 @@ Item {
     property string batteryPercentPosition: "right"
     property bool configureEnabled: true
     signal configureRequested()
+    signal closeRequested()
     property real compactScale: 1
     property real minimumTextScale: 0.5
     property bool expandedHeader: false
@@ -59,7 +60,8 @@ Item {
             anchors.fill: parent
             onClicked: mouse => {
                 const point = settingsButton.mapFromItem(visual, mouse.x, mouse.y);
-                if (!settingsButton.visible || !settingsButton.contains(point)) compact.activated();
+                const closePoint = closeButton.mapFromItem(visual, mouse.x, mouse.y);
+                if ((!settingsButton.visible || !settingsButton.contains(point)) && (!closeButton.visible || !closeButton.contains(closePoint))) compact.activated();
             }
         }
         RowLayout {
@@ -87,6 +89,17 @@ Item {
                 Accessible.name: strings.text("Configure Boring Island")
                 Accessible.description: strings.text("Configure Boring Island")
                 onClicked: compact.configureRequested()
+            }
+            ActionButton {
+                id: closeButton
+                objectName: "closeButton"
+                visible: compact.expandedHeader
+                text: "×"; textSize: Math.max(9, 16 * compact.contentScale)
+                implicitWidth: Math.max(16, 22 * compact.contentScale); implicitHeight: implicitWidth
+                leftPadding: 3; rightPadding: 3
+                Accessible.name: strings.text("Close")
+                Accessible.description: strings.text("Close")
+                onClicked: compact.closeRequested()
             }
         }
         HoverHandler { onHoveredChanged: compact.hoverChanged(hovered) }

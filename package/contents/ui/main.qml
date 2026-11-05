@@ -6,6 +6,7 @@ import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import "../code/Shelf.js" as Shelf
 import "../code/Activity.js" as Activity
+import "../code/Sizing.js" as Sizing
 
 PlasmoidItem {
     id: root
@@ -162,8 +163,7 @@ PlasmoidItem {
         autoHeight: Plasmoid.configuration.autoHeight; compactHeight: Plasmoid.configuration.compactHeight
         showBattery: Plasmoid.configuration.showBattery
         Layout.minimumWidth: 80
-        Layout.preferredWidth: root.geometryLocked ? root.popupAnchorWidth : Math.max(80,
-            (Plasmoid.configuration.autoWidth ? Math.min(Plasmoid.configuration.compactWidth, naturalWidth) : Plasmoid.configuration.compactWidth) * root.compactScale)
+        Layout.preferredWidth: root.geometryLocked ? root.popupAnchorWidth : Sizing.compactWidth(Plasmoid.configuration.autoWidth, Plasmoid.configuration.compactMinimumWidth, Plasmoid.configuration.compactWidth, naturalWidth, root.compactScale)
         Layout.fillHeight: true
         Layout.minimumHeight: 16
         Behavior on Layout.preferredWidth { NumberAnimation { duration: root.reduceMotion ? 0 : root.animationDuration; easing.type: Easing.InOutCubic } }
@@ -192,6 +192,9 @@ PlasmoidItem {
         }
         mainItem: ExpandingIsland {
             id: popupShell
+            calendarMode: Plasmoid.configuration.calendarMode
+            calendarSources: Plasmoid.configuration.calendarSources
+            calendarAppletId: Plasmoid.id
             editing: root.editing
             fixedViewport: true
             onWidthChanged: root.positionDialog()
@@ -235,6 +238,9 @@ PlasmoidItem {
         Layout.minimumHeight: Plasmoid.configuration.autoHeight ? 42 : Plasmoid.configuration.compactHeight
         ExpandingIsland {
             id: desktopShell
+            calendarMode: Plasmoid.configuration.calendarMode
+            calendarSources: Plasmoid.configuration.calendarSources
+            calendarAppletId: Plasmoid.id
             editing: root.editing
             backend: systemBackend; notifications: root.notificationBackend; activities: root.activityBackend
             opened: !root.inPanel && root.wantOpen; fullView: root.opened

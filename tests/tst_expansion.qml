@@ -37,7 +37,7 @@ Item {
         property int count: historyModel.count
         property bool available: true
         function clearAll() { historyModel.clear(); }
-        function closeId(id) { for (let i=historyModel.count-1;i>=0;--i) if (historyModel.get(i).id === id) historyModel.remove(i); }
+        function closeId(id) { for (let i=historyModel.count-1;i>=0;--i) if (String(historyModel.get(i).notificationId) === String(id)) historyModel.remove(i); }
     }
     QtObject {
         id: activities
@@ -76,9 +76,9 @@ Item {
         }
         function test_shapes_and_scaling(data) {
             shell.notch=data.notch; shell.fullView=true; shell.opened=true;
-            compare(shell.width,520); compare(shell.height,446);
+            compare(shell.width,600); compare(shell.height,330);
             shell.uiScale=1.5;
-            compare(shell.width,780); compare(shell.height,669);
+            compare(shell.width,900); compare(shell.height,495);
             shell.opened=false;
             compare(shell.width,240); compare(shell.height,42);
         }
@@ -133,7 +133,7 @@ Item {
             const initialWidth=shell.width, initialHeight=shell.height;
             shell.opened=true; wait(100);
             compare(shell.width,initialWidth); compare(shell.height,initialHeight);
-            verify(shell.surfaceWidth>240 && shell.surfaceWidth<520);
+            verify(shell.surfaceWidth>240 && shell.surfaceWidth<600);
             tryCompare(shell,"progress",1,1200);
         }
         function test_tab_layout_data() { return [{tag:"en",language:"en"},{tag:"pl",language:"pl"}]; }
@@ -154,7 +154,7 @@ Item {
             shell.language="en";
         }
         function test_notification_history() {
-            historyModel.append({id:"a", applicationName:"Fixture",summary:"Hello",body:"World"});
+            historyModel.append({notificationId:"a", applicationName:"Fixture",summary:"Hello",body:"World"});
             shell.fullView=true; shell.opened=true; shell.initialPage=4;
             tryVerify(() => findChild(shell,"notificationsPage") !== null);
             compare(findChild(shell,"notificationsTab").text,"Notifications · 1");
@@ -210,10 +210,25 @@ Item {
             verify(a.x>=30); verify(b.x<=morph.width-30);
             verify(title.font.pixelSize>=16); verify(battery.fontSize>=16);
         }
+        function test_delete_individual_history_notification() {
+            historyModel.append({notificationId:"first",applicationName:"Fixture",summary:"First",body:""});
+            historyModel.append({notificationId:"second",applicationName:"Fixture",summary:"Second",body:""});
+            shell.fullView=true; shell.opened=true; shell.initialPage=4;
+            tryVerify(() => findChild(shell,"deleteNotification_first") !== null);
+            mouseClick(findChild(shell,"deleteNotification_first"));
+            compare(historyModel.count,1); compare(historyModel.get(0).notificationId,"second");
+            tryVerify(() => findChild(shell,"deleteNotification_second") !== null);
+            mouseClick(findChild(shell,"deleteNotification_second")); compare(historyModel.count,0);
+        }
+        function test_year_in_header() {
+            shell.fullView=true; shell.opened=true;
+            const label=findChild(shell,"headerDate");
+            verify(label.text.indexOf(String(new Date().getFullYear()))>=0);
+        }
         function test_activity_page() {
             shell.fullView=true; shell.opened=true; shell.initialPage=5;
             tryVerify(() => findChild(shell,"activityPage") !== null);
-            verify(shell.height>400);
+            verify(shell.height>=330);
         }
     }
 }

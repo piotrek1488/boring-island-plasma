@@ -7,8 +7,28 @@ ColumnLayout {
     objectName: "calendarPage"
     property string language: "en"
     Translations { id: strings; language: agenda.language }
-    property var backend: nativeBackend
-    CalendarBackend { id: nativeBackend }
+    property string calendarMode: "kde"
+    property string calendarSources: ""
+    property int calendarAppletId: 0
+    property var backend: calendarLoader.item || fallback
+    QtObject {
+        id: fallback
+        property date selectedDate: new Date()
+        property var events: []
+        property bool providerAvailable: true
+        property string errorMessage: "Loading calendar…"
+        function moveDay(offset) {}
+        function resetToday() {}
+        function reload() {}
+    }
+    Loader {
+        id: calendarLoader
+        source: agenda.calendarMode === "ics" ? "IcsCalendarBackend.qml" : "CalendarBackend.qml"
+        onLoaded: if (agenda.calendarMode === "ics") {
+            item.appletId = Qt.binding(() => agenda.calendarAppletId);
+            item.sources = Qt.binding(() => agenda.calendarSources);
+        }
+    }
     spacing: 6
     RowLayout {
         ActionButton { objectName: "previousDay"; text: "‹"; implicitWidth: 30; implicitHeight: 28; Accessible.description: strings.text("Previous day"); onClicked: agenda.backend.moveDay(-1) }
@@ -21,9 +41,9 @@ ColumnLayout {
         objectName: "calendarStatus"
         visible: !agenda.backend.providerAvailable || agenda.backend.errorMessage.length > 0 || agenda.backend.events.length === 0
         Layout.fillWidth: true; wrapMode: Text.WordWrap; textFormat: Text.PlainText; color: "#aaa9bb"; font.pixelSize: 12
-        text: !agenda.backend.providerAvailable
+        text: agenda.backend.errorMessage ? strings.text(agenda.backend.errorMessage) : !agenda.backend.providerAvailable
             ? strings.text("KDE PIM calendar integration is not installed. Install the PIM Events plugin (kdepim-addons on Ubuntu), then restart this widget. Select calendars in the Plasma clock settings → Calendar → PIM Events.")
-            : agenda.backend.errorMessage || strings.text("No events for this day. Calendar sources are shared with Plasma: select your Akonadi calendars in the clock settings → Calendar → PIM Events. Accounts are managed in KOrganizer.")
+            : agenda.calendarMode === "ics" ? strings.text("No events for this day.") : strings.text("No events for this day. Calendar sources are shared with Plasma: select your Akonadi calendars in the clock settings → Calendar → PIM Events. Accounts are managed in KOrganizer.")
     }
     ListView {
         id: eventList

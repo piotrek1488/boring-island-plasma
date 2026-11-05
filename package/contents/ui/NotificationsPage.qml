@@ -34,7 +34,7 @@ ColumnLayout {
                 Label { Layout.fillWidth: true; text: notification.model.summary || ""; textFormat: Text.PlainText; color: "#f3f2fa"; wrapMode: Text.Wrap; font.bold: true }
                 Label { Layout.fillWidth: true; text: notification.model.body || ""; textFormat: Text.StyledText; color: "#9899aa"; wrapMode: Text.Wrap; onLinkActivated: link => Qt.openUrlExternally(link) }
             }
-            ActionButton { text: "×"; Accessible.description: strings.text("Delete notification"); onClicked: page.backend.closeId(notification.model.id) }
+            ActionButton { objectName: "deleteNotification_" + notification.model.notificationId; text: "×"; Accessible.description: strings.text("Delete notification"); onClicked: page.backend.closeId(notification.model.notificationId) }
         }
     }
 }

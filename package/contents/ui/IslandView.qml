@@ -5,6 +5,9 @@ import QtQuick.Layouts
 import "../code/Shelf.js" as Shelf
 Item {
     id: view
+    property string calendarMode: "kde"
+    property string calendarSources: ""
+    property int calendarAppletId: 0
     property string language: "en"
     Translations { id: strings; language: view.language }
     required property var backend
@@ -23,7 +26,7 @@ Item {
     signal interactionHeldChangedByUser(bool held)
     onInteractionHeldChanged: interactionHeldChangedByUser(interactionHeld)
     property date currentDate: new Date()
-    readonly property string today: currentDate.toLocaleDateString(strings.locale, "ddd, d MMM")
+    readonly property string today: currentDate.toLocaleDateString(strings.locale, "ddd, d MMM yyyy")
     onVisibleChanged: { if (!visible) hoverChanged(false); }
     signal shelfEdited(var urls)
     signal hoverChanged(bool hovered)
@@ -40,8 +43,7 @@ Item {
             Layout.fillWidth: true
             Text { text: "BORING / ISLAND"; color: "#aaa0c9"; font.pixelSize: 10; font.letterSpacing: 2 }
             Item { Layout.fillWidth: true }
-            Text { text: view.today; color: "#c1c2d0"; font.pixelSize: 13 }
-            ActionButton { text: "×"; implicitWidth: 26; implicitHeight: 26; Accessible.description: strings.text("Close"); onClicked: view.closeRequested() }
+            Text { objectName: "headerDate"; text: view.today; color: "#c1c2d0"; font.pixelSize: 13 }
         }
         Flow {
             objectName: "tabs"
@@ -143,7 +145,12 @@ Item {
             Loader {
                 active: view.page === 3
                 source: "CalendarPage.qml"
-                onLoaded: item.language = Qt.binding(() => view.language)
+                onLoaded: {
+                    item.language = Qt.binding(() => view.language);
+                    item.calendarMode = Qt.binding(() => view.calendarMode);
+                    item.calendarSources = Qt.binding(() => view.calendarSources);
+                    item.calendarAppletId = Qt.binding(() => view.calendarAppletId);
+                }
             }
             Loader {
                 active: view.page === 4 && view.notifications !== null

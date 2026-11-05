@@ -15,9 +15,12 @@ class SettingsDefaults(unittest.TestCase):
         for entry in ET.parse(ROOT / 'package/contents/config/main.xml').findall('.//k:entry', ns):
             if entry.get('name') == 'shelfJson':
                 continue
-            value = entry.find('k:default', ns).text
+            value = entry.find('k:default', ns).text or ''
             kind = entry.get('type')
             expected[entry.get('name')] = int(value) if kind == 'Int' else value == 'true' if kind == 'Bool' else value
         self.assertEqual(actual, expected)
         self.assertEqual(actual['animationDuration'], 400)
+        self.assertEqual(actual['compactMinimumWidth'], 180)
+        self.assertEqual(actual['expandedWidth'], 600)
+        self.assertEqual(actual['expandedHeight'], 330)
         self.assertNotIn('shelfJson', actual)

@@ -1,6 +1,21 @@
 .pragma library
 
 var polish = {
+    "Calendar setup instructions": "Instrukcja konfiguracji kalendarza",
+    "Calendar source:": "Źródło kalendarza:",
+    "ICS addresses or file paths:": "Adresy ICS lub ścieżki plików:",
+    "ICS subscriptions / files": "Subskrypcje / pliki ICS",
+    "KDE / Akonadi": "KDE / Akonadi",
+    "No events for this day.": "Brak wydarzeń w tym dniu.",
+    "One subscription address or local ICS file per line. Read-only; refreshes every five minutes. Google: secret iCal address. Outlook: published ICS link.": "Jeden adres subskrypcji lub plik ICS na linię. Tylko odczyt; odświeżanie co pięć minut. Google: prywatny adres iCal. Outlook: opublikowany link ICS.",
+    "Install calendar support using the setup instructions. Subscription addresses can grant access to calendar data; keep them private.": "Zainstaluj obsługę kalendarza zgodnie z instrukcją. Adresy subskrypcji mogą dawać dostęp do danych kalendarza; zachowaj je w poufności.",
+    "Loading calendar…": "Wczytywanie kalendarza…",
+    "Add an ICS calendar address or local file in widget settings.": "Dodaj adres kalendarza ICS lub plik lokalny w ustawieniach widżetu.",
+    "Some calendars could not be loaded. Check the ICS addresses and network connection.": "Nie udało się wczytać części kalendarzy. Sprawdź adresy ICS i połączenie sieciowe.",
+    "ICS support requires Python calendar dependencies. See the calendar setup instructions.": "Obsługa ICS wymaga bibliotek Pythona. Zobacz instrukcję konfiguracji kalendarza.",
+    "Calendar data could not be loaded.": "Nie udało się wczytać danych kalendarza.",
+
+    "Minimum compact width (px):": "Minimalna szerokość zwiniętego widżetu (px):",
     "Restore default settings": "Przywróć ustawienia domyślne",
     "Use Apply or OK to save the reset. Shelf shortcuts are kept.": "Zapisz reset przyciskiem Zastosuj lub OK. Skróty na półce zostaną zachowane.",
     "Lower values make opening faster. Closing uses 70% of that duration, limited to 100–220 ms. Reduced motion disables animations.": "Mniejsze wartości przyspieszają otwieranie. Zamykanie trwa 70% tego czasu, w zakresie 100–220 ms. Ograniczenie animacji wyłącza ruch.",

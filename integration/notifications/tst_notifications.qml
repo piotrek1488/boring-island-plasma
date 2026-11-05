@@ -24,14 +24,15 @@ TestCase {
             disconnectSource(source);
         }
     }
-    function send(expectedHistoryCount = 1) {
+    UI.NotificationsPage { id: page; width: 600; height: 380; backend: backend }
+    function send(expectedHistoryCount = 1, expectedCenterCount = 1) {
         commandDone = false;
         serial++;
         sender.connectSource("gdbus call --session --dest org.freedesktop.Notifications --object-path /org/freedesktop/Notifications --method org.freedesktop.Notifications.Notify BoringIslandTest 0 '' 'Fixture " + serial + "' 'Test body' '[]' '{}' 0");
         tryVerify(() => commandDone, 5000);
         compare(commandExit, 0);
         tryCompare(backend, "count", expectedHistoryCount, 3000);
-        tryCompare(center, "count", 1, 3000);
+        tryCompare(center, "count", expectedCenterCount, 3000);
         tryVerify(() => backend.preview !== null, 3000);
     }
     function initTestCase() {
@@ -63,6 +64,14 @@ TestCase {
         backend.closeId(backend.preview.id);
         tryCompare(center, "count", 0);
         tryCompare(backend, "preview", null);
+    }
+    function test_individual_delete_button_uses_native_role() {
+        send(); send(2,2);
+        const id=backend.history.data(backend.history.index(0,0),NM.Notifications.IdRole);
+        tryVerify(() => findChild(page,"deleteNotification_"+id) !== null);
+        mouseClick(findChild(page,"deleteNotification_"+id));
+        tryCompare(center,"count",1); tryCompare(backend,"count",1);
+        verify(backend.history.data(backend.history.index(0,0),NM.Notifications.IdRole)!==id);
     }
     function test_delete_from_center() {
         send();

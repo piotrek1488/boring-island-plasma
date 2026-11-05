@@ -3,6 +3,8 @@
 // Kept in sync with KConfig by tests/test_settings_defaults.py. Shelf data is preserved.
 var values = {
     "language": "en",
+    "calendarMode": "kde",
+    "calendarSources": "",
     "shape": 1,
     "hoverOpen": true,
     "hoverDelay": 250,
@@ -11,8 +13,9 @@ var values = {
     "compactHeight": 42,
     "compactWidth": 320,
     "autoWidth": true,
-    "expandedWidth": 520,
-    "expandedHeight": 390,
+    "compactMinimumWidth": 180,
+    "expandedWidth": 600,
+    "expandedHeight": 330,
     "expandedScale": 100,
     "notificationDuration": 4,
     "notificationPreviews": true,

@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.3.6; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.3.7; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.3.6.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.3.7.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -107,7 +107,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.6.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.7.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -183,7 +183,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.3.6.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.3.7.plasmoid
 plasmawindowed ./package
 ```
 
@@ -286,7 +286,7 @@ Ograniczenie animacji wyłącza ruch.
 ### Reset ustawień i edycja panelu (0.3.6)
 
 Domyślny czas animacji wynosi teraz **400 ms**. Zapisane wartości pozostają bez
-zmian. Przycisk **Przywróć ustawienia domyślne** na początku strony ustawień
+zmian. Przycisk **Przywróć ustawienia domyślne** na końcu strony ustawień
 Boring Island resetuje wygląd i zachowanie, w tym język i czas animacji. Zapisz
 zmiany przez **Zastosuj** lub **OK**; **Anuluj** odrzuca reset. Skróty na półce,
 położenie w panelu i skrót klawiaturowy Plasma zostają zachowane.
@@ -296,3 +296,58 @@ rozwijanie jest zablokowane. Otwarty widok znika natychmiast, timery hover są
 zatrzymywane, a podglądy powiadomień wyłączone bez usuwania historii KDE.
 Zwinięty kształt wraca do obszaru plasmoidu i nie przechwytuje wejścia, dzięki czemu
 można użyć uchwytów edycji i usuwania. Po zakończeniu edycji wraca zwykłe działanie.
+
+### Wymiary i poprawki nagłówka (0.3.7)
+
+Przy dopasowaniu szerokości do treści obowiązuje nowe pole **Minimalna szerokość
+zwiniętego widżetu (px)**, domyślnie **180**; możesz je zmniejszyć do 80.
+Dotychczasowa szerokość zwinięcia stanowi maksimum i ma pierwszeństwo, jeśli jest
+niższa od minimum. Skala jest stosowana po dopasowaniu. Domyślne rozwinięcie ma
+**600 × 330 px logicznych**. Wysokość rozwinięcia obejmuje teraz nagłówek, zamiast
+doliczać go do ustawionej wysokości. Zapisane wartości zostają zachowane; użyj
+resetu, aby zastosować nowe domyślne wymiary.
+
+Reset jest ostatnim przyciskiem ustawień. Nagłówek ma kolejność **bateria → zębatka
+→ zamknij**, a data zawiera rok. Pojedyncze powiadomienia są usuwane według
+właściwego identyfikatora KDE, z zachowaniem synchronizacji z centrum powiadomień.
+
+## Kalendarze Google i Outlook bez Akonadi
+
+Nowe źródło **Subskrypcje / pliki ICS** czyta kalendarze bez Akonadi i PIM Events.
+Obsługuje wydarzenia cykliczne, wyjątki, wydarzenia całodniowe i wielodniowe oraz
+przeliczenie stref czasowych. Jest to tylko odczyt; wydarzenia zmieniasz w Google
+lub Outlooku. Można dodać do 16 adresów lub plików, po jednym na linię.
+
+W lokalnym klonie repozytorium zainstaluj obsługę kalendarza:
+
+```bash
+./scripts/install-calendar-deps.sh
+```
+
+Skrypt tworzy osobne środowisko Pythona w `~/.local/share/boring-island/calendar-venv`
+(lub w `XDG_DATA_HOME`). Wymaga Pythona 3, venv i pip. W Debianie/Ubuntu, jeśli
+brakuje venv, zainstaluj pakiet `python3-venv`. Następnie w ustawieniach wybierz
+**Źródło kalendarza → Subskrypcje / pliki ICS**, wklej adresy i kliknij **Zastosuj**
+lub **OK**. Dotychczasowe źródło KDE/Akonadi pozostaje dostępne.
+
+- **Google Calendar:** strona WWW → Ustawienia → wybierz kalendarz → Integracja
+  kalendarza → **Prywatny adres w formacie iCal**. Skopiuj go do widżetu.
+  [Instrukcja Google](https://support.google.com/calendar/answer/37648).
+- **Outlook:** Ustawienia kalendarza → Kalendarze udostępnione → Publikowanie
+  kalendarza. Wybierz kalendarz i uprawnienia, opublikuj go i skopiuj adres **ICS**,
+  nie HTML. [Instrukcja Microsoft](https://support.microsoft.com/en-us/outlook/share-your-calendar-in-outlook-com).
+  Organizacja może blokować publikowanie kalendarzy służbowych. Ta integracja nie
+  obchodzi blokady i nie zawiera logowania OAuth do konta Microsoft/Google.
+- Możesz też podać ścieżkę do lokalnego pliku `.ics` lub adres `file:///…`.
+  Wyeksportowany plik jest migawką, a adres subskrypcji aktualizuje się automatycznie.
+
+Odświeżanie odbywa się co pięć minut, gdy agenda jest wczytana; przycisk ↻ wymusza
+pobranie. Google/Microsoft mogą udostępniać zmiany w eksporcie z opóźnieniem.
+Adresy subskrypcji traktuj jako poufne: mogą dawać dostęp do danych kalendarza.
+Są zapisywane w konfiguracji Plasma, bez przekazywania w argumentach procesu
+ani komunikatach błędów. Pobrane dane mają pamięć podręczną z uprawnieniami tylko
+dla użytkownika w `~/.cache/boring-island/calendars` (lub `XDG_CACHE_HOME`).
+Reset ustawień usuwa konfigurację źródeł kalendarza, zachowując półkę.
+
+Testy deweloperskie wymagają dodatkowo bibliotek z
+`package/contents/code/requirements-calendar.txt`, instalowanych w środowisku venv.
