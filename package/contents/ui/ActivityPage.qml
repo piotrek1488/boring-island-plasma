@@ -18,9 +18,9 @@ ScrollView {
             Label { text: strings.text("Panel view:"); color: "#f3f2fa" }
             ComboBox {
                 Layout.fillWidth: true
-                model: [strings.text("Automatic"), strings.text("Clock"), strings.text("Media"), strings.text("System"), strings.text("Packages"), strings.text("Local AI")]
-                currentIndex: Math.max(0, ["auto", "clock", "media", "system", "packages", "llm"].indexOf(page.pinnedMode))
-                onActivated: index => page.pinRequested(["auto", "clock", "media", "system", "packages", "llm"][index])
+                model: [strings.text("Automatic"), strings.text("Clock"), strings.text("Media"), strings.text("System"), strings.text("Packages"), strings.text("Local AI"), strings.text("Notifications")]
+                currentIndex: Math.max(0, ["auto", "clock", "media", "system", "packages", "llm", "notifications"].indexOf(page.pinnedMode))
+                onActivated: index => page.pinRequested(["auto", "clock", "media", "system", "packages", "llm", "notifications"][index])
             }
         }
         Label { visible: page.backend.error !== ""; text: strings.text("Activity data unavailable"); color: "#f4a4a4" }

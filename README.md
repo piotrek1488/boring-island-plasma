@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.3.0** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.3.1** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -44,7 +44,7 @@ Right-click the widget and open its settings, then select **Boring Island**.
 - **Notch:** a flat top edge and rounded bottom corners.
 - **Dynamic Island:** a rounded capsule; the default shape.
 - **Fit height to panel:** enabled by default; follows the space Plasma gives the widget.
-- Disable automatic fitting to set **Compact height (px)** from 16 to 128. The
+- Edit **Compact height (px)** from 16 to 128 to disable automatic fitting. The
   visible height is capped to the available panel space. Text, indicator and padding
   scale with the height; compact width remains independently configurable.
 - A smaller notch stays aligned to the top of its allocated area; a smaller island
@@ -93,12 +93,12 @@ Cover art may be fetched from URLs supplied by the player.
 - Hover or click to expand, then choose **Notifications**. Delete one entry with
   **×**, or use **Clear all**. This uses Plasma's shared notification model:
   deleting here removes it from KDE's notification center, and vice versa.
-  Existing history is not replayed when the widget loads. Do Not Disturb and
+  Existing history is not replayed when the widget loads. Live arrivals use a
+  separate native model so history filters and early expiry do not drop previews. Do Not Disturb and
   application popup/history preferences are respected. Transient notifications
   still follow KDE's retention rules; the widget does not keep a private archive.
 - **Automatic priority:** temporary notification → package operation → playing
-  media → loaded local AI model → clock. Pin Clock, Media, System, Packages or
-  Local AI in settings or on the **Activity** tab. A temporary notification takes
+  media → loaded local AI model → clock. Pin Clock, Media, System, Packages, Local AI or Notifications in settings or on the **Activity** tab. A temporary notification takes
   precedence over a pin, then restores it. Pins persist per widget instance.
 - **System:** CPU/RAM and available GPU utilization. AMD-compatible sysfs counters
   and optional `nvidia-smi`/`intel_gpu_top` are supported; unsupported GPUs are omitted. Click ↗
@@ -121,6 +121,8 @@ Cover art may be fetched from URLs supplied by the player.
 - **Size:** retain Notch/Dynamic Island, panel height fitting and manual compact
   height. Compact width now supports 80–1000 logical pixels, optionally used as an
   automatic-width limit. Expanded width, height and content scale are independent.
+  **Compact scale (%)** (50–200%) also adjusts the collapsed height, width and text;
+  the panel still limits the visible height. Editing manual height disables auto-fit.
   Reduced motion disables the expansion and pulse animations.
 
 The optional activity provider requires **Python 3** and Plasma's
@@ -139,7 +141,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.0.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.1.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -181,14 +183,14 @@ fullscreen detection. See the [source analysis, in Polish](docs/ANALIZA.md).
 
 The MPRIS, battery, dialog and notification integrations use **private Plasma APIs**.
 Earlier releases were verified on Plasma 6.6.6 / Qt 6.10.2 on Ubuntu 26.04.
-The 0.3.0 core tests run on Qt 6.4.2 without a Plasma session. Plasma 5 and older Plasma 6
+The 0.3.1 core tests run on Qt 6.4.2 without a Plasma session. Plasma 5 and older Plasma 6
 versions are not supported. Future API changes may require updates.
 
 ## Development and testing
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.3.0.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.3.1.plasmoid
 plasmawindowed ./package
 ```
 
@@ -237,3 +239,20 @@ kpackagetool6 --type Plasma/Applet --remove org.kde.plasma.boringisland
 ```
 
 Licensed under GPL-3.0-only. See [NOTICE.md](NOTICE.md) for attribution.
+
+## Automated releases
+
+[GitHub Actions](.github/workflows/release.yml) runs core tests and validates the
+package on pull requests. Every push/merge to `main` then publishes a GitHub release
+with the `.plasmoid` and `SHA256SUMS`; it can also be run manually on `main`.
+The workflow uses actions/checkout **7.0.1** and actions/setup-python **7.1.0**
+(the latest stable releases checked on 2026-11-05), and the GitHub CLI to publish.
+Only the publication job has `contents: write`; no extra secret is required.
+
+The first release uses the metadata version if it is newer than existing tags.
+Subsequent merges increment the latest patch version automatically; raising the
+metadata version selects a new minor/major release. The built package embeds that
+version without a bot commit to the source. A rerun reuses an existing tag on the
+same commit and leaves an already published release unchanged. Jobs are serialized
+to avoid version collisions. Native Plasma/Wayland checks still need a desktop;
+passing the core CI suite does not certify those integrations.

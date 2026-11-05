@@ -13,6 +13,7 @@ PlasmoidItem {
     readonly property bool inPanel: Plasmoid.formFactor === PlasmaCore.Types.Horizontal || Plasmoid.formFactor === PlasmaCore.Types.Vertical
     readonly property bool notch: Plasmoid.configuration.shape === 0
     readonly property bool reduceMotion: Plasmoid.configuration.reduceMotion
+    readonly property real compactScale: Math.max(0.5, Math.min(2, Plasmoid.configuration.compactScale / 100))
     readonly property real uiScale: Math.max(0.6, Math.min(2, Plasmoid.configuration.expandedScale / 100))
     readonly property var notificationBackend: notifications
     readonly property var activityBackend: activities
@@ -29,7 +30,7 @@ PlasmoidItem {
     readonly property color accentColor: ({notifications: "#f6c177", packages: "#7ac7ff", media: "#b9a3ff", llm: "#a7e7b8", system: "#89dceb", clock: "#77798d"})[mode] || "#b9a3ff"
     property string clockText: Qt.formatTime(new Date(), "hh:mm")
     readonly property string displayText: {
-        if (mode === "notifications" && notifications.preview) return notifications.preview.summary;
+        if (mode === "notifications") return notifications.preview ? notifications.preview.summary : strings.text("Notifications") + " · " + notifications.count;
         if (mode === "media") return systemBackend.title || strings.text("Nothing playing");
         if (mode === "packages") return activities.packages.active ? activities.packages.tool + " · " + activities.packages.operation + " " + (activities.packages.package || "") : strings.text("No package operations detected");
         if (mode === "llm") {
@@ -92,10 +93,11 @@ PlasmoidItem {
         language: root.language; backend: systemBackend; notch: root.notch
         displayText: root.displayText; accentColor: root.accentColor
         animateMedia: true; reduceMotion: root.reduceMotion
+        compactScale: root.compactScale
         autoHeight: Plasmoid.configuration.autoHeight; compactHeight: Plasmoid.configuration.compactHeight
         showBattery: Plasmoid.configuration.showBattery
         Layout.minimumWidth: 80
-        Layout.preferredWidth: Plasmoid.configuration.autoWidth ? Math.max(80, Math.min(Plasmoid.configuration.compactWidth, textWidth)) : Plasmoid.configuration.compactWidth
+        Layout.preferredWidth: Plasmoid.configuration.autoWidth ? Math.max(80, Math.min(Plasmoid.configuration.compactWidth * root.compactScale, textWidth)) : Plasmoid.configuration.compactWidth * root.compactScale
         Layout.minimumHeight: 16
         Behavior on Layout.preferredWidth { NumberAnimation { duration: root.reduceMotion ? 0 : 260; easing.type: Easing.InOutCubic } }
         onActivated: root.opened ? root.close() : root.open()
@@ -119,6 +121,9 @@ PlasmoidItem {
         }
         mainItem: ExpandingIsland {
             id: popupShell
+            fixedViewport: true
+            onWidthChanged: root.positionDialog()
+            onHeightChanged: root.positionDialog()
             backend: systemBackend; notifications: root.notificationBackend; activities: root.activityBackend
             opened: root.inPanel && root.wantOpen; fullView: root.opened
             language: root.language; displayText: root.displayText; accentColor: root.accentColor
@@ -130,8 +135,7 @@ PlasmoidItem {
             expandedWidth: Plasmoid.configuration.expandedWidth; expandedHeight: Plasmoid.configuration.expandedHeight
             shelf: root.savedShelf; showBattery: Plasmoid.configuration.showBattery
             pinnedMode: Plasmoid.configuration.pinnedMode; initialPage: root.selectedPage
-            onWidthChanged: Qt.callLater(root.positionDialog)
-            onHeightChanged: Qt.callLater(root.positionDialog)
+
             onCloseRequested: root.close()
             onActivated: root.opened ? root.close() : root.open()
             onHoverChanged: hovered => root.hoverChanged(false, hovered)
@@ -144,7 +148,7 @@ PlasmoidItem {
     Timer { interval: 150; running: attachedDialog.visible; repeat: true; onTriggered: root.positionDialog() }
     fullRepresentation: Item {
         implicitWidth: desktopShell.width; implicitHeight: desktopShell.height
-        Layout.minimumWidth: Plasmoid.configuration.compactWidth
+        Layout.minimumWidth: Plasmoid.configuration.compactWidth * root.compactScale
         Layout.minimumHeight: Plasmoid.configuration.autoHeight ? 42 : Plasmoid.configuration.compactHeight
         ExpandingIsland {
             id: desktopShell
@@ -152,8 +156,8 @@ PlasmoidItem {
             opened: !root.inPanel && root.wantOpen; fullView: root.opened
             language: root.language; displayText: root.displayText; accentColor: root.accentColor
             notch: root.notch; reduceMotion: root.reduceMotion; uiScale: root.uiScale
-            compactWidth: Plasmoid.configuration.compactWidth
-            compactHeight: Plasmoid.configuration.autoHeight ? 42 : Plasmoid.configuration.compactHeight
+            compactWidth: Plasmoid.configuration.compactWidth * root.compactScale
+            compactHeight: (Plasmoid.configuration.autoHeight ? 42 : Plasmoid.configuration.compactHeight) * root.compactScale
             expandedWidth: Plasmoid.configuration.expandedWidth; expandedHeight: Plasmoid.configuration.expandedHeight
             shelf: root.savedShelf; showBattery: Plasmoid.configuration.showBattery
             pinnedMode: Plasmoid.configuration.pinnedMode; initialPage: root.selectedPage

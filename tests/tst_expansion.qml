@@ -55,17 +55,18 @@ Item {
         backend: media; notifications: notifications; activities: activities
         onPinRequested: mode => pinnedMode = mode
     }
+    UI.CompactView { id: compactTest; backend: media; width: 240; height: 64; visible: false }
     TestCase {
         name: "Expansion"; when: windowShown
-        function init() { shell.opened=false; shell.fullView=false; shell.reduceMotion=true; shell.notch=false; shell.uiScale=1; shell.initialPage=0; historyModel.clear(); }
+        function init() { shell.opened=false; shell.fullView=false; shell.presentedFullView=false; shell.fixedViewport=false; shell.reduceMotion=true; shell.notch=false; shell.uiScale=1; shell.initialPage=0; historyModel.clear(); }
         function test_shapes_and_scaling_data() {
             return [{tag:"island",notch:false},{tag:"notch",notch:true}];
         }
         function test_shapes_and_scaling(data) {
             shell.notch=data.notch; shell.fullView=true; shell.opened=true;
-            compare(shell.width,520); compare(shell.height,432);
+            compare(shell.width,520); compare(shell.height,446);
             shell.uiScale=1.5;
-            compare(shell.width,780); compare(shell.height,627);
+            compare(shell.width,780); compare(shell.height,669);
             shell.opened=false;
             compare(shell.width,240); compare(shell.height,42);
         }
@@ -77,6 +78,31 @@ Item {
             wait(90); verify(shell.progress>0 && shell.progress<1);
             tryCompare(shell,"progress",0,600);
         }
+        function test_fixed_viewport_does_not_resize_during_animation() {
+            shell.fixedViewport=true; shell.fullView=true; shell.reduceMotion=false;
+            const initialWidth=shell.width, initialHeight=shell.height;
+            shell.opened=true; wait(100);
+            compare(shell.width,initialWidth); compare(shell.height,initialHeight);
+            verify(shell.surfaceWidth>240 && shell.surfaceWidth<520);
+            tryCompare(shell,"progress",1,800);
+        }
+        function test_tab_layout_data() { return [{tag:"en",language:"en"},{tag:"pl",language:"pl"}]; }
+        function test_tab_layout(data) {
+            shell.language=data.language; shell.fullView=true; shell.opened=true;
+            wait(80);
+            const flow=findChild(shell,"tabs");
+            const tabs=Array.from(flow.children).filter(item => item.hasOwnProperty("showTooltip"));
+            verify(tabs.length===5);
+            for (let i=0;i<tabs.length;i++) {
+                verify(tabs[i].width>=tabs[i].contentItem.implicitWidth+20);
+                verify(!tabs[i].showTooltip);
+                for (let j=i+1;j<tabs.length;j++) {
+                    const a=tabs[i], b=tabs[j];
+                    verify(a.x+a.width<=b.x || b.x+b.width<=a.x || a.y+a.height<=b.y || b.y+b.height<=a.y);
+                }
+            }
+            shell.language="en";
+        }
         function test_notification_history() {
             historyModel.append({id:"a", applicationName:"Fixture",summary:"Hello",body:"World"});
             shell.fullView=true; shell.opened=true; shell.initialPage=4;
@@ -87,6 +113,21 @@ Item {
             shell.language="pl";
             compare(findChild(shell,"notificationsTab").text,"Powiadomienia · 0");
             shell.language="en";
+        }
+        function test_compact_scale_and_manual_height() {
+            compactTest.autoHeight=true; compactTest.compactScale=0.5;
+            compare(compactTest.effectiveHeight,32);
+            compactTest.compactScale=2; compare(compactTest.effectiveHeight,64);
+            compactTest.autoHeight=false; compactTest.compactHeight=20; compactTest.compactScale=1.5;
+            compare(compactTest.effectiveHeight,30);
+        }
+        function test_expanded_header_insets() {
+            shell.fullView=true; shell.opened=true; wait(30);
+            const title=findChild(shell,"compactTitle"), battery=findChild(shell,"compactBattery");
+            const morph=findChild(shell,"morphSurface");
+            const a=title.mapToItem(morph,0,0), b=battery.mapToItem(morph,battery.width,battery.height);
+            verify(a.x>=30); verify(b.x<=morph.width-30);
+            verify(title.font.pixelSize>=16); verify(battery.font.pixelSize>=16);
         }
         function test_activity_page() {
             shell.fullView=true; shell.opened=true; shell.initialPage=5;

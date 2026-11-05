@@ -17,7 +17,7 @@ Item {
     TestCase {
         name: "CompactSizing"; when: windowShown
         function init() {
-            compact.autoHeight = true; compact.compactHeight = 42;
+            compact.compactScale=1; compact.autoHeight = true; compact.compactHeight = 42;
             compact.notch = false; compact.height = 64;
             activation.clear();
         }
@@ -48,9 +48,16 @@ Item {
             mouseClick(compact, 120, 50); compare(activation.count, 1);
             mouseClick(compact, 120, 12); compare(activation.count, 2);
         }
+        function test_compact_scale() {
+            compact.autoHeight=true; compact.height=64; compact.compactScale=0.5;
+            compare(compact.effectiveHeight,32);
+            compact.compactScale=2; compare(compact.effectiveHeight,64);
+            compact.autoHeight=false; compact.compactHeight=20; compact.compactScale=1.5;
+            compare(compact.effectiveHeight,30);
+        }
         function test_settings() {
             settings.cfg_autoHeight = true;
-            verify(!findChild(settings, "compactHeightSetting").enabled);
+            verify(findChild(settings, "compactHeightSetting").enabled);
             settings.cfg_autoHeight = false;
             verify(findChild(settings, "compactHeightSetting").enabled);
             settings.cfg_compactHeight = 54;

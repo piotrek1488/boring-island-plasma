@@ -7,6 +7,7 @@
     <entry name="hoverOpen" type="Bool"><default>true</default></entry>
     <entry name="hoverDelay" type="Int"><default>250</default></entry>
     <entry name="autoHeight" type="Bool"><default>true</default></entry>
+    <entry name="compactScale" type="Int"><default>100</default><min>50</min><max>200</max></entry>
     <entry name="compactHeight" type="Int"><default>42</default><min>16</min><max>128</max></entry>
     <entry name="compactWidth" type="Int"><default>320</default><min>80</min><max>1000</max></entry>
     <entry name="autoWidth" type="Bool"><default>true</default></entry>

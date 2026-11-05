@@ -6,6 +6,7 @@ import "../package/contents/code/Activity.js" as Activity
 TestCase {
     name: "NotificationQueue"
     UI.NotificationQueue { id: queue }
+    UI.NotificationFeed { id: feed; duration: 1000 }
     function init() { queue.reset(); queue.enabled = true; queue.duration = 1000; }
     function test_expiry_keeps_history_separate() {
         queue.push({id: "a", summary: "First"});
@@ -49,6 +50,23 @@ TestCase {
         queue.enabled = false;
         verify(!queue.active); compare(queue.pending.length, 0);
     }
+    function test_live_feed_and_expired_arrival() {
+        feed.reset(); feed.initialized=false;
+        feed.sync([{id:"old",summary:"Old",body:"",updated:"",allowed:true}]);
+        compare(feed.preview,null);
+        const fresh={id:"fresh",summary:"New",body:"Message",updated:"",allowed:true,expired:true};
+        feed.sync([fresh]);
+        compare(feed.preview.id,"fresh");
+        feed.sync([]); compare(feed.preview,null);
+    }
+    function test_live_feed_respects_suppression() {
+        feed.reset(); feed.initialized=false; feed.sync([]);
+        feed.sync([{id:"muted",summary:"Muted",body:"",updated:"",allowed:false}]);
+        compare(feed.preview,null);
+        feed.sync([{id:"next",summary:"New",body:"",updated:"",allowed:true}]);
+        compare(feed.preview.id,"next");
+        feed.removed("next"); compare(feed.preview,null);
+    }
     function test_priority() {
         compare(Activity.resolve("auto", true, true, true, true), "notifications");
         compare(Activity.resolve("auto", false, true, true, true), "packages");
@@ -57,6 +75,7 @@ TestCase {
         compare(Activity.resolve("auto", false, false, false, false), "clock");
         compare(Activity.resolve("clock", false, true, true, true), "clock");
         compare(Activity.resolve("clock", true, true, true, true), "notifications");
+        compare(Activity.resolve("notifications",false,true,true,true),"notifications");
         compare(Activity.page("notifications"), 4);
         compare(Activity.page("packages"), 5);
     }

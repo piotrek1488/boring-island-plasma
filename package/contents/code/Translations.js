@@ -84,7 +84,9 @@ var polish = {
     "Monitor CPU, RAM and GPU": "Monitoruj CPU, RAM i GPU",
     "Detect package operations": "Wykrywaj operacje na pakietach",
     "Monitor Ollama and LM Studio": "Monitoruj Ollama i LM Studio",
-    "Show audio output device": "Pokazuj urządzenie wyjściowe dźwięku"
+    "Show audio output device": "Pokazuj urządzenie wyjściowe dźwięku",
+    "Compact scale (%):": "Skala zwiniętego widżetu (%):",
+    "Editing the height disables automatic fitting. Compact scale adjusts height, width and text within the available panel space.": "Zmiana wysokości wyłącza dopasowanie automatyczne. Skala zwinięcia zmienia wysokość, szerokość i tekst w granicach miejsca w panelu."
 };
 
 function text(language, source) {

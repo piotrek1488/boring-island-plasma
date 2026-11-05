@@ -1,3 +1,24 @@
+# Verification of 0.3.1
+
+Ubuntu 24.04 / Qt 6.4.2, offscreen. Current tests cover 17 Python cases
+(including release numbering/reruns), preview feed seeding and early-expired
+arrivals, suppression, queue timeout/deletion, notification pinning, smooth
+opening/closing inside a fixed viewport, compact scale/manual height, expanded
+header insets and non-overlapping tabs in both languages.
+
+The native notification fixture now also checks previews when history filtering
+excludes the application, and deletion of such a preview. Native Plasma 6 modules
+are still unavailable in this environment: that fixture and real Wayland animation
+are NOT certified here. Run `./scripts/test-notifications.sh` and manually test
+`notify-send` after restarting plasmashell. Check preview duration and deletion
+from both the widget and KDE notification center.
+
+CI runs `./scripts/test-core.sh`, builds the package and validates QML syntax,
+archive integrity and the embedded version before publication. Release numbering
+is tested for consecutive merges, reruns, invalid versions and explicit minor bumps.
+
+---
+
 # Verification of 0.3.0
 
 Current development environment: Ubuntu 24.04, Qt 6.4.2, offscreen software

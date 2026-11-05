@@ -24,13 +24,13 @@ TestCase {
             disconnectSource(source);
         }
     }
-    function send() {
+    function send(expectedHistoryCount = 1) {
         commandDone = false;
         serial++;
         sender.connectSource("gdbus call --session --dest org.freedesktop.Notifications --object-path /org/freedesktop/Notifications --method org.freedesktop.Notifications.Notify BoringIslandTest 0 '' 'Fixture " + serial + "' 'Test body' '[]' '{}' 0");
         tryVerify(() => commandDone, 5000);
         compare(commandExit, 0);
-        tryCompare(backend, "count", 1, 3000);
+        tryCompare(backend, "count", expectedHistoryCount, 3000);
         tryCompare(center, "count", 1, 3000);
         tryVerify(() => backend.preview !== null, 3000);
     }
@@ -39,7 +39,19 @@ TestCase {
         verify(NM.Server.valid);
         wait(100); // Finish seeding existing history before sending fixtures.
     }
-    function cleanup() { backend.clearAll(); backend.hidePreviews(); tryCompare(center, "count", 0); }
+    function cleanup() {
+        for (let row=center.count-1;row>=0;--row) center.close(center.index(row,0));
+        backend.hidePreviews(); tryCompare(center,"count",0);
+        backend.history.blacklistedDesktopEntries=[];
+    }
+    function test_preview_independent_of_history_filter() {
+        backend.history.blacklistedDesktopEntries=["@other"];
+        send(0);
+        const id=backend.preview.id;
+        backend.closeId(id);
+        tryCompare(center,"count",0);
+        tryCompare(backend,"preview",null);
+    }
     function test_timeout_keeps_both_histories() {
         send();
         tryCompare(backend, "preview", null, 2000);

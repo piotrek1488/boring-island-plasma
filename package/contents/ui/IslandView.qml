@@ -35,26 +35,28 @@ Item {
     HoverHandler { onHoveredChanged: view.hoverChanged(hovered) }
     DropArea { anchors.fill: parent; onDropped: drop => { if (drop.hasUrls) { view.addFiles(drop.urls); drop.acceptProposedAction(); } } }
     ColumnLayout {
-        anchors.fill: parent; anchors.margins: 22; spacing: 12
+        anchors.fill: parent; anchors.margins: 26; spacing: 12
         RowLayout {
             Layout.fillWidth: true
             Text { text: "BORING / ISLAND"; color: "#aaa0c9"; font.pixelSize: 10; font.letterSpacing: 2 }
             Item { Layout.fillWidth: true }
-            Text { text: view.today; color: "#9395a7"; font.pixelSize: 11 }
+            Text { text: view.today; color: "#c1c2d0"; font.pixelSize: 13 }
+            Text { objectName: "expandedBattery"; visible: view.showBattery && view.backend.hasBattery; text: (view.backend.charging ? "+ " : "") + view.backend.percent + "%"; color: "#b7f4c8"; font.pixelSize: 14 }
             ActionButton { text: "×"; implicitWidth: 26; implicitHeight: 26; Accessible.description: strings.text("Close"); onClicked: view.closeRequested() }
         }
         Flow {
+            objectName: "tabs"
             Layout.fillWidth: true
+            Layout.preferredHeight: implicitHeight
             spacing: 5
-            ActionButton { text: strings.text("Media"); implicitWidth: 70; implicitHeight: 30; accent: view.page === 0; onClicked: view.page = 0 }
-            ActionButton { text: strings.text("Shelf") + " · " + view.shelf.length; implicitWidth: 85; implicitHeight: 30; accent: view.page === 1; onClicked: view.page = 1 }
-            ActionButton { objectName: "calendarTab"; text: strings.text("Calendar"); implicitWidth: 92; implicitHeight: 30; accent: view.page === 3; onClicked: view.page = 3 }
-            ActionButton { objectName: "notificationsTab"; text: strings.text("Notifications") + (view.notifications ? " · " + view.notifications.count : ""); implicitHeight: 30; accent: view.page === 4; onClicked: view.page = 4 }
-            ActionButton { text: strings.text("Activity"); implicitHeight: 30; accent: view.page === 5; onClicked: view.page = 5 }
-            Text { visible: view.showBattery && view.backend.hasBattery; text: (view.backend.charging ? "+ " : "") + view.backend.percent + "%"; color: "#a7e7b8"; font.pixelSize: 12 }
+            ActionButton { text: strings.text("Media"); showTooltip: false; implicitHeight: 34; accent: view.page === 0; onClicked: view.page = 0 }
+            ActionButton { text: strings.text("Shelf") + " · " + view.shelf.length; showTooltip: false; implicitHeight: 34; accent: view.page === 1; onClicked: view.page = 1 }
+            ActionButton { objectName: "calendarTab"; text: strings.text("Calendar"); showTooltip: false; implicitHeight: 34; accent: view.page === 3; onClicked: view.page = 3 }
+            ActionButton { objectName: "notificationsTab"; text: strings.text("Notifications") + (view.notifications ? " · " + view.notifications.count : ""); showTooltip: false; implicitHeight: 34; accent: view.page === 4; onClicked: view.page = 4 }
+            ActionButton { text: strings.text("Activity"); showTooltip: false; implicitHeight: 34; accent: view.page === 5; onClicked: view.page = 5 }
         }
         StackLayout {
-            currentIndex: view.page; Layout.fillWidth: true; Layout.fillHeight: true
+            currentIndex: view.page; Layout.fillWidth: true; Layout.fillHeight: true; clip: true
             ColumnLayout {
                 spacing: 8
                 RowLayout {

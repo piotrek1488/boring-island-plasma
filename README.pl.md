@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.3.0; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.3.1; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.3.0.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.3.1.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -42,7 +42,7 @@ PPM → ustawienia Boring Island → **Boring Island**:
 - **Dynamic Island** — zaokrąglona kapsuła; ustawienie domyślne.
 - **Dopasuj wysokość do panelu** — domyślnie włączone; widżet korzysta z wysokości
   przydzielonej przez Plasma.
-- Wyłącz automatyczne dopasowanie, aby ustawić **Wysokość zwiniętego widżetu (px)**
+- Zmień **Wysokość zwiniętego widżetu (px)**, aby wyłączyć dopasowanie automatyczne. Wartość jest
   w zakresie 16–128. Widoczna wysokość nie przekroczy dostępnego miejsca w panelu.
   Tekst, wskaźnik i odstępy skalują się razem z wysokością; szerokość ustawisz osobno.
 - Mniejszy notch przylega do góry przydzielonego obszaru, a wyspa jest wyśrodkowana
@@ -73,7 +73,7 @@ Na pulpicie używany jest ten sam komponent. Nie emuluje fizycznego wycięcia ek
   tymczasowe podlegają regułom przechowywania KDE; nie tworzymy osobnego archiwum.
 - **Priorytety:** podgląd powiadomienia → operacja na pakietach → odtwarzana muzyka
   → lokalny model AI → zegar. W ustawieniach lub zakładce **Aktywność** można
-  przypiąć konkretny widok. Podgląd chwilowo przerywa przypięcie, po czym je przywraca.
+  przypiąć konkretny widok, w tym **Powiadomienia**. Podgląd chwilowo przerywa przypięcie, po czym je przywraca.
 - **System:** CPU, RAM i obsługiwane GPU (liczniki sysfs, opcjonalnie `nvidia-smi`/`intel_gpu_top`).
   Nieobsługiwane GPU są pomijane. ↗ otwiera Monitor systemu lub `top` w Konsole.
 - **Pakiety:** wykrywanie poleceń APT/dpkg, pacman, DNF/Yum, Zypper, Flatpak, pip
@@ -91,7 +91,8 @@ Na pulpicie używany jest ten sam komponent. Nie emuluje fizycznego wycięcia ek
   i nazwa wyjścia audio przez opcjonalne `pactl`. Pulsujący wskaźnik jest dekoracyjny.
 - **Rozmiar:** wybór Notch/Dynamic Island, automatyczna lub ręczna wysokość,
   szerokość 80–1000 px, automatyczna szerokość z limitem oraz osobne wymiary
-  i skala rozwinięcia. Opcja ograniczenia animacji wyłącza animację rozwijania.
+  i skala rozwinięcia. **Skala zwiniętego widżetu (%)** (50–200%) zmienia też
+  wysokość, szerokość i tekst zwinięcia w granicach przydzielonych przez panel. Opcja ograniczenia animacji wyłącza animację rozwijania.
 
 Monitoring wymaga **Python 3** i modułu Plasma `org.kde.plasma.plasma5support`.
 Krótki proces zbiera dane co około 3 sekundy, bez usługi i autostartu. Poszczególne
@@ -106,7 +107,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.0.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.1.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -173,14 +174,14 @@ Szczegółowe porównanie źródeł: [docs/ANALIZA.md](docs/ANALIZA.md).
 
 Moduły MPRIS, baterii, okna i powiadomień są **prywatnym API Plasma**.
 Wcześniejsze wersje sprawdzano na Plasma 6.6.6 / Qt 6.10.2, Ubuntu 26.04.
-Testy podstawowe 0.3.0 wykonano na Qt 6.4.2 bez sesji Plasma. Nie deklarujemy zgodności z Plasma 5 ani
+Testy podstawowe 0.3.1 wykonano na Qt 6.4.2 bez sesji Plasma. Nie deklarujemy zgodności z Plasma 5 ani
 ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacji.
 
 ## Testy i rozwój
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.3.0.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.3.1.plasmoid
 plasmawindowed ./package
 ```
 
@@ -215,3 +216,19 @@ kpackagetool6 --type Plasma/Applet --remove org.kde.plasma.boringisland
 ```
 
 Licencja GPL-3.0-only. Autorzy i źródło inspiracji: [NOTICE.md](NOTICE.md).
+
+## Automatyczne wydania
+
+[Workflow GitHub Actions](.github/workflows/release.yml) sprawdza testy podstawowe
+i pakiet dla PR. Po pushu/scaleniu do `main` publikuje wydanie z `.plasmoid`
+i sumą SHA256; można go też uruchomić ręcznie dla `main`. Użyte najnowsze stabilne
+wersje sprawdzone 2026-11-05: checkout 7.0.1, setup-python 7.1.0. Publikacja
+korzysta z GitHub CLI i wbudowanego tokena; nie wymaga dodatkowych sekretów.
+
+Pierwsze wydanie używa wersji z metadanych, jeżeli jest nowsza od tagów. Każde
+kolejne scalenie automatycznie zwiększa numer poprawki; podniesienie wersji
+w metadanych pozwala rozpocząć nową wersję minor/major. Wersja jest wpisywana
+do zbudowanego pakietu bez dodatkowego commita bota. Ponowienie zadania używa
+tagu tego samego commita i nie nadpisuje istniejącego wydania. Publikacje są
+kolejkowane, aby nie powstały dwa identyczne numery. CI nie zastępuje testów
+natywnego centrum powiadomień i interaktywnego pulpitu Wayland.
