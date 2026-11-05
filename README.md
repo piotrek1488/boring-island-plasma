@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.3.4** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.3.5** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -144,7 +144,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.4.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.5.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -193,7 +193,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.3.4.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.3.5.plasmoid
 plasmawindowed ./package
 ```
 
@@ -262,11 +262,14 @@ passing the core CI suite does not certify those integrations.
 
 ### Overlay interaction (0.3.2)
 
-Hover and notification previews do not request keyboard focus or deactivate the
-current application. Mouse buttons inside the widget remain usable. Opening with
-a keyboard shortcut/Enter/Space explicitly enables focus for keyboard navigation.
+Hover and notification previews use a nonactivating Notification window role,
+so the current application keeps focus. A click inside switches the overlay to
+an interactive AppletPopup and requests activation. Controls keep their original
+click actions. Opening with a keyboard shortcut/Enter/Space also enables focus.
 The overlay has no automatic Plasma visual parent: its position is set before
 the first expansion frame, and its compact origin/size are held during expansion.
+Collapsed content has at least 28 logical pixels of side padding for a notch
+(22 for an island), including when compact scale is reduced.
 The compact shape follows manual height multiplied by compact scale. Since 0.3.4,
 it renders directly in the panel content item, bypassing applet padding and clipping.
 The panel window remains the physical drawing boundary; increase the panel height
@@ -294,5 +297,6 @@ model, with no extra polling or service.
 from 50 to 1000 ms. The new default is **280 ms** (previously 420 ms). Lower values
 are faster; this changes duration, not display refresh rate. Hover delay remains
 independent. After the pointer leaves, a manually opened view waits 30 ms for
-header/body hover handoff and closes in 60 ms, regardless of opening duration.
+header/body hover handoff, then closes with an InOutCubic curve in 70% of the
+opening duration, bounded to 100–220 ms (196 ms by default).
 Reduce motion overrides both durations with no animation.

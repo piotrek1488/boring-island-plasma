@@ -14,7 +14,7 @@ Item {
     property bool reduceMotion: false
     readonly property real unscaledHeight: autoHeight ? (panelItem ? panelItem.height : height) : Math.max(16, Math.min(128, compactHeight))
     readonly property real naturalScale: Math.max(0.5, Math.min(2, unscaledHeight / 42))
-    readonly property real naturalWidth: naturalMetrics.width + (64 + (expandedHeader ? 22 : 0) + (showBattery && backend.hasBattery ? batteryIndicator.implicitWidth / contentScale : 0)) * naturalScale
+    readonly property real naturalWidth: naturalMetrics.width + (96 + (expandedHeader ? 22 : 0) + (showBattery && backend.hasBattery ? batteryIndicator.implicitWidth / contentScale : 0)) * naturalScale
     TextMetrics { id: naturalMetrics; text: compact.displayText || compact.backend.title || compact.clockText; font.pixelSize: Math.round(13 * compact.naturalScale) }
     readonly property real textWidth: textMetrics.width + 86 * contentScale + (showBattery && backend.hasBattery ? batteryIndicator.implicitWidth : 0)
     TextMetrics { id: textMetrics; text: compact.displayText || compact.backend.title || compact.clockText; font.pixelSize: Math.round(13 * compact.contentScale) }
@@ -29,7 +29,8 @@ Item {
     property real compactScale: 1
     property real minimumTextScale: 0.5
     property bool expandedHeader: false
-    property real edgeInset: expandedHeader ? 32 : 16
+    property real edgeInset: expandedHeader ? 32 : 24
+    readonly property real horizontalPadding: expandedHeader ? edgeInset * contentScale : Math.max(notch ? 28 : 22, edgeInset * contentScale)
     property real batteryFontSize: expandedHeader ? 14 : 11
     property bool autoHeight: true
     property int compactHeight: 42
@@ -61,7 +62,7 @@ Item {
             }
         }
         RowLayout {
-            anchors.fill: parent; anchors.leftMargin: compact.edgeInset * compact.contentScale; anchors.rightMargin: compact.edgeInset * compact.contentScale; spacing: 10 * compact.contentScale
+            anchors.fill: parent; anchors.leftMargin: compact.horizontalPadding; anchors.rightMargin: compact.horizontalPadding; spacing: 10 * compact.contentScale
             Rectangle { implicitWidth: 7 * compact.contentScale; implicitHeight: implicitWidth; radius: implicitWidth / 2; color: compact.accentColor
                 SequentialAnimation on opacity { running: compact.animateMedia && compact.backend.playing && !compact.reduceMotion && compact.visible; loops: Animation.Infinite; NumberAnimation { to: 0.3; duration: 600 } NumberAnimation { to: 1; duration: 600 } } }
             Text { objectName: "compactTitle"; Layout.fillWidth: true; text: compact.displayText || compact.backend.title || compact.clockText; color: "#f5f5fa"; font.pixelSize: Math.round(13 * compact.contentScale); elide: Text.ElideRight; textFormat: Text.PlainText }

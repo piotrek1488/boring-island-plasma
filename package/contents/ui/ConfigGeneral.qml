@@ -69,7 +69,7 @@ Kirigami.FormLayout {
         onActivated: index => config.cfg_batteryPercentPosition = ["inside", "left", "right", "hidden"][index]
     }
     SpinBox { id: animationDuration; objectName: "animationDurationSetting"; Kirigami.FormData.label: strings.text("Animation duration (ms):"); from: 50; to: 1000; value: 280; stepSize: 10; editable: true }
-    Label { text: strings.text("Lower values make opening faster. Closing takes 60 ms. Reduced motion disables animations."); wrapMode: Text.WordWrap }
+    Label { text: strings.text("Lower values make opening faster. Closing uses 70% of that duration, limited to 100–220 ms. Reduced motion disables animations."); wrapMode: Text.WordWrap }
     CheckBox { id: motion; text: strings.text("Reduce motion") }
     Label { text: strings.text("For an island at the top of the screen, place this widget in a centered top panel."); wrapMode: Text.WordWrap; LayoutMirroring.enabled: false }
 }

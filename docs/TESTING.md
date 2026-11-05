@@ -1,3 +1,24 @@
+# Verification of 0.3.5
+
+Core offscreen tests cover minimum collapsed side padding at 50%, 100% and 150%
+scale, visible intermediate collapse frames, hover without an interaction request,
+and clicks on both the header and a tab requesting focus while preserving the tab
+switch. The 0.3.4 battery warning, concave shoulders and panel geometry tests remain
+in the core suite.
+
+The focus fix follows [KWin's acceptsFocus implementation](https://github.com/KDE/kwin/blob/master/src/xdgshellwindow.cpp):
+Notification honors panelTakesFocus, while AppletPopup does not. Hover now uses
+Notification with WindowDoesNotAcceptFocus. A pointer click or keyboard activation
+switches to AppletPopup and explicitly requests activation. Each new hover session
+resets to nonactivating mode.
+
+The native popup fixture covers both roles, focus flags, reset after interaction
+and stable coordinates. It requires Plasma 6 modules unavailable in this cloud
+workspace. Real compositor focus and smoothness still require a Plasma/Wayland
+desktop. Core QML tests use Qt 6.4.2 with offscreen software rendering.
+
+---
+
 # Verification of 0.3.3
 
 The core suites now additionally cover four battery percentage placements, power

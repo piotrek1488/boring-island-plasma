@@ -56,6 +56,7 @@ Item {
         backend: media; notifications: notifications; activities: activities
         onPinRequested: mode => pinnedMode = mode
     }
+    SignalSpy { id: interactionSpy; target: shell; signalName: "interactionRequested" }
     UI.CompactView { id: compactTest; backend: media; width: 240; height: 64; visible: false }
     RowLayout {
         width: 900; height: 64
@@ -86,7 +87,29 @@ Item {
             wait(90); verify(shell.progress>0 && shell.progress<1);
             tryCompare(shell,"progress",1,600);
             shell.opened=false;
-            tryCompare(shell,"progress",0,150);
+            wait(60); verify(shell.progress>0 && shell.progress<1);
+            tryCompare(shell,"progress",0,400);
+        }
+        function test_click_interaction_does_not_fire_on_hover() {
+            shell.fullView=true; shell.opened=true; wait(30);
+            interactionSpy.clear();
+            const title=findChild(findChild(shell,"expandedHeader"),"compactTitle");
+            mouseMove(title,10,10); wait(30); compare(interactionSpy.count,0);
+            mouseClick(title); compare(interactionSpy.count,1);
+        }
+        function test_tab_click_keeps_its_action_and_requests_focus() {
+            shell.fullView=true; shell.opened=true; wait(30);
+            interactionSpy.clear();
+            mouseClick(findChild(shell,"notificationsTab"));
+            compare(interactionSpy.count,1);
+            tryVerify(() => findChild(shell,"notificationsPage") !== null);
+        }
+        function test_collapse_has_visible_intermediate_frames() {
+            shell.fullView=true; shell.opened=true;
+            shell.reduceMotion=false; shell.opened=false;
+            wait(50); verify(shell.progress>0.7 && shell.progress<1);
+            wait(60); verify(shell.progress>0 && shell.progress<0.7);
+            tryCompare(shell,"progress",0,400);
         }
         function test_animation_duration_setting() {
             shell.reduceMotion=false; shell.fullView=true; shell.animationDuration=800; shell.opened=true;

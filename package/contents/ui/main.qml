@@ -22,7 +22,7 @@ PlasmoidItem {
     readonly property var notificationBackend: notifications
     readonly property var activityBackend: activities
     property bool opened: false
-    property bool keyboardRequested: false
+    property bool focusRequested: false
     property bool popupReady: false
     property bool geometryLocked: false
     property point popupAnchorPoint: Qt.point(0, 0)
@@ -86,10 +86,23 @@ PlasmoidItem {
     toolTipSubText: displayText
     onExpandedChanged: if (expanded) { expanded = false; open(true); }
     function open(keyboard = false) {
-        keyboardRequested = keyboard;
+        if (!opened) focusRequested = keyboard;
+        else if (keyboard) focusRequested = true;
         if (!opened) selectedPage = Activity.page(mode);
         opened = true;
-        if (keyboard) Qt.callLater(() => { attachedDialog.requestActivate(); popupShell.forceActiveFocus(); });
+        if (keyboard) {
+            activateFromInteraction();
+            Qt.callLater(() => { if (root.focusRequested && attachedDialog.visible) popupShell.forceActiveFocus(); });
+        }
+    }
+    function activateFromInteraction() {
+        if (!inPanel || !wantOpen) return;
+        // Let the original control handle this pointer event before activation.
+        Qt.callLater(() => {
+            if (!root.wantOpen || !attachedDialog.visible) return;
+            root.focusRequested = true;
+            attachedDialog.requestActivate();
+        });
     }
     function close() { if (lowBattery) lowBattery.dismiss(); opened = false; if (notifications) notifications.hidePreviews(); }
     function hoverChanged(compact, hovered) {
@@ -143,7 +156,7 @@ PlasmoidItem {
         Layout.fillHeight: true
         Layout.minimumHeight: 16
         Behavior on Layout.preferredWidth { NumberAnimation { duration: root.reduceMotion ? 0 : root.animationDuration; easing.type: Easing.InOutCubic } }
-        onActivated: root.opened ? root.close() : root.open()
+        onActivated: root.opened ? root.close() : root.open(true)
         onKeyboardActivated: root.open(true)
         onHoverChanged: hovered => root.hoverChanged(true, hovered)
         onFilesDropped: urls => { root.storeShelf(Shelf.merge(root.savedShelf, urls)); root.selectedPage = 1; root.opened = true; }
@@ -152,7 +165,7 @@ PlasmoidItem {
         id: attachedDialog
         visible: root.inPanel && root.anchorItem !== null && root.anchorItem.width > 0 && root.anchorItem.height > 0 && (root.wantOpen || popupShell.progress > 0.001)
         transientParent: root.anchorItem ? root.anchorItem.Window.window : null
-        keyboardRequested: root.keyboardRequested
+        focusRequested: root.focusRequested
         onWindowDeactivated: root.close()
         onVisibleChanged: {
             root.compactHovered = false;
@@ -163,7 +176,7 @@ PlasmoidItem {
             } else {
                 root.popupReady = false;
                 root.geometryLocked = false;
-                root.keyboardRequested = false;
+                root.focusRequested = false;
             }
         }
         mainItem: ExpandingIsland {
@@ -180,6 +193,7 @@ PlasmoidItem {
             batteryPercentPosition: Plasmoid.configuration.batteryPercentPosition
             configureEnabled: root.configureEnabled
             onConfigureRequested: root.configure()
+            onInteractionRequested: root.activateFromInteraction()
             reduceMotion: root.reduceMotion; uiScale: root.uiScale
             maximumWidth: root.anchorItem && root.anchorItem.Window.window ? root.anchorItem.Window.window.screen.width : 4096
             compactWidth: root.geometryLocked ? root.popupAnchorWidth : (root.anchorItem ? root.anchorItem.width : Plasmoid.configuration.compactWidth)
@@ -189,7 +203,7 @@ PlasmoidItem {
             pinnedMode: Plasmoid.configuration.pinnedMode; initialPage: root.selectedPage
 
             onCloseRequested: root.close()
-            onActivated: root.opened ? root.close() : root.open()
+            onActivated: root.opened ? root.close() : root.open(true)
             onHoverChanged: hovered => root.hoverChanged(false, hovered)
             onFilesDropped: urls => { root.storeShelf(Shelf.merge(root.savedShelf, urls)); root.selectedPage = 1; root.opened = true; }
             onShelfEdited: urls => root.storeShelf(urls)
@@ -217,6 +231,7 @@ PlasmoidItem {
             batteryPercentPosition: Plasmoid.configuration.batteryPercentPosition
             configureEnabled: root.configureEnabled
             onConfigureRequested: root.configure()
+            onInteractionRequested: root.activateFromInteraction()
             notch: root.notch; reduceMotion: root.reduceMotion; uiScale: root.uiScale
             compactWidth: Plasmoid.configuration.compactWidth * root.compactScale
             compactHeight: (Plasmoid.configuration.autoHeight ? 42 : Plasmoid.configuration.compactHeight) * root.compactScale
@@ -224,7 +239,7 @@ PlasmoidItem {
             shelf: root.savedShelf; showBattery: Plasmoid.configuration.showBattery
             pinnedMode: Plasmoid.configuration.pinnedMode; initialPage: root.selectedPage
             onCloseRequested: root.close()
-            onActivated: root.opened ? root.close() : root.open()
+            onActivated: root.opened ? root.close() : root.open(true)
             onHoverChanged: hovered => root.hoverChanged(false, hovered)
             onFilesDropped: urls => { root.storeShelf(Shelf.merge(root.savedShelf, urls)); root.selectedPage = 1; root.opened = true; }
             onShelfEdited: urls => root.storeShelf(urls)

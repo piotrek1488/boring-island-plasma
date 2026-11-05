@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.3.4; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.3.5; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.3.4.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.3.5.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -107,7 +107,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.4.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.5.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -183,7 +183,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.3.4.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.3.5.plasmoid
 plasmawindowed ./package
 ```
 
@@ -237,11 +237,15 @@ natywnego centrum powiadomień i interaktywnego pulpitu Wayland.
 
 ### Rozwijanie i fokus (0.3.2)
 
-Hover i podgląd powiadomienia nie żądają fokusu klawiatury i nie dezaktywują
-bieżącej aplikacji. Przyciski nadal działają myszą. Otwarcie skrótem klawiaturowym
-lub Enter/Spacją jawnie włącza fokus dla obsługi klawiaturą. Pozycję okna ustawiamy
+Hover i podgląd powiadomienia używają nieaktywującej roli okna Notification.
+Kliknięcie wewnątrz przełącza okno w interaktywną rolę AppletPopup i żąda fokusu,
+zachowując działanie klikniętego przycisku. Otwarcie skrótem klawiaturowym
+lub Enter/Spacją również włącza fokus. Pozycję okna ustawiamy
 przed pierwszą klatką rozwijania, bez automatycznego pozycjonowania popupu Plasma.
 Punkt początkowy i zwinięte wymiary pozostają stałe podczas animacji.
+
+Zwinięty notch ma minimum 28 px bocznego odstępu, a wyspa 22 px — także po
+zmniejszeniu skali.
 
 Od 0.3.4 kształt jest rysowany bezpośrednio w oknie panelu, poza odstępami
 i przycinaniem obszaru plasmoidu. Wysokość jest mnożona przez skalę zwinięcia.
@@ -275,5 +279,6 @@ wzroście poziomu powyżej 20%. To komunikat widżetu, bez dodawania wpisu do hi
 szerokości. Zakres: 50–1000 ms, nowa wartość domyślna **280 ms** zamiast 420 ms.
 Mniej oznacza szybciej; pole nie zmienia częstotliwości odświeżania ekranu.
 Opóźnienie najechania jest osobne. Po opuszczeniu ręcznie otwartego widżetu
-zamykanie startuje po 30 ms i trwa 60 ms niezależnie od czasu otwierania.
+zamykanie startuje po 30 ms i używa łagodnej krzywej InOutCubic. Trwa 70% czasu
+otwierania, w zakresie 100–220 ms (domyślnie 196 ms).
 Ograniczenie animacji wyłącza ruch.

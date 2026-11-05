@@ -25,6 +25,7 @@ Item {
     property string batteryPercentPosition: "right"
     property bool configureEnabled: true
     signal configureRequested()
+    signal interactionRequested()
     property real uiScale: 1
     property real compactWidth: 240
     property real compactHeight: 42
@@ -50,11 +51,12 @@ Item {
     readonly property real surfaceHeight: headerHeight + bodyHeight * progress
     width: fixedViewport ? targetWidth : surfaceWidth
     height: fixedViewport ? expandedHeaderHeight + bodyHeight : surfaceHeight
+    readonly property int collapseDuration: Math.max(100, Math.min(220, Math.round(animationDuration * 0.7)))
     Behavior on progress {
         id: morphAnimation
         NumberAnimation {
-            duration: shell.reduceMotion ? 0 : (morphAnimation.targetValue > shell.progress ? Math.max(50, Math.min(1000, shell.animationDuration)) : 60)
-            easing.type: Easing.OutQuint
+            duration: shell.reduceMotion ? 0 : (morphAnimation.targetValue > 0 ? Math.max(50, Math.min(1000, shell.animationDuration)) : shell.collapseDuration)
+            easing.type: morphAnimation.targetValue > 0 ? Easing.OutQuint : Easing.InOutCubic
         }
     }
     Item {
@@ -142,6 +144,16 @@ Item {
         }
         Translations { id: strings; language: shell.language }
         HoverHandler { onHoveredChanged: shell.hoverChanged(hovered) }
+        // Observe presses first, then reject them so the original control gets
+        // the same event. A passive TapHandler here can swallow legacy buttons.
+        MouseArea {
+            anchors.fill: parent; z: 1000
+            acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+            onPressed: mouse => {
+                shell.interactionRequested();
+                mouse.accepted = false;
+            }
+        }
     }
     onInitialPageChanged: content.page = initialPage
     onFullViewChanged: if (fullView) { presentedFullView = true; content.page = initialPage; }
