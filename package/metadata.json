@@ -2,9 +2,9 @@
   "KPlugin": {
     "Id": "org.kde.plasma.boringisland",
     "Name": "Boring Island",
-    "Description": "Notch and Dynamic Island for Plasma: media, KDE calendars, KDE Connect and file shelf",
+    "Description": "Notch and Dynamic Island: notifications, activities, media, KDE calendars and file sharing",
     "Icon": "media-playback-start",
-    "Version": "0.2.2",
+    "Version": "0.3.0",
     "License": "GPL-3.0-only",
     "Authors": [
       {
@@ -12,7 +12,7 @@
       }
     ],
     "Category": "Multimedia",
-    "Description[pl]": "Notch i Dynamic Island dla Plasma: multimedia, kalendarze KDE, KDE Connect i półka plików"
+    "Description[pl]": "Notch i Dynamic Island: powiadomienia, aktywność, multimedia, kalendarze KDE i pliki"
   },
   "KPackageStructure": "Plasma/Applet",
   "X-Plasma-API-Minimum-Version": "6.6"

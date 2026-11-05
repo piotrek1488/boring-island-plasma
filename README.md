@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.2.2** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.3.0** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -50,7 +50,7 @@ Right-click the widget and open its settings, then select **Boring Island**.
 - A smaller notch stays aligned to the top of its allocated area; a smaller island
   is centered vertically. On the desktop, automatic height is 42 px.
 - Sizes use Qt logical pixels, so desktop display scaling still applies. Panel
-  margins are controlled by Plasma; the expanded popup keeps its existing size.
+  margins are controlled by Plasma; the expanded content has separate width, height and 60–200% scale controls.
 - Configure hover delay, battery visibility and reduced motion.
 
 Device names, filenames, track metadata and event content remain in their original
@@ -59,8 +59,9 @@ settings. The configuration category uses the language-neutral name Boring Islan
 
 For an island effect, enable a floating panel in Plasma settings. For a notch,
 disable floating and place the panel at the top edge. Plasma's theme still controls
-the panel background and margins. In a panel, the expanded view is a standard
-Plasma popup; on the desktop, it expands inside the widget's allocated area.
+the panel background and margins. The expanded view uses a single animated surface containing the compact header and
+content. In a panel, a frameless Plasma dialog overlays the compact widget at its
+screen position, with no themed popup gap. The desktop view uses the same surface.
 It does not create an independent overlay above every window or a physical cutout.
 
 ## Features
@@ -83,6 +84,71 @@ The shelf stores addresses only. Moving or deleting the original breaks its
 shortcut. MPRIS support and available controls depend on the player. An empty media
 view means no active MPRIS source. Player volume does not change system volume.
 Cover art may be fetched from URLs supplied by the player.
+
+## Notifications and activity
+
+- **Notifications:** a preview appears inside the notch/island for **4 seconds** by
+  default (configurable from 1 to 60 seconds). Bursts are queued, with at most 20
+  pending previews. Expiry hides only the preview, leaving KDE's history intact.
+- Hover or click to expand, then choose **Notifications**. Delete one entry with
+  **×**, or use **Clear all**. This uses Plasma's shared notification model:
+  deleting here removes it from KDE's notification center, and vice versa.
+  Existing history is not replayed when the widget loads. Do Not Disturb and
+  application popup/history preferences are respected. Transient notifications
+  still follow KDE's retention rules; the widget does not keep a private archive.
+- **Automatic priority:** temporary notification → package operation → playing
+  media → loaded local AI model → clock. Pin Clock, Media, System, Packages or
+  Local AI in settings or on the **Activity** tab. A temporary notification takes
+  precedence over a pin, then restores it. Pins persist per widget instance.
+- **System:** CPU/RAM and available GPU utilization. AMD-compatible sysfs counters
+  and optional `nvidia-smi`/`intel_gpu_top` are supported; unsupported GPUs are omitted. Click ↗
+  to launch Plasma System Monitor, or `top` in Konsole as a fallback.
+- **Packages:** detects command-line operations from APT/dpkg, pacman, DNF/Yum,
+  Zypper, Flatpak, pip and npm. The moving bar means activity, not a measured
+  percentage. Disappearing processes are not reported as successful installs.
+  Processes hidden by system permissions cannot be detected. Discover/PackageKit
+  operations are not guaranteed to be detected. Focusing the terminal requires
+  optional `kdotool`; Wayland focus policy can still prevent activation.
+- **Local AI:** optional, disabled by default. Reads loaded models and context from
+  LM Studio (localhost:1234, REST v1 with v0 fallback) or Ollama (localhost:11434).
+  Shows inference-process CPU/RSS when readable, and Ollama's reported model memory.
+  Generation state and tok/s are shown only when an LM Studio inference process
+  exposes an accessible local llama-server `/slots` endpoint with decoded-token
+  counters. An unavailable measurement stays unknown. Authenticated/custom-port
+  APIs and Ollama's live generation rate are not supported.
+- **Media:** retains MPRIS controls, adds a button to raise the player when supported
+  and an optional audio output label via `pactl`. The pulsing indicator is decorative.
+- **Size:** retain Notch/Dynamic Island, panel height fitting and manual compact
+  height. Compact width now supports 80–1000 logical pixels, optionally used as an
+  automatic-width limit. Expanded width, height and content scale are independent.
+  Reduced motion disables the expansion and pulse animations.
+
+The optional activity provider requires **Python 3** and Plasma's
+`org.kde.plasma.plasma5support` executable data engine. It is started by the widget
+for each snapshot (~every 3 seconds), without a service or autostart entry. Disable
+individual monitors to stop querying their data; local AI never receives prompts
+from the widget. Notifications require the native `org.kde.notificationmanager`
+module and the **plasmashell process**. A separate `plasmawindowed` process cannot
+share in-memory notification history with the desktop. System notification popups
+remain governed by KDE; this version does not globally disable them.
+
+### Build and update
+
+From your local clone:
+
+```bash
+git pull --ff-only origin main
+python3 scripts/package.py
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.3.0.plasmoid
+systemctl --user restart plasma-plasmashell.service
+```
+
+For a first installation use `--install` instead of `--upgrade`. The restart
+reloads the desktop/panels without logging out; running applications stay open.
+Alternatively, `./scripts/install.sh` chooses install or upgrade from source.
+Settings and shelf shortcuts are retained. Live Wayland positioning and shared
+notification deletion still need testing on a Plasma 6.6+ desktop; see
+[verification status](docs/TESTING.md).
 
 ## KDE Connect and calendars
 
@@ -110,19 +176,19 @@ KOrganizer; the widget's agenda is read-only.
 
 ## Scope and limitations
 
-Not implemented: AirDrop, camera preview, lyrics, clipboard history, a full
-notification queue, measured audio visualization, system OSD replacement and
+Not implemented: AirDrop, camera preview, lyrics, clipboard history, measured audio visualization, system OSD replacement and
 fullscreen detection. See the [source analysis, in Polish](docs/ANALIZA.md).
 
-The MPRIS and battery integrations use **private Plasma APIs**. The verified
-environment is Plasma 6.6.6 / Qt 6.10.2 on Ubuntu 26.04. Plasma 5 and older Plasma 6
+The MPRIS, battery, dialog and notification integrations use **private Plasma APIs**.
+Earlier releases were verified on Plasma 6.6.6 / Qt 6.10.2 on Ubuntu 26.04.
+The 0.3.0 core tests run on Qt 6.4.2 without a Plasma session. Plasma 5 and older Plasma 6
 versions are not supported. Future API changes may require updates.
 
 ## Development and testing
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.2.2.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.3.0.plasmoid
 plasmawindowed ./package
 ```
 
@@ -130,6 +196,20 @@ The standard suites require Qt Quick Test (`qmltestrunner`), `dbus-run-session`,
 `python3-dbus`, `python3-gi` and the KDE Connect QML module. Set `QMLTESTRUNNER` if
 your distribution installs the runner elsewhere. No translation compilation step
 is required: the English/Polish catalog ships inside the package.
+
+The core activity, queue and expansion suites can also run without Plasma:
+
+```bash
+./scripts/test-core.sh
+```
+
+The shared notification integration test requires Plasma 6.6+ modules and `gdbus`:
+
+```bash
+./scripts/test-notifications.sh
+```
+
+It uses its own private D-Bus session; do not run the QML fixture on your desktop bus.
 
 The optional native calendar provider test requires CMake, a C++ compiler, Qt 6
 Core development files and `libkf6declarative-dev` headers:

@@ -13,7 +13,7 @@ args.output_dir.mkdir(parents=True, exist_ok=True)
 target = args.output_dir / f'boring-island-{version}.plasmoid' 
 with ZipFile(target, 'w', compression=ZIP_DEFLATED) as archive:
     files = [(p, p.relative_to(root / 'package').as_posix())
-             for p in sorted((root / 'package').rglob('*')) if p.is_file()]
+             for p in sorted((root / 'package').rglob('*')) if p.is_file() and '__pycache__' not in p.parts and p.suffix != '.pyc']
     files += [(root / 'LICENSE', 'LICENSE'), (root / 'NOTICE.md', 'NOTICE.md')]
     for path, name in files:
         entry = ZipInfo(name, date_time=(2026, 11, 3, 0, 0, 0))

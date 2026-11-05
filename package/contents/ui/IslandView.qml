@@ -8,6 +8,11 @@ Item {
     property string language: "en"
     Translations { id: strings; language: view.language }
     required property var backend
+    property var notifications: null
+    property var activities: null
+    property string pinnedMode: "auto"
+    property bool drawSurface: true
+    signal pinRequested(string mode)
     property bool notch: false
     property bool showBattery: true
     property bool reduceMotion: false
@@ -26,7 +31,7 @@ Item {
     implicitWidth: 440; implicitHeight: 286
     function addFiles(urls) { shelfEdited(Shelf.merge(shelf, urls)); page = 1; }
     function timeLabel(us) { var s = Math.max(0, Math.floor(us / 1000000)); return Math.floor(s / 60) + ":" + (s % 60 < 10 ? "0" : "") + s % 60; }
-    IslandSurface { anchors.fill: parent; notch: view.notch }
+    IslandSurface { anchors.fill: parent; notch: view.notch; visible: view.drawSurface }
     HoverHandler { onHoveredChanged: view.hoverChanged(hovered) }
     DropArea { anchors.fill: parent; onDropped: drop => { if (drop.hasUrls) { view.addFiles(drop.urls); drop.acceptProposedAction(); } } }
     ColumnLayout {
@@ -38,12 +43,14 @@ Item {
             Text { text: view.today; color: "#9395a7"; font.pixelSize: 11 }
             ActionButton { text: "×"; implicitWidth: 26; implicitHeight: 26; Accessible.description: strings.text("Close"); onClicked: view.closeRequested() }
         }
-        RowLayout {
-            spacing: 8
+        Flow {
+            Layout.fillWidth: true
+            spacing: 5
             ActionButton { text: strings.text("Media"); implicitWidth: 70; implicitHeight: 30; accent: view.page === 0; onClicked: view.page = 0 }
             ActionButton { text: strings.text("Shelf") + " · " + view.shelf.length; implicitWidth: 85; implicitHeight: 30; accent: view.page === 1; onClicked: view.page = 1 }
             ActionButton { objectName: "calendarTab"; text: strings.text("Calendar"); implicitWidth: 92; implicitHeight: 30; accent: view.page === 3; onClicked: view.page = 3 }
-            Item { Layout.fillWidth: true }
+            ActionButton { objectName: "notificationsTab"; text: strings.text("Notifications") + (view.notifications ? " · " + view.notifications.count : ""); implicitHeight: 30; accent: view.page === 4; onClicked: view.page = 4 }
+            ActionButton { text: strings.text("Activity"); implicitHeight: 30; accent: view.page === 5; onClicked: view.page = 5 }
             Text { visible: view.showBattery && view.backend.hasBattery; text: (view.backend.charging ? "+ " : "") + view.backend.percent + "%"; color: "#a7e7b8"; font.pixelSize: 12 }
         }
         StackLayout {
@@ -64,6 +71,7 @@ Item {
                         RowLayout {
                             ActionButton { objectName: "previousButton"; text: "|‹"; enabled: view.backend.canPrevious; Accessible.description: strings.text("Previous track"); onClicked: view.backend.previous() }
                             ActionButton { objectName: "playButton"; text: view.backend.playing ? "Ⅱ" : "▶"; accent: true; enabled: view.backend.canToggle; Accessible.description: view.backend.playing ? strings.text("Pause") : strings.text("Play"); onClicked: view.backend.toggle() }
+                            ActionButton { text: "↗"; enabled: !!view.backend.canRaise; Accessible.description: strings.text("Open media player"); onClicked: view.backend.raisePlayer() }
                             ActionButton { objectName: "nextButton"; text: "›|"; enabled: view.backend.canNext; Accessible.description: strings.text("Next track"); onClicked: view.backend.next() }
                         }
                     }
@@ -79,7 +87,7 @@ Item {
                     Text { text: view.timeLabel(view.backend.duration); color: "#9395a7"; font.pixelSize: 10 }
                 }
                 RowLayout {
-                    Text { Layout.fillWidth: true; text: view.backend.identity || "MPRIS · Plasma 6"; textFormat: Text.PlainText; color: "#77798d"; font.pixelSize: 10; elide: Text.ElideRight }
+                    Text { Layout.fillWidth: true; text: (view.backend.identity || "MPRIS · Plasma 6") + (view.activities && view.activities.audio ? " · " + view.activities.audio : ""); textFormat: Text.PlainText; color: "#77798d"; font.pixelSize: 10; elide: Text.ElideRight }
                     Text { text: strings.text("Volume"); color: "#9395a7"; font.pixelSize: 10 }
                     Slider { Layout.preferredWidth: 110; from: 0; to: 1; value: view.backend.volume; enabled: view.backend.available; Accessible.name: strings.text("Player volume"); onMoved: view.backend.setVolume(value) }
                 }
@@ -135,6 +143,23 @@ Item {
                 active: view.page === 3
                 source: "CalendarPage.qml"
                 onLoaded: item.language = Qt.binding(() => view.language)
+            }
+            Loader {
+                active: view.page === 4 && view.notifications !== null
+                onActiveChanged: if (active) setSource("NotificationsPage.qml", {backend: view.notifications, language: view.language})
+                Component.onCompleted: if (active) setSource("NotificationsPage.qml", {backend: view.notifications, language: view.language})
+                onLoaded: item.language = Qt.binding(() => view.language)
+            }
+            Loader {
+                active: view.page === 5 && view.activities !== null
+                id: activityLoader
+                onActiveChanged: if (active) setSource("ActivityPage.qml", {backend: view.activities, language: view.language, pinnedMode: view.pinnedMode})
+                Component.onCompleted: if (active) setSource("ActivityPage.qml", {backend: view.activities, language: view.language, pinnedMode: view.pinnedMode})
+                onLoaded: {
+                    item.language = Qt.binding(() => view.language);
+                    item.pinnedMode = Qt.binding(() => view.pinnedMode);
+                }
+                Connections { target: activityLoader.item; function onPinRequested(mode) { view.pinRequested(mode); } }
             }
         }
     }

@@ -1,4 +1,49 @@
-# Verification of 0.2.2
+# Verification of 0.3.0
+
+Current development environment: Ubuntu 24.04, Qt 6.4.2, offscreen software
+renderer. This environment has no Plasma 6/Kirigami 6 runtime or Wayland desktop.
+Do not confuse the historical 0.2.2 validation below with validation of 0.3.0.
+
+Executed successfully:
+
+- 12 Python activity-provider tests: CPU deltas, package operations and queries,
+  optional dependencies, LM Studio v1/Ollama fixture contracts, missing/malformed
+  endpoints, generation token counters and resets between tasks.
+- Notification queue QML suite: preview timeout, replacement, ordered bursts,
+  external deletion, bounded pending queue, disabling and pin/automatic priority.
+- Expansion QML suite: animated opening/closing, both shapes, 150% scaling,
+  notification history UI/translation and loading the activity page.
+- English default and Polish catalog coverage; QML syntax parsing.
+- Actual local collector snapshot (CPU/RAM, no GPU/AI/audio devices available).
+
+The native suites cannot run here: org.kde.notificationmanager, Plasma, Kirigami,
+MPRIS and KDE Connect modules are missing. Shared notification deletion is
+implemented against KDE's shared native model, but has NOT been verified against
+a running Plasma notification center in this environment. Run
+`./scripts/test-notifications.sh` on Plasma 6.6+; it creates a private D-Bus bus
+and tests deletion in both directions, preview expiry and deletion after expiry.
+Never run that fixture on the live desktop session bus.
+
+Manual target checks before release:
+
+1. Update the installed package and restart plasmashell. Exercise Notch and Island
+   on top/bottom panels, floating panels, monitor changes and display scaling.
+2. Check that the expanded surface stays attached without a gap throughout its
+   animation; verify mouse/keyboard interaction, hover closing and reduced motion.
+3. Send a real notification. Confirm the configured preview time, burst ordering,
+   history after expiry, removal from either UI and Do Not Disturb behavior.
+4. Try height/width limits and expanded scale, then restart to verify persistence.
+5. Exercise real package operations, supported GPU counters, player activation,
+   LM Studio/Ollama and optional terminal activation under Wayland focus policy.
+6. Recheck KDE Connect delivery, calendar sync and existing shelf drag/drop.
+
+Run `./scripts/test-core.sh` for the suites available without Plasma, and
+`./scripts/test.sh` for all standard native suites on the target environment.
+
+---
+
+# Historical verification of 0.2.2
+
 
 Environment: Ubuntu 26.04, Plasma 6.6.6, Qt 6.10.2. Tests run offscreen with a
 software renderer and an isolated session bus. No files were sent to real devices.

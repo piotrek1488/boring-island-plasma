@@ -11,6 +11,8 @@ Item {
     readonly property string artist: available ? player.artist : ""
     readonly property string artwork: available ? player.artUrl : ""
     readonly property string identity: available ? player.identity : ""
+    readonly property bool canRaise: available && player.canRaise
+    function raisePlayer() { if (canRaise) player.Raise(); }
     readonly property bool canToggle: available && (playing ? player.canPause : player.canPlay)
     readonly property bool canNext: available && player.canGoNext
     readonly property bool canPrevious: available && player.canGoPrevious

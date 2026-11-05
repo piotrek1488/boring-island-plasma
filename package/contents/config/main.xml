@@ -8,7 +8,18 @@
     <entry name="hoverDelay" type="Int"><default>250</default></entry>
     <entry name="autoHeight" type="Bool"><default>true</default></entry>
     <entry name="compactHeight" type="Int"><default>42</default><min>16</min><max>128</max></entry>
-    <entry name="compactWidth" type="Int"><default>240</default></entry>
+    <entry name="compactWidth" type="Int"><default>320</default><min>80</min><max>1000</max></entry>
+    <entry name="autoWidth" type="Bool"><default>true</default></entry>
+    <entry name="expandedWidth" type="Int"><default>520</default><min>420</min><max>1000</max></entry>
+    <entry name="expandedHeight" type="Int"><default>390</default><min>320</min><max>800</max></entry>
+    <entry name="expandedScale" type="Int"><default>100</default><min>60</min><max>200</max></entry>
+    <entry name="notificationDuration" type="Int"><default>4</default><min>1</min><max>60</max></entry>
+    <entry name="notificationPreviews" type="Bool"><default>true</default></entry>
+    <entry name="pinnedMode" type="String"><default>auto</default></entry>
+    <entry name="monitorSystem" type="Bool"><default>true</default></entry>
+    <entry name="monitorPackages" type="Bool"><default>true</default></entry>
+    <entry name="monitorLlm" type="Bool"><default>false</default></entry>
+    <entry name="showAudioDevice" type="Bool"><default>true</default></entry>
     <entry name="showBattery" type="Bool"><default>true</default></entry>
     <entry name="reduceMotion" type="Bool"><default>false</default></entry>
     <entry name="shelfJson" type="String"><default>[]</default></entry>
