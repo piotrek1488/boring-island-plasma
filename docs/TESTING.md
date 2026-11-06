@@ -1,3 +1,36 @@
+# Verification of 0.4.4
+
+KDE Plasma 6.6 source confirms two cases missed by an OSD-progress-only listener:
+the brightness widget sets its controller silent while expanded, and multi-display
+brightness OSD can emit text instead of numeric progress. The optional brightness
+backend now reads ScreenBrightnessControl's per-display model without invoking
+setters. BrightnessMonitor normalizes each display's range and emits only actual
+value changes after initialization; it coalesces rapid changes and silently seeds
+initial/hotplug/range/re-enabled state. Existing volume OSD routing is unchanged.
+
+Seven core Qt 6.4.2 cases pass for initial/hotplug silence, silent-slider changes,
+two monitor ranges, range changes, unchanged values, disabled/re-enabled tracking,
+rapid updates, clamping and expiry. The remaining core suite also passes.
+The native OSD fixture loads the real PowerDevil QML plugin on Qt 6.11.2 and exposes
+mock ScreenBrightness and plasmashell OSD services on a private bus. Seven cases
+pass for no startup replay, brightness with no OSD signal, two monitors with text
+OSD, disable/re-enable and volume progress. Fixture write counters remain zero.
+
+Run `./scripts/test-osd.sh` with PowerDevil, CMake, a C++ compiler and Qt Quick
+Test/Qml/DBus development files. The fixture performs no real display writes or
+desktop-bus calls. Physical backlight/DDC/driver behavior still needs target-device
+confirmation; tools that do not update KDE's model or OSD cannot be observed here.
+
+Native settings tests pass in English 640×360 and Polish 460×240 windows with ICS
+controls visible. They assert the first control is at least 20 px below the top,
+the reset button remains at least 20 px above the bottom when scrolled to the end,
+and the reset section starts at least 20 px after the final option. Both settings
+pages have 20 px vertical padding. CI includes the new brightness suites and
+PowerDevil dependency. Both README translations and this evidence ship in the same
+commit as the implementation.
+
+---
+
 # Verification of 0.4.3
 
 The repository metadata reports `private: true`. Real anonymous requests to the

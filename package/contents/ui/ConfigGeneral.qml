@@ -8,6 +8,8 @@ ScrollView {
     objectName: "settingsScroll"
     clip: true
     contentWidth: availableWidth
+    topPadding: 20
+    bottomPadding: 20
     implicitWidth: 640
     implicitHeight: 560
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -147,11 +149,14 @@ ScrollView {
             wrapMode: Text.WordWrap
         }
         Button {
+            objectName: "calendarSetupInstructions"
             visible: config.cfg_calendarMode === "ics"
             text: strings.text("Calendar setup instructions")
             onClicked: Qt.openUrlExternally("https://github.com/piotrek1488/boring-island-plasma/blob/main/README.md#google-and-outlook-calendars-without-akonadi")
         }
+        Item { objectName: "resetGap"; implicitHeight: 20; implicitWidth: 1 }
         Label {
+            objectName: "resetHelp"
             text: strings.text("Use Apply or OK to save the reset. Shelf shortcuts are kept.")
             wrapMode: Text.WordWrap
         }

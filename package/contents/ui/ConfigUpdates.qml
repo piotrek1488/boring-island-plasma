@@ -10,6 +10,8 @@ ScrollView {
     UpdateBackend { id: updater }
     clip: true
     contentWidth: availableWidth
+    topPadding: 20
+    bottomPadding: 20
     implicitWidth: 640; implicitHeight: 400
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
     ColumnLayout {

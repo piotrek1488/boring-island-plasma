@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.4.3** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.4.4** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -147,7 +147,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.3.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.4.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -196,7 +196,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.4.3.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.4.4.plasmoid
 plasmawindowed ./package
 ```
 
@@ -458,8 +458,15 @@ using Plasma's OSD signals, with a configurable timeout (default two seconds aft
 the last change). Notification previews and the low-battery message are held while
 this feedback is visible, then receive their full display duration. KDE's own OSD
 remains enabled: these are additional indicators, not a global OSD replacement.
-The feature depends on KDE emitting OSD events for the change; unsupported hardware
-or other applications' private sliders may not emit them.
+Volume continues to use KDE's OSD events. From 0.4.4, brightness also observes
+PowerDevil's per-display model, covering the brightness widget's silent slider
+changes and multi-monitor OSD messages that contain text instead of progress.
+The bar uses the last changed display's brightness as a percentage of its own
+range. This observer never writes brightness. Initial reads, hotplug and range
+changes are silent. It reconnects without replaying changes when indicators are
+re-enabled. If the optional PowerDevil brightness QML module is missing, OSD-event
+support remains available. Unsupported hardware/tools that do not update either
+source still require target-device testing.
 
 **Calendar reminders** run independently of the Calendar tab for the configured
 KDE/Akonadi or ICS source. Defaults: 15 minutes before and at the start, for timed
@@ -485,9 +492,11 @@ from both the widget and KDE history. A failed application launch keeps the entr
 × still deletes without opening anything. Actual window activation is
 subject to the application's behavior and compositor policy.
 
-## Settings and updates (0.4.3)
+## Settings and updates (0.4.4)
 
-The settings form has a permanent vertical scrollbar. Scroll to its bottom to
+The settings form has a permanent vertical scrollbar and 20 px top/bottom padding.
+The reset section has an additional 20 px gap after the last option. The Updates
+page uses the same top/bottom padding. Scroll to the form's bottom to
 reach **Restore default settings**; Apply/OK saves the reset and preserves shelf
 shortcuts. The tab rows and category content are centered, including wrapped tab
 rows and wider expanded widgets. Preview notifications have symmetric side margins.
@@ -524,3 +533,8 @@ widget settings. Private assets are downloaded through the authenticated release
 asset API, with a binary Accept header. Public releases remain usable without
 `gh`. A missing account/repository permission is reported separately from GitHub
 rate limits; access errors are no longer hidden behind a generic download error.
+
+Native brightness routing can be tested with `./scripts/test-osd.sh`. It requires
+PowerDevil's brightness QML module, CMake, a C++ compiler and Qt Quick Test/Qml/DBus
+development files. The fixture owns mock brightness/OSD services on a private bus;
+it never changes the computer's real display brightness.

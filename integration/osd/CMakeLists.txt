@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.22)
+project(BoringOsdTests LANGUAGES CXX)
+set(CMAKE_AUTOMOC ON)
+find_package(Qt6 REQUIRED COMPONENTS QuickTest Widgets DBus Qml)
+add_executable(osd-tests runner.cpp)
+target_link_libraries(osd-tests PRIVATE Qt6::QuickTest Qt6::Widgets Qt6::DBus Qt6::Qml)

@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.4.3; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.4.4; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.4.3.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.4.4.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -109,7 +109,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.3.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.4.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -185,7 +185,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.4.3.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.4.4.plasmoid
 plasmawindowed ./package
 ```
 
@@ -435,8 +435,15 @@ Opcja **Pokazuj głośność i jasność w zwiniętym widżecie** dodaje ikonę,
 na czas ustawiony przez użytkownika (domyślnie dwie sekundy od ostatniej zmiany).
 Powiadomienia i ostrzeżenie baterii czekają na koniec wskaźnika, po czym dostają
 pełny czas prezentacji. Systemowe OSD KDE nadal działa obok wskaźnika notcha.
-Obsługa wymaga, aby KDE emitowało zdarzenie OSD; prywatne suwaki aplikacji lub
-nieobsługiwany sprzęt mogą go nie wysyłać.
+Głośność nadal korzysta ze zdarzeń OSD KDE. Od 0.4.4 jasność jest dodatkowo
+obserwowana w modelu monitorów PowerDevila. Obejmuje to suwak jasności, który może
+wyciszać OSD, oraz kilka monitorów, dla których KDE wysyła komunikat tekstowy.
+Pasek pokazuje ostatnio zmieniony monitor, w procentach jego własnego zakresu.
+Obserwator nie zmienia jasności. Pierwszy odczyt, podłączenie monitora i zmiana
+zakresu nie wywołują paska. Ponowne włączenie wskaźników nie odtwarza wcześniejszych
+zmian. Bez opcjonalnego modułu QML jasności PowerDevila pozostaje obsługa sygnałów
+OSD. Sprzęt lub narzędzia nieprzekazujące zmian do żadnego z tych źródeł wymagają
+sprawdzenia na docelowym komputerze.
 
 **Przypomnienia kalendarza** działają także bez otwartej zakładki dla wybranego
 źródła KDE/Akonadi lub ICS. Domyślnie: 15 minut przed wydarzeniem oraz w chwili
@@ -462,9 +469,11 @@ otwarcia usuwa powiadomienie z widżetu i historii KDE. Nieudana próba uruchomi
 aplikacji zachowuje wpis. × nadal usuwa bez otwierania aplikacji.
 Aktywacja okna zależy również od aplikacji i polityki kompozytora.
 
-## Ustawienia i aktualizacje (0.4.3)
+## Ustawienia i aktualizacje (0.4.4)
 
-Formularz ustawień ma stale widoczny pionowy pasek przewijania. Na samym dole
+Formularz ustawień ma stale widoczny pionowy pasek przewijania oraz po 20 px
+marginesu u góry i na dole. Sekcja resetu ma dodatkowy odstęp 20 px od ostatniej
+opcji. Zakładka Aktualizacje ma takie same marginesy pionowe. Na samym dole formularza
 znajduje się **Przywróć ustawienia domyślne**; reset zapiszesz przez Zastosuj/OK,
 a skróty na półce zostają zachowane. Kategorie i ich zawartość są wyśrodkowane,
 również przy zawijaniu kategorii do kolejnych wierszy i przy szerszym rozwinięciu.
@@ -503,6 +512,11 @@ przez `gh`; token nie trafia do ustawień widżetu. Prywatne pliki są pobierane
 uwierzytelnione API zasobów wydania, z nagłówkiem pobierania binarnego. Publiczne
 wydania nadal działają bez `gh`. Brak uprawnień/logowania jest odróżniany od limitu
 zapytań GitHuba, zamiast ogólnego komunikatu o nieudanym pobraniu.
+
+Natywną obsługę jasności sprawdza `./scripts/test-osd.sh`. Wymaga modułu QML
+jasności PowerDevila, CMake, kompilatora C++ i pakietów deweloperskich Qt Quick
+Test/Qml/DBus. Test używa symulowanych usług na prywatnej magistrali D-Bus;
+nie zmienia rzeczywistej jasności monitora.
 
 Natywny test powiadomień (`./scripts/test-notifications.sh`) wymaga też CMake,
 kompilatora C++, `gdbus` i pakietów deweloperskich Plasma Workspace, Qt Quick Test

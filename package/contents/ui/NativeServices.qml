@@ -12,6 +12,18 @@ Item {
     signal textReceived(string icon, string description)
     signal delivered(string key, string notificationId)
     signal failed(string key)
+    readonly property bool brightnessAvailable: brightnessLoader.item ? brightnessLoader.item.available : false
+    Loader {
+        id: brightnessLoader
+        active: bridge.osdEnabled
+        source: "BrightnessBackend.qml"
+    }
+    Connections {
+        target: brightnessLoader.item
+        function onBrightnessChanged(percent, displayLabel) {
+            if (bridge.osdEnabled) bridge.progressReceived("video-display-brightness", percent, 100, displayLabel);
+        }
+    }
     DBus.SignalWatcher {
         enabled: bridge.osdEnabled
         busType: DBus.BusType.Session

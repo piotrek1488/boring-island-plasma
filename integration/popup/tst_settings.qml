@@ -37,12 +37,17 @@ Item {
             const flick=config.contentItem, reset=findChild(config,"resetDefaultsButton");
             tryVerify(() => flick.contentHeight>config.height);
             verify(waitForRendering(config));
+            flick.contentY=0;
+            verify(waitForRendering(config));
+            verify(findChild(config,"languageChoice").mapToItem(config,0,0).y>=20);
             compare(config.ScrollBar.horizontal.policy,ScrollBar.AlwaysOff);
             compare(config.ScrollBar.vertical.policy,ScrollBar.AlwaysOn);
             flick.contentY=flick.contentHeight-flick.height;
             verify(waitForRendering(config));
             const p=reset.mapToItem(config,0,0);
-            verify(p.y>=0 && p.y+reset.height<=config.height+1, "reset="+p.y+" height="+reset.height+" viewport="+config.height+" content="+flick.contentHeight+" scroll="+flick.contentY);
+            verify(p.y>=20 && p.y+reset.height<=config.height-19, "reset="+p.y+" height="+reset.height+" viewport="+config.height+" content="+flick.contentHeight+" scroll="+flick.contentY);
+            const last=findChild(config,"calendarSetupInstructions"), help=findChild(config,"resetHelp");
+            verify(help.mapToItem(config,0,0).y-last.mapToItem(config,0,last.height).y>=20);
             mouseClick(reset);
             compare(config.cfg_idleView,"clock"); compare(config.cfg_animationDuration,400);
         }
