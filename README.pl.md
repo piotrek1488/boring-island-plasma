@@ -4,7 +4,7 @@
 
 Natywna implementacja dla Linuksa inspirowana gałęzią `dev` projektu
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Wersja 0.4.2; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
+Wersja 0.4.3; wymagana **Plasma 6.6+**. Nie jest to pełny port wszystkich funkcji macOS.
 
 ![Dynamic Island po polsku](docs/dynamic-island-pl.png)
 
@@ -16,7 +16,7 @@ W katalogu tego projektu uruchom:
 ./scripts/install.sh
 ```
 
-Albo zainstaluj gotowy `boring-island-0.4.2.plasmoid` przez „Dodaj elementy interfejsu” →
+Albo zainstaluj gotowy `boring-island-0.4.3.plasmoid` przez „Dodaj elementy interfejsu” →
 „Pobierz nowe elementy interfejsu” → „Zainstaluj z pliku lokalnego”.
 Dodaj **Boring Island** do pulpitu lub górnego panelu.
 Plasma zapisuje widżet i jego konfigurację: po kolejnym logowaniu przywraca go sama.
@@ -109,7 +109,7 @@ W lokalnym klonie repozytorium zbuduj pakiet i zaktualizuj istniejący widżet:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.2.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.3.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -185,7 +185,7 @@ ze starszą Plasma 6; przyszłe zmiany tych modułów mogą wymagać aktualizacj
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # wynik: build/boring-island-0.4.2.plasmoid
+python3 ./scripts/package.py  # wynik: build/boring-island-0.4.3.plasmoid
 plasmawindowed ./package
 ```
 
@@ -462,7 +462,7 @@ otwarcia usuwa powiadomienie z widżetu i historii KDE. Nieudana próba uruchomi
 aplikacji zachowuje wpis. × nadal usuwa bez otwierania aplikacji.
 Aktywacja okna zależy również od aplikacji i polityki kompozytora.
 
-## Ustawienia i aktualizacje (0.4.2)
+## Ustawienia i aktualizacje (0.4.3)
 
 Formularz ustawień ma stale widoczny pionowy pasek przewijania. Na samym dole
 znajduje się **Przywróć ustawienia domyślne**; reset zapiszesz przez Zastosuj/OK,
@@ -470,7 +470,9 @@ a skróty na półce zostają zachowane. Kategorie i ich zawartość są wyśrod
 również przy zawijaniu kategorii do kolejnych wierszy i przy szerszym rozwinięciu.
 Podglądy powiadomień mają symetryczne marginesy po bokach.
 
-Otwórz ustawienia → **About / O programie** → **Sprawdź aktualizacje**. Gdy dostępne
+Otwórz ustawienia → **Updates / Aktualizacje** → **Sprawdź aktualizacje**. Ta
+zakładka zastępuje „O programie” i zawiera wyłącznie wersję oraz obsługę aktualizacji.
+Gdy dostępne
 jest nowsze stabilne wydanie, **Zainstaluj aktualizację** pobiera pakiet z wydań
 naszego repozytorium na GitHubie. Sprawdzane są SHA-256 z pliku SHA256SUMS,
 identyfikator i wersja pakietu. Instalacja używa `kpackagetool6` jako Twój użytkownik.
@@ -481,8 +483,26 @@ odbywa się wyłącznie po kliknięciu, nie automatycznie w tle.
 Po instalacji kliknij **Uruchom ponownie Plasmę** lub wyloguj się i zaloguj.
 Restart to osobny przycisk i zamknie widżet oraz okno ustawień. Po błędzie sieci
 lub limicie GitHuba można ponowić próbę; błąd weryfikacji blokuje instalację.
-Nadal można pobierać i instalować pakiety ręcznie. Wersję 0.4.2 zainstaluj raz
-ręcznie, aby otrzymać te przyciski dla następnych wydań.
+Nadal można pobierać i instalować pakiety ręcznie. Wersję 0.4.3 zainstaluj raz
+ręcznie, aby otrzymać poprawkę dostępu do prywatnych wydań — aktualizator w 0.4.2
+nie obsługuje logowania.
+
+Repozytorium jest prywatne. Samo logowanie w przeglądarce nie udostępnia go
+plasmoidowi. Zainstaluj [GitHub CLI (`gh`)](https://cli.github.com/), a następnie
+zaloguj się kontem, które ma prawo odczytu tego repozytorium:
+
+```bash
+gh auth login --hostname github.com
+```
+
+Przycisk **Zaloguj się do GitHuba** otwiera logowanie CLI w Konsole lub terminalu
+wybranym przez system. Dokończ logowanie, a potem ponownie wybierz **Sprawdź
+aktualizacje**. Gdy nie ma programu uruchamiającego terminal, zakładka podaje
+polecenie do ręcznego wykonania. Aktualizator korzysta z logowania zapisanego
+przez `gh`; token nie trafia do ustawień widżetu. Prywatne pliki są pobierane przez
+uwierzytelnione API zasobów wydania, z nagłówkiem pobierania binarnego. Publiczne
+wydania nadal działają bez `gh`. Brak uprawnień/logowania jest odróżniany od limitu
+zapytań GitHuba, zamiast ogólnego komunikatu o nieudanym pobraniu.
 
 Natywny test powiadomień (`./scripts/test-notifications.sh`) wymaga też CMake,
 kompilatora C++, `gdbus` i pakietów deweloperskich Plasma Workspace, Qt Quick Test

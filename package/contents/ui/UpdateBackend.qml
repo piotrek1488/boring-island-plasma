@@ -23,6 +23,7 @@ Item {
     function check() { run("check"); }
     function install() { if (state === "available") run("install"); }
     function restart() { if (state === "installed") run("restart"); }
+    function login() { if (state === "authRequired") run("login"); }
     Plasma5Support.DataSource {
         id: executor
         engine: "executable"

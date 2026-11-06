@@ -4,7 +4,7 @@
 
 A native Linux plasmoid inspired by the `dev` branch of
 [boring.notch](https://github.com/TheBoredTeam/boring.notch/tree/dev).
-Version **0.4.2** requires **Plasma 6.6+**. This is an unofficial reimplementation,
+Version **0.4.3** requires **Plasma 6.6+**. This is an unofficial reimplementation,
 not a complete port of every macOS feature.
 
 ![Dynamic Island](docs/dynamic-island.png)
@@ -147,7 +147,7 @@ From your local clone:
 ```bash
 git pull --ff-only origin main
 python3 scripts/package.py
-kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.2.plasmoid
+kpackagetool6 --type Plasma/Applet --upgrade build/boring-island-0.4.3.plasmoid
 systemctl --user restart plasma-plasmashell.service
 ```
 
@@ -196,7 +196,7 @@ versions are not supported. Future API changes may require updates.
 
 ```bash
 ./scripts/test.sh
-python3 ./scripts/package.py  # creates build/boring-island-0.4.2.plasmoid
+python3 ./scripts/package.py  # creates build/boring-island-0.4.3.plasmoid
 plasmawindowed ./package
 ```
 
@@ -485,14 +485,16 @@ from both the widget and KDE history. A failed application launch keeps the entr
 × still deletes without opening anything. Actual window activation is
 subject to the application's behavior and compositor policy.
 
-## Settings and updates (0.4.2)
+## Settings and updates (0.4.3)
 
 The settings form has a permanent vertical scrollbar. Scroll to its bottom to
 reach **Restore default settings**; Apply/OK saves the reset and preserves shelf
 shortcuts. The tab rows and category content are centered, including wrapped tab
 rows and wider expanded widgets. Preview notifications have symmetric side margins.
 
-Open settings → **About / O programie** → **Check for updates**. If a newer stable
+Open settings → **Updates / Aktualizacje** → **Check for updates**. This page
+contains update controls and the installed version, replacing the About page.
+If a newer stable
 release is available, **Install update** downloads it from this repository's GitHub
 releases. The updater checks SHA-256 against the release's SHA256SUMS, checks the
 package ID/version and upgrades with `kpackagetool6` as your user. Python 3 and
@@ -503,5 +505,22 @@ updates are not checked or installed automatically.
 After installation, click **Restart Plasma**, or log out and back in. Restart is
 separate from installation and closes the widget/settings window. Network/rate-limit
 errors can be retried; a failed verification does not install the package. The
-manual download/install method remains available. Install 0.4.2 manually once to
-get these controls for subsequent releases.
+manual download/install method remains available. Install 0.4.3 manually once to
+receive the private-release fix; the updater in 0.4.2 cannot authenticate.
+
+The repository is private, so a browser login alone does not give the plasmoid
+access. Install [GitHub CLI (`gh`)](https://cli.github.com/), then sign in with an
+account that can read this repository:
+
+```bash
+gh auth login --hostname github.com
+```
+
+When access is required, **Sign in to GitHub** opens the CLI login in Konsole (or
+the desktop's terminal launcher). Finish login, then click **Check for updates**
+again. Without a terminal launcher, the page shows the command to run manually.
+The updater reuses `gh`'s own credential store; no token is entered or saved in
+widget settings. Private assets are downloaded through the authenticated release
+asset API, with a binary Accept header. Public releases remain usable without
+`gh`. A missing account/repository permission is reported separately from GitHub
+rate limits; access errors are no longer hidden behind a generic download error.

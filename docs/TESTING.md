@@ -1,3 +1,26 @@
+# Verification of 0.4.3
+
+The repository metadata reports `private: true`. Real anonymous requests to the
+latest-release API and browser asset URLs returned HTTP 404, while authenticated
+access returned v0.4.2. The updater now falls back to GitHub CLI's existing login
+for access failures, downloads assets through their API IDs with the binary Accept
+header, and retains checksum/plugin-ID/version verification. A live authenticated
+download of the published 0.4.2 package (80,363 bytes) passed these checks; no live
+package was installed or Plasma restarted during this diagnostic.
+
+Python regression tests cover anonymous/public access, private JSON/binary requests
+via gh, missing CLI/invalid login, rate-limit classification, accepted endpoints,
+asset IDs and terminal-login arguments, along with the existing package checks.
+Credentials are handled by gh and are not printed, copied into settings or passed
+as command-line arguments. The settings fixture now loads ConfigUpdates, checks the
+Polish Updates title, existing update/install/restart actions and login/retry UI.
+The old About description/project link have been removed from the update page.
+
+README translations document the private-repository requirement, manual bootstrap
+to 0.4.3, gh login and the renamed settings tab in the same commit as the fix.
+
+---
+
 # Verification of 0.4.2
 
 Settings are tested with real Kirigami/KDE controls on Plasma 6.7.4 / Qt 6.11.2.

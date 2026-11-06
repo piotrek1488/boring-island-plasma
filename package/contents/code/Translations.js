@@ -1,6 +1,12 @@
 .pragma library
 
 var polish = {
+    "Updates": "Aktualizacje",
+    "Sign in to GitHub": "Zaloguj się do GitHuba",
+    "Sign in with gh auth login --hostname github.com using an account with access to this repository, then check again.": "Uruchom gh auth login --hostname github.com i zaloguj się kontem z dostępem do tego repozytorium, a następnie sprawdź ponownie.",
+    "This release requires GitHub access. Install GitHub CLI (gh), then run gh auth login --hostname github.com.": "To wydanie wymaga dostępu do GitHuba. Zainstaluj GitHub CLI (gh), a następnie uruchom gh auth login --hostname github.com.",
+    "Finish signing in in the terminal, then click Check for updates again.": "Dokończ logowanie w terminalu, a następnie ponownie kliknij Sprawdź aktualizacje.",
+    "GitHub refused the update request. Check that your account has repository access.": "GitHub odmówił dostępu do aktualizacji. Sprawdź, czy Twoje konto ma dostęp do repozytorium.",
     "Installed version:": "Zainstalowana wersja:",
     "A notch and Dynamic Island for KDE Plasma.": "Notch i Dynamic Island dla KDE Plasma.",
     "Update available:": "Dostępna aktualizacja:",
