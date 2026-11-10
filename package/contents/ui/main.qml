@@ -162,12 +162,19 @@ PlasmoidItem {
     function prepareDialog() {
         if (!anchorItem) return;
         const visual = anchorItem.visualItem;
-        popupAnchorPoint = visual.mapToGlobal(0, 0);
-        popupAnchorWidth = visual.width;
-        popupAnchorHeight = visual.height;
+        if (!visual) return;
         // Native Plasma windows expose their screen to items through Screen;
         // Window.window.screen is only available on the QML Window wrapper.
         const screen = visual.Screen;
+        // During display hotplug/dock changes KWin can momentarily report no
+        // outputs ("There are no outputs - creating placeholder screen"). The
+        // attached Screen then has no backing QScreen and reading its geometry
+        // fields dereferences null, crashing plasmashell. Skip this pass and
+        // wait for the next screenChanged once a real output is back.
+        if (!screen || screen.width <= 0 || screen.height <= 0) return;
+        popupAnchorPoint = visual.mapToGlobal(0, 0);
+        popupAnchorWidth = visual.width;
+        popupAnchorHeight = visual.height;
         popupScreenGeometry = Qt.rect(screen.virtualX, screen.virtualY, screen.width, screen.height);
         popupMaximumHeight = Math.max(1, Plasmoid.location === PlasmaCore.Types.BottomEdge
             ? popupAnchorPoint.y + popupAnchorHeight - popupScreenGeometry.y
