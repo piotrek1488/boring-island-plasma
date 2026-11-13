@@ -56,8 +56,11 @@ TestCase {
         backend.history.blacklistedDesktopEntries=[];
         backend.history.blacklistedNotifyRcNames=[];
         // Reset readiness so the queueing test cannot leak state into others.
-        nativeBridge.notificationsReady=true;
+        // Clear the queue BEFORE marking ready: setting notificationsReady=true
+        // triggers flushPending(), which would otherwise deliver leftovers into
+        // the next test's history.
         nativeBridge.pendingNotifications=[];
+        nativeBridge.notificationsReady=true;
     }
     function test_notify_is_queued_while_server_not_ready() {
         // Regression: sending Notify before plasmashell owns the notification
@@ -82,6 +85,9 @@ TestCase {
         compare(String(nativeBridge.pendingNotifications[0].key), "k1");
         compare(String(nativeBridge.pendingNotifications[1].key), "k2");
         compare(String(nativeBridge.pendingNotifications[0].title), "Standup");
+        // Drop the queued entries without flushing, so they are never delivered
+        // into another test's history. Clear before init() marks ready again.
+        nativeBridge.pendingNotifications=[];
     }
     function test_native_reminder_joins_shared_history() {
         deliveredSpy.clear(); reminderOpenedSpy.clear();
