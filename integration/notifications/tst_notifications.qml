@@ -15,9 +15,10 @@ TestCase {
     property bool commandDone: false
     property int commandExit: -1
     UI.NotificationBackend { id: backend; previewDuration: 1000 }
-    // The fixture's runner.cpp owns the notification service, so the server is
-    // ready for the suite by default; the queueing test toggles this itself.
-    UI.NativeServices { id: nativeBridge; osdEnabled:false; notificationsReady:true }
+    // runner.cpp owns the notification service in THIS process, exactly like
+    // plasmashell. NativeServices must therefore send Notify from a child process;
+    // an in-process asyncCall crashed the libdbusplugin decoder (docs/issues/0001).
+    UI.NativeServices { id: nativeBridge; osdEnabled:false }
     SignalSpy { id: reminderOpenedSpy; target:nativeBridge; signalName:"reminderActivated" }
     SignalSpy { id: deliveredSpy; target:nativeBridge; signalName:"delivered" }
     NM.Notifications { id: center; showExpired: true; showDismissed: true; groupMode: NM.Notifications.GroupDisabled }
@@ -55,47 +56,30 @@ TestCase {
         // Do not let the user's/default @other blacklist hide fixture history.
         backend.history.blacklistedDesktopEntries=[];
         backend.history.blacklistedNotifyRcNames=[];
-        // Reset readiness so the queueing test cannot leak state into others.
-        // Clear the queue BEFORE marking ready: setting notificationsReady=true
-        // triggers flushPending(), which would otherwise deliver leftovers into
-        // the next test's history.
-        nativeBridge.pendingNotifications=[];
-        nativeBridge.notificationsReady=true;
     }
-    function test_notify_is_queued_while_server_not_ready() {
-        // Regression: sending Notify before plasmashell owns the notification
-        // name crashed the libdbusplugin reply decoder (SIGSEGV, boring-island
-        // crash loop on shell startup). notify() must NOT call asyncCall while
-        // the server is not ready; it queues instead, preserving order, and
-        // only deliver()s once ready. See docs/issues/0001-*.md.
-        //
-        // This asserts the gate and the queue only. It intentionally does not
-        // drive the real Notify/reply path, because the synthetic fixture
-        // server returns a reply shape the stripped libdbusplugin decoder
-        // crashes on in offscreen mode (unrelated to this fix; the live Plasma
-        // server returns a well-formed uint32 and the full delivery path is
-        // covered by test_native_reminder_joins_shared_history).
-        deliveredSpy.clear(); reminderOpenedSpy.clear();
-        nativeBridge.notificationsReady = false;
-        nativeBridge.notify("k1","Standup","Standup at 09:30");
-        nativeBridge.notify("k2","Review","Review at 10:00");
-        // Nothing delivered while not ready; both requests are held, in order.
-        compare(deliveredSpy.count, 0);
-        compare(nativeBridge.pendingNotifications.length, 2);
-        compare(String(nativeBridge.pendingNotifications[0].key), "k1");
-        compare(String(nativeBridge.pendingNotifications[1].key), "k2");
-        compare(String(nativeBridge.pendingNotifications[0].title), "Standup");
-        // Drop the queued entries without flushing, so they are never delivered
-        // into another test's history. Clear before init() marks ready again.
-        nativeBridge.pendingNotifications=[];
+    function reminderId() {
+        return String(center.data(center.index(0,0), NM.Notifications.IdRole));
+    }
+    function test_reminder_in_process_keeps_text_and_action() {
+        // Regression for docs/issues/0001: the server lives in this process, as in
+        // plasmashell. Sending must not crash, the text must arrive verbatim, and
+        // the default action must survive (it is lost if the sender disconnects).
+        deliveredSpy.clear();
+        const title = "-x 'single' \"double\" $(echo hacked) `id` ; | & zażółć";
+        nativeBridge.notify("hostile-reminder", title, "Body");
+        compare(deliveredSpy.count, 1);
+        compare(String(deliveredSpy.signalArguments[0][0]), "hostile-reminder");
+        tryCompare(center,"count",1,5000);
+        compare(String(center.data(center.index(0,0), NM.Notifications.SummaryRole)), title);
+        wait(300);
+        verify(center.data(center.index(0,0), NM.Notifications.HasDefaultActionRole));
     }
     function test_native_reminder_joins_shared_history() {
         deliveredSpy.clear(); reminderOpenedSpy.clear();
-        nativeBridge.notificationsReady = true;
         nativeBridge.notify("fixture-reminder","Meeting starts","Meeting <fixture> at 10:00");
-        tryCompare(deliveredSpy,"count",1,3000);
-        tryCompare(backend,"count",1,3000); tryCompare(center,"count",1,3000);
-        const id=deliveredSpy.signalArguments[0][1];
+        compare(deliveredSpy.count, 1);
+        tryCompare(backend,"count",1,5000); tryCompare(center,"count",1,3000);
+        const id=reminderId();
         verify(backend.canOpenId(id)); verify(backend.openId(id,null));
         tryCompare(reminderOpenedSpy,"count",1,3000);
         tryCompare(center,"count",0,3000); tryCompare(backend,"count",0,3000);

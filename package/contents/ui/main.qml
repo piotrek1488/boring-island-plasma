@@ -81,14 +81,11 @@ PlasmoidItem {
     NativeServices {
         id: nativeServices
         language: root.language
-        // Only emit Notify once plasmashell's own notification server owns the
-        // name; sending during shell startup crashes the reply decoder.
-        notificationsReady: notifications.available
         onReminderActivated: { root.open(true); root.selectedPage=3; }
         osdEnabled: osdState.enabled
         onProgressReceived: (icon,value,maximum,description) => osdState.progress(icon,value,maximum,description)
         onTextReceived: (icon,description) => osdState.text(icon,description)
-        onDelivered: (key,notificationId) => reminderScheduler.acknowledge(key)
+        onDelivered: key => reminderScheduler.acknowledge(key)
     }
     ReminderCalendar {
         id: reminderCalendar

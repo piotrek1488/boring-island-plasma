@@ -454,7 +454,8 @@ z dotychczasowego odświeżania/pamięci podręcznej co pięć minut.
 
 Przypomnienia trafiają do wspólnej historii KDE i respektują ustawienia podglądów
 oraz Nie przeszkadzać. Kliknięcie aktywnego przypomnienia otwiera zakładkę kalendarza
-w widżecie. Dziennik dostarczenia jest zapisywany osobno dla każdego widżetu,
+w widżecie. Przypomnienia wysyła systemowy komponent powiadomień Plasmy, więc
+widnieją pod jego nazwą, a nie jako „Boring Island”. Dziennik dostarczenia jest zapisywany osobno dla każdego widżetu,
 przetrwa normalny restart i nie jest zerowany resetem preferencji. Start można
 nadrobić w ciągu dwóch minut; stare alarmy nie są odtwarzane po długim uśpieniu.
 Niezależne alarmy KOrganizer lub innego dostawcy nadal mogą pojawiać się osobno.

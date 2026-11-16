@@ -474,7 +474,9 @@ events; all-day events are excluded. Set lead time to zero for start-only remind
 or disable reminders entirely. Tomorrow is included for reminders before midnight,
 including month/year boundaries. ICS uses its normal five-minute refresh/cache.
 Delivery uses KDE's notification service and shared history; clicking a live
-reminder opens the widget's Calendar tab. Do Not Disturb and notification popup
+reminder opens the widget's Calendar tab. Reminders are sent through Plasma's
+system notifications component, so they are listed under its name rather than
+"Boring Island". Do Not Disturb and notification popup
 preferences still apply. The per-widget delivery journal survives normal restarts
 and prevents refresh duplicates. Start reminders have a two-minute catch-up window;
 old missed reminders are not replayed after long sleep/offline periods. Existing

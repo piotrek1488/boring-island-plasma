@@ -6,7 +6,7 @@ per issue, newest numbers last.
 ## Naming
 
 `NNNN-short-slug.md` — zero-padded sequential number, then a short kebab-case
-slug (e.g. `0001-plasmashell-segfault-notify-startup.md`).
+slug (e.g. `0001-plasmashell-segfault-in-process-notify.md`).
 
 ## What each entry should contain
 
